@@ -6,6 +6,13 @@ import { PrismaService } from '../../database/prisma.service';
 import { AuthTokens, JwtPayload } from '../interfaces/authenticated-user.interface';
 import { PasswordService } from './password.service';
 
+/**
+ * Ventana durante la cual un refresh token recién rotado sigue siendo aceptado.
+ * Evita cerrar la sesión cuando dos peticiones concurrentes —dos pestañas, una
+ * recarga rápida o el doble montaje de efectos en desarrollo— usan el mismo token.
+ */
+const ROTATION_GRACE_MS = 15_000;
+
 @Injectable()
 export class TokenService {
   constructor(
@@ -33,6 +40,7 @@ export class TokenService {
 
     const decoded = this.jwt.decode(refreshToken) as JwtPayload;
 
+    // El token se guarda hasheado: si alguien lee la tabla, no obtiene credenciales.
     await this.prisma.refreshToken.create({
       data: {
         userId: user.id,
@@ -44,6 +52,7 @@ export class TokenService {
     });
 
     const access = this.jwt.decode(accessToken) as JwtPayload;
+
     return {
       accessToken,
       refreshToken,
@@ -52,21 +61,33 @@ export class TokenService {
   }
 
   /** Rotación: invalida el refresh usado y emite un par nuevo. */
-  async rotate(oldToken: string, user: { id: string; email: string; role: Role }, meta = {}) {
+  async rotate(
+    oldToken: string,
+    user: { id: string; email: string; role: Role },
+    meta: { userAgent?: string; ip?: string } = {},
+  ): Promise<AuthTokens> {
     await this.revoke(oldToken);
     return this.issue(user, meta);
   }
 
+  /**
+   * Un token es válido si no ha expirado y no está revocado; o si acaba de
+   * revocarse dentro de la ventana de gracia, que indica una carrera y no un robo.
+   */
   async isActive(token: string): Promise<boolean> {
     const record = await this.prisma.refreshToken.findFirst({
       where: {
         tokenHash: this.passwords.sha256(token),
-        revokedAt: null,
         expiresAt: { gt: new Date() },
       },
-      select: { id: true },
+      select: { revokedAt: true },
+      orderBy: { createdAt: 'desc' },
     });
-    return Boolean(record);
+
+    if (!record) return false;
+    if (!record.revokedAt) return true;
+
+    return Date.now() - record.revokedAt.getTime() < ROTATION_GRACE_MS;
   }
 
   async revoke(token: string): Promise<void> {
@@ -81,5 +102,18 @@ export class TokenService {
       where: { userId, revokedAt: null },
       data: { revokedAt: new Date() },
     });
+  }
+
+  /** Limpieza de tokens caducados o revocados hace tiempo. Útil como tarea programada. */
+  async purgeExpired(): Promise<number> {
+    const { count } = await this.prisma.refreshToken.deleteMany({
+      where: {
+        OR: [
+          { expiresAt: { lt: new Date() } },
+          { revokedAt: { lt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) } },
+        ],
+      },
+    });
+    return count;
   }
 }
