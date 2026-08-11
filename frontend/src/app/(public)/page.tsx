@@ -1,8 +1,8 @@
+import { StackSection } from '@/components/ui/StackSection';
 import { CategoryGrid } from '@/features/home/components/CategoryGrid';
 import { FeaturedProperties } from '@/features/home/components/FeaturedProperties';
-import { HostCta } from '@/features/home/components/HostCta';
 import { HowItWorks } from '@/features/home/components/HowItWorks';
-import { ParallaxHero } from '@/features/home/components/ParallaxHero';
+import { Hero } from '@/features/home/components/Hero';
 import { PopularDestinations } from '@/features/home/components/PopularDestinations';
 import { Testimonials } from '@/features/home/components/Testimonials';
 import { catalogServerService } from '@/features/properties/services/catalog.service';
@@ -10,10 +10,6 @@ import { propertiesServerService } from '@/features/properties/services/properti
 
 export const revalidate = 120;
 
-/**
- * Home renderizada en el servidor: bueno para SEO y para el primer pintado.
- * Cada bloque degrada a null si la API no responde, la página nunca se rompe.
- */
 export default async function HomePage() {
   const [featured, categories, destinations] = await Promise.all([
     propertiesServerService.featured(8),
@@ -23,13 +19,30 @@ export default async function HomePage() {
 
   return (
     <>
-      <ParallaxHero />
-      <CategoryGrid categories={categories ?? []} />
-      <FeaturedProperties properties={featured ?? []} />
-      <PopularDestinations destinations={destinations ?? []} />
-      <HowItWorks />
-      <Testimonials />
-      <HostCta />
+      {/* El hero ya tiene su propio sticky interno: queda al fondo de la pila. */}
+      <Hero />
+<StackSection index={1} className="bg-white">
+        <FeaturedProperties properties={featured ?? []} />
+      </StackSection>
+
+      <StackSection index={2} className="bg-white">
+        <CategoryGrid categories={categories ?? []} />
+      </StackSection>
+
+      
+
+      <StackSection index={3} className="bg-ink-50">
+        <PopularDestinations destinations={destinations ?? []} />
+      </StackSection>
+
+      <StackSection index={4} className="bg-white">
+        <HowItWorks />
+      </StackSection>
+
+      <StackSection index={5} className="bg-ink-50">
+        <Testimonials />
+      </StackSection>
+
     </>
   );
 }

@@ -1,78 +1,74 @@
-import { Parallax } from '@/components/ui/Parallax';
-import { Star } from 'lucide-react';
-import Image from 'next/image';
+import { DiagonalMarquee, type MarqueeCard } from '@/components/ui/DiagonalMarquee';
+import type { Department } from '@/types';
 
-/** Paisaje de fondo. Sustitúyelo por '/hero/fondo.jpg' cuando subas el tuyo. */
-const BACKGROUND_IMAGE = 'https://picsum.photos/seed/wasi-hero-peru/1920/1080';
+const TRUST = [
+  { value: '1.200+', label: 'huéspedes hospedados' },
+  { value: '4,9', label: 'calificación promedio' },
+  { value: '10', label: 'regiones del Perú' },
+];
 
+/** Respaldo: si la API aún no responde, el hero no se queda en blanco. */
+const FALLBACK_CARDS: MarqueeCard[] = [
+  'Cusco',
+  'Lima',
+  'Arequipa',
+  'Ica',
+  'Piura',
+  'Puno',
+  'Áncash',
+  'Loreto',
+].map((name, index) => ({
+  id: index,
+  url: `https://picsum.photos/seed/wasi-${name.toLowerCase()}/680/480`,
+  title: name,
+}));
 
-const FOREGROUND_IMAGE: string | null = null;
+export function Hero({ destinations = [] }: { destinations?: Department[] }) {
+  const cards: MarqueeCard[] = destinations.length
+    ? destinations.map((department) => ({
+        id: department.id,
+        url: department.imageUrl ?? `https://picsum.photos/seed/dep-${department.slug}/680/480`,
+        title: department.name,
+      }))
+    : FALLBACK_CARDS;
 
-export function Hero() {
   return (
-    <section className="relative">
-      <div className="container-page pt-4">
-        <div className="relative overflow-hidden rounded-[28px]">
-          <div className="relative h-[440px] w-full sm:h-[560px]">
-            {/* --- Capa 1: paisaje, se mueve despacio --- */}
-            <Parallax speed={0.22} className="absolute inset-0 scale-[1.2]">
-              <div className="relative size-full">
-                <Image
-                  src={BACKGROUND_IMAGE}
-                  alt="Paisaje andino del Perú"
-                  fill
-                  priority
-                  sizes="100vw"
-                  className="object-cover"
-                />
-              </div>
-            </Parallax>
-
-            <div className="absolute inset-0 bg-gradient-to-t from-ink-950/80 via-ink-950/25 to-ink-950/5" />
-
-            {/* --- Capa 2: titular --- */}
-            <Parallax speed={-0.05} className="absolute inset-x-0 bottom-0 z-10 p-6 sm:p-10 lg:p-14">
-              <span className="inline-flex items-center gap-2 rounded-full bg-white/15 px-3.5 py-1.5 text-xs font-medium text-white backdrop-blur-md">
-                <Star className="size-3.5 fill-white" />
-                Más de 1.200 huéspedes hospedados este año
-              </span>
-
-              <h1 className="mt-4 max-w-2xl text-4xl leading-[1.05] text-white sm:text-5xl lg:text-6xl">
-                <span className="text-display block">Donde quieras ir</span>
-                <span className="block font-semibold tracking-tight">en el Perú, hay un wasi.</span>
-              </h1>
-
-              <p className="mt-4 max-w-lg text-base leading-relaxed text-white/85">
-                Casas, departamentos y cabañas seleccionadas una por una. Reserva en línea, paga en
-                soles y coordina directo con el anfitrión.
-              </p>
-            </Parallax>
-
-            {/* --- Capa 3: figura recortada, delante del texto --- */}
-            {FOREGROUND_IMAGE && (
-              <Parallax
-                speed={-0.16}
-                className="pointer-events-none absolute inset-x-0 bottom-0 z-20 flex justify-center"
-              >
-                <div className="relative h-[380px] w-[280px] sm:h-[480px] sm:w-[340px]">
-                  <Image
-                    src={FOREGROUND_IMAGE}
-                    alt=""
-                    fill
-                    priority
-                    sizes="340px"
-                    className="object-contain object-bottom drop-shadow-[0_20px_40px_rgba(0,0,0,0.5)]"
-                  />
-                </div>
-              </Parallax>
-            )}
-          </div>
-        </div>
+    <section className="relative z-20 -mt-[88px] flex min-h-[760px] items-center overflow-hidden pb-16 pt-32 lg:h-[96vh]">
+      <div className="absolute inset-0">
+        <DiagonalMarquee cards={cards} angle={-22} baseSpeed={130} />
       </div>
 
-      <div className="container-page relative z-30 -mt-8 sm:-mt-9">
-        <div className="mx-auto max-w-4xl">
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(255,255,255,0.94)_0%,rgba(255,255,255,0.75)_45%,transparent_75%)]" />
+
+      <div className="container-page relative w-full text-center">
+        <p className="text-xs font-semibold uppercase tracking-[0.22em] text-clay-700">
+          Alojamientos con alma peruana
+        </p>
+
+        <h1 className="mx-auto mt-5 max-w-4xl text-[2.75rem] leading-[0.98] tracking-tight text-ink-950 sm:text-6xl lg:text-[4.5rem]">
+          <span className="text-display block font-normal">Donde quieras ir</span>
+          <span className="block font-semibold">en el Perú, hay un wasi.</span>
+        </h1>
+
+        <p className="mx-auto mt-6 max-w-xl text-lg leading-relaxed text-ink-600">
+          Casas, departamentos y cabañas verificadas una por una. Reserva en línea, paga en soles y
+          coordina directo con el anfitrión.
+        </p>
+
+        <div className="mx-auto mt-10 max-w-4xl">
         </div>
+
+        <dl className="mt-10 flex flex-wrap justify-center gap-x-12 gap-y-4">
+          {TRUST.map((item) => (
+            <div key={item.label}>
+              <dt className="sr-only">{item.label}</dt>
+              <dd>
+                <span className="block text-2xl font-semibold text-ink-900">{item.value}</span>
+                <span className="text-xs uppercase tracking-wider text-ink-500">{item.label}</span>
+              </dd>
+            </div>
+          ))}
+        </dl>
       </div>
     </section>
   );

@@ -1,19 +1,24 @@
 'use client';
 
 import { Star } from 'lucide-react';
+import Image from 'next/image';
 import { useEffect, useRef } from 'react';
 
 /**
- * `bottom` → dónde se apoya la capa (vh, negativo = por debajo del viewport)
- * `range`  → desplazamiento al recorrer la sección (vh, negativo = sube)
+ * Cada capa se ancla al borde INFERIOR del lienzo y se extiende hacia arriba
+ * (y hacia abajo si necesita subir). Todo en vh, para que sea predecible.
+ *
+ *   height → alto de la capa
+ *   bottom → dónde queda su base (negativo = por debajo del viewport)
+ *   range  → cuánto se desplaza al recorrer la sección (negativo = sube)
  */
 const LAYERS = [
-  { src: '/parallax/capa-3.webp', bottom: 0, range: 4 },    // cielo
-  { src: '/parallax/capa-2.webp', bottom: 0, range: 0 },    // montaña: INMÓVIL
-  { src: '/parallax/capa-1.webp', bottom: -40, range: -38 }, // suelo + hombre: sube y tapa
+  { src: '/parallax/capa-3.webp', height: 150, bottom: 0, range: 5 },     // cielo
+  { src: '/parallax/capa-2.webp', height: 150, bottom: 0, range: 0 },     // montaña: INMÓVIL
+  { src: '/parallax/capa-1.webp', height: 190, bottom: -35, range: -28 }, // suelo + hombre: sube
 ];
 
-const TITLE_RANGE = -6;
+const TITLE_RANGE = -8;
 
 export function ParallaxHero() {
   const sectionRef = useRef<HTMLElement>(null);
@@ -34,7 +39,8 @@ export function ParallaxHero() {
       const progress = Math.min(Math.max(-rect.top / travel, 0), 1);
 
       layerRefs.current.forEach((el, i) => {
-        if (el) el.style.transform = `translate3d(0, ${progress * LAYERS[i].range}vh, 0)`;
+        if (!el) return;
+        el.style.transform = `translate3d(0, ${progress * LAYERS[i].range}vh, 0)`;
       });
 
       if (titleRef.current) {
@@ -67,31 +73,25 @@ export function ParallaxHero() {
               layerRefs.current[index] = el;
             }}
             className={`absolute inset-x-0 will-change-transform ${index === 2 ? 'z-20' : ''}`}
-            style={{ bottom: `${layer.bottom}vh` }}
+            style={{
+              height: `${layer.height}vh`,
+              bottom: `${layer.bottom}vh`,
+            }}
           >
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
+            <Image
               src={layer.src}
               alt=""
-              loading="eager"
-              className="block h-auto w-full min-h-screen object-cover object-bottom [filter:contrast(1.07)_saturate(1.06)]"
+              fill
+              priority
+              quality={90}
+              sizes="100vw"
+              // El contenido de estas tiras vive en su parte inferior.
+              className="object-cover object-bottom"
             />
           </div>
         ))}
 
-        {/* Grano de película: enmascara el reescalado de las capas. */}
-        <div
-          aria-hidden
-          className="pointer-events-none absolute inset-0 z-[25] opacity-[0.09] mix-blend-overlay"
-          style={{
-            backgroundImage:
-              "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E\")",
-            backgroundRepeat: 'repeat',
-            backgroundSize: '180px 180px',
-          }}
-        />
-
-        {/* Titular: entre la montaña y el suelo */}
+        {/* Titular: entre la montaña y el suelo, por eso queda tapado al subir el terreno */}
         <div
           ref={titleRef}
           className="absolute inset-x-0 top-[16vh] z-10 flex flex-col items-center px-6 text-center will-change-transform"
@@ -111,7 +111,7 @@ export function ParallaxHero() {
           </p>
         </div>
 
-        <div className="absolute inset-x-0 bottom-24 z-40 px-5">
+        <div className="absolute inset-x-0 bottom-10 z-30 px-5">
           <div className="mx-auto max-w-4xl">
           </div>
         </div>

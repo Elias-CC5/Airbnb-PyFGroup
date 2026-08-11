@@ -327,3 +327,39 @@
 @media (prefers-reduced-motion: reduce) {
   .animate-breathe { animation: none; }
 }
+@keyframes clip-in {
+  from { transform: scale(0); }
+  to   { transform: scale(1); }
+}
+
+.clip-shape {
+  /* Sin esto el origen sería el del lienzo SVG y las formas volarían. */
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: clip-in 0.75s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .clip-shape { animation: none; }
+}
+/* Marquesina horizontal en bucle: la fila se duplica y recorre media anchura. */
+@keyframes marquee-left {
+  from { transform: translate3d(0, 0, 0); }
+  to   { transform: translate3d(-50%, 0, 0); }
+}
+@keyframes marquee-right {
+  from { transform: translate3d(-50%, 0, 0); }
+  to   { transform: translate3d(0, 0, 0); }
+}
+
+@utility animate-marquee-left {
+  animation: marquee-left var(--speed, 120s) linear infinite;
+}
+@utility animate-marquee-right {
+  animation: marquee-right var(--speed, 120s) linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-marquee-left,
+  .animate-marquee-right { animation: none; }
+}

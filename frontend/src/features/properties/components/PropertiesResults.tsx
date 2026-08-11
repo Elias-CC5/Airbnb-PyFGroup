@@ -5,7 +5,6 @@ import { SORT_OPTIONS } from '@/constants';
 import { ActiveFilters } from '@/features/search/components/ActiveFilters';
 import { CategoryChips } from '@/features/search/components/CategoryChips';
 import { FiltersPanel } from '@/features/search/components/FiltersPanel';
-import { SearchBar } from '@/features/search/components/SearchBar';
 import { useSearchFilters } from '@/features/search/hooks/useSearchFilters';
 import { SearchX } from 'lucide-react';
 import { useProperties } from '../hooks/useProperties';
@@ -21,7 +20,6 @@ export function PropertiesResults() {
   return (
     <div className="container-page py-6 sm:py-8">
       <div className="mx-auto max-w-4xl">
-        <SearchBar compact />
       </div>
 
       <div className="mt-8 space-y-4">
