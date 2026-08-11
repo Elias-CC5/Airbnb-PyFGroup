@@ -32,7 +32,7 @@ export function DateRangePicker({
       onSelect={onChange}
       numberOfMonths={numberOfMonths}
       disabled={[{ before: today }, ...disabledRanges]}
-      className={cn('wasi-daypicker', className)}
+      className={cn('Airbnb PyFGroup-daypicker', className)}
       classNames={{
         months: 'flex flex-col sm:flex-row gap-8',
         month_caption: 'flex justify-center py-2 mb-2 text-sm font-semibold text-ink-900 capitalize',

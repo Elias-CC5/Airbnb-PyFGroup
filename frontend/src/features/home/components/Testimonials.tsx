@@ -164,7 +164,7 @@ export function Testimonials() {
           </h2>
 
           <p className="mt-4 text-base leading-relaxed text-ink-600">
-            Historias de viajeros que ya encontraron su wasi en el Perú.
+            Historias de viajeros que ya encontraron su Airbnb PyFGroup en el Perú.
           </p>
         </header>
 

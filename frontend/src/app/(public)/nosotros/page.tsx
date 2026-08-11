@@ -34,7 +34,7 @@ export default function AboutPage() {
       <section className="grid items-center gap-10 lg:grid-cols-2">
         <div>
           <h1 className="text-3xl font-semibold leading-tight tracking-tight text-ink-900 sm:text-4xl">
-            <span className="text-display">Wasi</span> significa casa en quechua.
+            <span className="text-display">Airbnb PyFGroup</span> significa casa en quechua.
           </h1>
           <p className="mt-5 leading-relaxed text-ink-700">
             Nacimos con una idea sencilla: que encontrar dónde quedarte en el Perú sea tan fácil como

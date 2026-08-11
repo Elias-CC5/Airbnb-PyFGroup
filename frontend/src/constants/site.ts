@@ -6,7 +6,8 @@ export const SITE = {
   url: process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000',
   locale: 'es_PE',
   whatsapp: process.env.NEXT_PUBLIC_WHATSAPP_PHONE ?? '51999888777',
-  email: 'hola@wasi.pe',
+  // Un correo no admite espacios ni mayúsculas en el dominio.
+  email: 'hola@airbnbpyfgroup.com',
 } as const;
 
 export const NAV_LINKS = [

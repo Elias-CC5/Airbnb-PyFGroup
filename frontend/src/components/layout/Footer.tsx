@@ -2,21 +2,24 @@ import { NAV_LINKS, SITE } from '@/constants';
 import { Facebook, Instagram, Mail, MessageCircle } from 'lucide-react';
 import Link from 'next/link';
 
+/** Texto del wordmark de fondo. Se ajusta solo al ancho, sea cual sea su largo. */
+const WORDMARK = 'Airbnb PyFGroup';
+
 const SOCIALS = [
-  { href: `https://wa.me/${SITE.whatsapp}`, label: 'WhatsApp', icon: MessageCircle, external: true },
-  { href: 'https://instagram.com', label: 'Instagram', icon: Instagram, external: true },
-  { href: 'https://facebook.com', label: 'Facebook', icon: Facebook, external: true },
-  { href: `mailto:${SITE.email}`, label: 'Correo', icon: Mail, external: true },
+  { href: `https://wa.me/${SITE.whatsapp}`, label: 'WhatsApp', icon: MessageCircle },
+  { href: 'https://instagram.com', label: 'Instagram', icon: Instagram },
+  { href: 'https://facebook.com', label: 'Facebook', icon: Facebook },
+  { href: `mailto:${SITE.email}`, label: 'Correo', icon: Mail },
 ];
 
-/** Monograma sobre placa oscura/arcilla, superpuesto al wordmark de fondo. */
+/** Monograma sobre placa oscura, superpuesto al wordmark de fondo. */
 function LogoTile() {
   return (
-    <span className="grid size-[72px] place-items-center rounded-[20px] bg-ink-950 shadow-[0_20px_40px_-12px_rgba(0,0,0,0.2)] ring-1 ring-black/10">
+    <span className="grid size-[72px] place-items-center rounded-[20px] bg-ink-950 shadow-[0_20px_50px_-14px_rgba(28,25,23,0.5)]">
       <svg width="38" height="38" viewBox="0 0 32 32" fill="none" aria-hidden>
         <path
           d="M4 24.5 8.2 8h3.4l3 11.2L17.6 8h3.4L24.2 19.2 27.2 8h3.4L26.4 24.5h-3.5l-2.6-9.6-2.9 9.6h-3.3l-2.7-9.6-2.5 9.6H4Z"
-          fill="#ffffff"
+          fill="white"
         />
       </svg>
     </span>
@@ -27,18 +30,13 @@ export function Footer() {
   const year = new Date().getFullYear();
 
   return (
-    <footer className="relative mt-24 overflow-hidden bg-white text-ink-900 border-t border-ink-200">
-      {/* Halo muy sutil y limpio para la versión clara. */}
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-x-0 top-0 h-64 bg-[radial-gradient(ellipse_at_top,rgba(185,74,41,0.06),transparent_70%)]"
-      />
-
-      {/* --- Bloque central --- */}
+    // Sin bordes: la separación la dan el espaciado y el degradado del fondo.
+    <footer className="relative mt-24 overflow-hidden bg-gradient-to-b from-white to-ink-50">
+      {/* Bloque central */}
       <div className="container-page relative pt-16 text-center">
-        <h2 className="text-3xl font-bold tracking-tight sm:text-4xl text-ink-950">{SITE.name}</h2>
+        <h2 className="text-3xl font-bold tracking-tight text-ink-900 sm:text-4xl">{SITE.name}</h2>
 
-        <p className="mx-auto mt-3 max-w-md text-sm font-medium leading-relaxed text-ink-600">
+        <p className="mx-auto mt-3 max-w-md text-sm leading-relaxed text-ink-600">
           {SITE.description}
         </p>
 
@@ -48,10 +46,10 @@ export function Footer() {
             <li key={social.label}>
               <Link
                 href={social.href}
-                target={social.external ? '_blank' : undefined}
-                rel={social.external ? 'noopener noreferrer' : undefined}
+                target="_blank"
+                rel="noopener noreferrer"
                 aria-label={social.label}
-                className="inline-grid size-9 place-items-center rounded-full text-ink-600 transition-colors duration-200 hover:bg-ink-100 hover:text-ink-950"
+                className="inline-grid size-9 place-items-center rounded-full text-ink-500 transition-colors duration-200 hover:bg-ink-100 hover:text-ink-900"
               >
                 <social.icon className="size-[18px]" />
               </Link>
@@ -66,7 +64,7 @@ export function Footer() {
               <li key={link.href}>
                 <Link
                   href={link.href}
-                  className="text-sm font-medium text-ink-600 transition-colors duration-200 hover:text-ink-950"
+                  className="text-sm font-medium text-ink-600 transition-colors duration-200 hover:text-ink-900"
                 >
                   {link.label}
                 </Link>
@@ -76,22 +74,38 @@ export function Footer() {
         </nav>
       </div>
 
-      {/* --- Wordmark gigante recortado + placa del logo --- */}
-      <div className="relative mt-14 flex items-end justify-center">
-        <span
+      {/* Wordmark gigante recortado + placa del logo */}
+      <div className="relative mt-14 flex items-end justify-center overflow-hidden">
+        {/*
+          El SVG con `textLength` fuerza al texto a ocupar exactamente el ancho
+          disponible, así el nombre nunca se desborda ni se queda corto.
+        */}
+        <svg
           aria-hidden
-          className="translate-y-[18%] select-none whitespace-nowrap text-[19vw] font-black leading-[0.8] tracking-tighter text-ink-950/[0.04]"
+          viewBox="0 0 1000 150"
+          preserveAspectRatio="xMidYMax meet"
+          className="w-full translate-y-[14%] select-none"
         >
-          WASIPERÚ
-        </span>
+          <text
+            x="500"
+            y="128"
+            textAnchor="middle"
+            textLength="980"
+            lengthAdjust="spacingAndGlyphs"
+            className="fill-ink-950/[0.055] font-black"
+            style={{ fontSize: 140, letterSpacing: '-0.03em' }}
+          >
+            {WORDMARK}
+          </text>
+        </svg>
 
         <span className="absolute bottom-0 translate-y-[35%]">
           <LogoTile />
         </span>
       </div>
 
-      {/* --- Barra inferior --- */}
-      <div className="container-page relative flex flex-col items-center justify-between gap-2 pb-6 pt-16 text-xs text-ink-500 sm:flex-row border-t border-ink-100">
+      {/* Barra inferior */}
+      <div className="container-page relative flex flex-col items-center justify-between gap-2 pb-6 pt-16 text-xs text-ink-500 sm:flex-row">
         <p>
           © {year} {SITE.name}. Todos los derechos reservados.
         </p>
