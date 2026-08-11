@@ -1,7 +1,6 @@
 import { StackSection } from '@/components/ui/StackSection';
 import { CategoryGrid } from '@/features/home/components/CategoryGrid';
 import { FeaturedProperties } from '@/features/home/components/FeaturedProperties';
-import { HowItWorks } from '@/features/home/components/HowItWorks';
 import { Hero } from '@/features/home/components/Hero';
 import { PopularDestinations } from '@/features/home/components/PopularDestinations';
 import { Testimonials } from '@/features/home/components/Testimonials';
@@ -35,11 +34,9 @@ export default async function HomePage() {
         <PopularDestinations destinations={destinations ?? []} />
       </StackSection>
 
-      <StackSection index={4} className="bg-white">
-        <HowItWorks />
-      </StackSection>
+     
 
-      <StackSection index={5} className="bg-ink-50">
+      <StackSection index={4} className="bg-ink-50">
         <Testimonials />
       </StackSection>
 

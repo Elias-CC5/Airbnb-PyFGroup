@@ -26,21 +26,8 @@ export function CategoryGrid({ categories }: { categories: Category[] }) {
   if (!categories.length) return null;
 
   return (
-    <section className="relative z-10 -mt-10 overflow-hidden rounded-t-[40px] bg-white pb-16 pt-20 shadow-[0_-24px_60px_-20px_rgba(28,25,23,0.45)]">
-      {/* Capas ambientales */}
-      <div
-        aria-hidden
-        className="bg-aurora animate-breathe pointer-events-none absolute left-1/2 top-1/2 h-[50vh] w-[80vw] rounded-[50%] blur-[90px]"
-      />
-      <div aria-hidden className="bg-grid-soft pointer-events-none absolute inset-0" />
-      <div
-        aria-hidden
-        className="text-giant-outline pointer-events-none absolute -top-4 left-1/2 -translate-x-1/2 select-none whitespace-nowrap text-[22vw]"
-      >
-        ESTADÍAS
-      </div>
-
-      <div className="container-page relative z-10">
+    <section className="relative mt-20 overflow-hidden py-16">
+      <div className="container-page">
         <Reveal>
           <header className="mb-4 flex items-end justify-between gap-4">
             <div>
