@@ -1,0 +1,141 @@
+import { Injectable } from '@nestjs/common';
+import { PropertyStatus, ReservationStatus } from '@prisma/client';
+import { PrismaService } from '../../database/prisma.service';
+
+export interface DashboardStats {
+  properties: { total: number; active: number; inactive: number };
+  reservations: { total: number; pending: number; confirmed: number; completed: number; cancelled: number };
+  users: { total: number; newThisMonth: number };
+  revenue: { total: number; thisMonth: number; currency: string };
+}
+
+@Injectable()
+export class DashboardService {
+  constructor(private readonly prisma: PrismaService) {}
+
+  async stats(): Promise<DashboardStats> {
+    const startOfMonth = new Date();
+    startOfMonth.setUTCDate(1);
+    startOfMonth.setUTCHours(0, 0, 0, 0);
+
+    const [
+      propertiesTotal,
+      propertiesActive,
+      reservationsTotal,
+      pending,
+      confirmed,
+      completed,
+      cancelled,
+      usersTotal,
+      usersNew,
+      revenueAll,
+      revenueMonth,
+    ] = await this.prisma.$transaction([
+      this.prisma.property.count({ where: { deletedAt: null } }),
+      this.prisma.property.count({ where: { deletedAt: null, status: PropertyStatus.ACTIVE } }),
+      this.prisma.reservation.count(),
+      this.prisma.reservation.count({ where: { status: ReservationStatus.PENDING } }),
+      this.prisma.reservation.count({ where: { status: ReservationStatus.CONFIRMED } }),
+      this.prisma.reservation.count({ where: { status: ReservationStatus.COMPLETED } }),
+      this.prisma.reservation.count({ where: { status: ReservationStatus.CANCELLED } }),
+      this.prisma.user.count({ where: { deletedAt: null } }),
+      this.prisma.user.count({ where: { deletedAt: null, createdAt: { gte: startOfMonth } } }),
+      this.prisma.reservation.aggregate({
+        where: { status: { in: [ReservationStatus.CONFIRMED, ReservationStatus.COMPLETED] } },
+        _sum: { totalPrice: true },
+      }),
+      this.prisma.reservation.aggregate({
+        where: {
+          status: { in: [ReservationStatus.CONFIRMED, ReservationStatus.COMPLETED] },
+          createdAt: { gte: startOfMonth },
+        },
+        _sum: { totalPrice: true },
+      }),
+    ]);
+
+    return {
+      properties: {
+        total: propertiesTotal,
+        active: propertiesActive,
+        inactive: propertiesTotal - propertiesActive,
+      },
+      reservations: { total: reservationsTotal, pending, confirmed, completed, cancelled },
+      users: { total: usersTotal, newThisMonth: usersNew },
+      revenue: {
+        total: Number(revenueAll._sum.totalPrice ?? 0),
+        thisMonth: Number(revenueMonth._sum.totalPrice ?? 0),
+        currency: 'PEN',
+      },
+    };
+  }
+
+  /** Serie mensual de reservas e ingresos de los últimos N meses (para los gráficos). */
+  async monthlySeries(months = 12) {
+    const from = new Date();
+    from.setUTCMonth(from.getUTCMonth() - (months - 1));
+    from.setUTCDate(1);
+    from.setUTCHours(0, 0, 0, 0);
+
+    const rows = await this.prisma.$queryRaw<Array<{ month: Date; reservations: bigint; revenue: string }>>`
+      SELECT date_trunc('month', "created_at") AS month,
+             COUNT(*)                          AS reservations,
+             COALESCE(SUM(CASE WHEN status IN ('CONFIRMED','COMPLETED') THEN "total_price" ELSE 0 END), 0) AS revenue
+      FROM reservations
+      WHERE "created_at" >= ${from}
+      GROUP BY 1
+      ORDER BY 1 ASC
+    `;
+
+    return rows.map((r) => ({
+      month: r.month.toISOString().slice(0, 7),
+      reservations: Number(r.reservations),
+      revenue: Number(r.revenue),
+    }));
+  }
+
+  /** Alojamientos más vistos / mejor valorados. */
+  topProperties(limit = 5) {
+    return this.prisma.property.findMany({
+      where: { deletedAt: null },
+      select: {
+        id: true,
+        title: true,
+        slug: true,
+        views: true,
+        ratingAvg: true,
+        reviewsCount: true,
+        pricePerNight: true,
+        images: { where: { isMain: true }, take: 1, select: { url: true } },
+        _count: { select: { reservations: true } },
+      },
+      orderBy: [{ views: 'desc' }],
+      take: limit,
+    });
+  }
+
+  /** Nuevos usuarios registrados por mes. */
+  async usersSeries(months = 12) {
+    const from = new Date();
+    from.setUTCMonth(from.getUTCMonth() - (months - 1));
+
+    const rows = await this.prisma.$queryRaw<Array<{ month: Date; total: bigint }>>`
+      SELECT date_trunc('month', "created_at") AS month, COUNT(*) AS total
+      FROM users
+      WHERE "created_at" >= ${from} AND "deleted_at" IS NULL
+      GROUP BY 1 ORDER BY 1 ASC
+    `;
+
+    return rows.map((r) => ({ month: r.month.toISOString().slice(0, 7), total: Number(r.total) }));
+  }
+
+  recentReservations(limit = 8) {
+    return this.prisma.reservation.findMany({
+      take: limit,
+      orderBy: { createdAt: 'desc' },
+      include: {
+        user: { select: { firstName: true, lastName: true, email: true } },
+        property: { select: { title: true, slug: true } },
+      },
+    });
+  }
+}

@@ -1,0 +1,398 @@
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ------------------------- ENUMS ---------------------------
+
+enum Role {
+  USER
+  HOST
+  ADMIN
+  SUPER_ADMIN
+}
+
+enum PropertyStatus {
+  DRAFT
+  PENDING
+  ACTIVE
+  INACTIVE
+}
+
+enum ReservationStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+  COMPLETED
+}
+
+enum Currency {
+  PEN
+  USD
+}
+
+// ------------------------- USERS ---------------------------
+
+model User {
+  id            String    @id @default(uuid()) @db.Uuid
+  firstName     String    @map("first_name") @db.VarChar(80)
+  lastName      String    @map("last_name") @db.VarChar(80)
+  email         String    @unique @db.VarChar(160)
+  phone         String?   @db.VarChar(30)
+  password      String
+  avatarUrl     String?   @map("avatar_url")
+  role          Role      @default(USER)
+  isActive      Boolean   @default(true) @map("is_active")
+  emailVerified Boolean   @default(false) @map("email_verified")
+
+  refreshTokens      RefreshToken[]
+  passwordResets     PasswordReset[]
+  properties         Property[]      @relation("PropertyOwner")
+  reservations       Reservation[]
+  reviews            Review[]
+  favorites          Favorite[]
+  contactMessages    ContactMessage[]
+
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  @@index([role])
+  @@index([deletedAt])
+  @@map("users")
+}
+
+/// Hash del refresh token (nunca se guarda el token en claro).
+model RefreshToken {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  tokenHash String   @map("token_hash")
+  userAgent String?  @map("user_agent") @db.VarChar(255)
+  ip        String?  @db.VarChar(64)
+  expiresAt DateTime @map("expires_at")
+  revokedAt DateTime? @map("revoked_at")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
+  @@map("refresh_tokens")
+}
+
+model PasswordReset {
+  id        String    @id @default(uuid()) @db.Uuid
+  userId    String    @map("user_id") @db.Uuid
+  tokenHash String    @map("token_hash")
+  expiresAt DateTime  @map("expires_at")
+  usedAt    DateTime? @map("used_at")
+  createdAt DateTime  @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("password_resets")
+}
+
+// ----------------------- UBICACIONES ------------------------
+
+model Department {
+  id        Int        @id @default(autoincrement())
+  name      String     @unique @db.VarChar(80)
+  slug      String     @unique @db.VarChar(90)
+  imageUrl  String?    @map("image_url")
+  provinces Province[]
+  locations Location[]
+
+  @@map("departments")
+}
+
+model Province {
+  id           Int        @id @default(autoincrement())
+  name         String     @db.VarChar(80)
+  slug         String     @db.VarChar(90)
+  departmentId Int        @map("department_id")
+
+  department Department @relation(fields: [departmentId], references: [id], onDelete: Cascade)
+  districts  District[]
+  locations  Location[]
+
+  @@unique([departmentId, slug])
+  @@index([departmentId])
+  @@map("provinces")
+}
+
+model District {
+  id         Int    @id @default(autoincrement())
+  name       String @db.VarChar(80)
+  slug       String @db.VarChar(90)
+  provinceId Int    @map("province_id")
+
+  province  Province   @relation(fields: [provinceId], references: [id], onDelete: Cascade)
+  locations Location[]
+
+  @@unique([provinceId, slug])
+  @@index([provinceId])
+  @@map("districts")
+}
+
+/// Dirección concreta de un alojamiento (desnormaliza dpto/prov/dist para filtros rápidos).
+model Location {
+  id           String  @id @default(uuid()) @db.Uuid
+  address      String? @db.VarChar(200)
+  reference    String? @db.VarChar(200)
+  latitude     Float?
+  longitude    Float?
+  departmentId Int     @map("department_id")
+  provinceId   Int     @map("province_id")
+  districtId   Int?    @map("district_id")
+
+  department Department @relation(fields: [departmentId], references: [id])
+  province   Province   @relation(fields: [provinceId], references: [id])
+  district   District?  @relation(fields: [districtId], references: [id])
+  property   Property?
+
+  @@index([departmentId, provinceId, districtId])
+  @@map("locations")
+}
+
+// ------------------- CATEGORÍAS Y AMENIDADES -----------------
+
+model Category {
+  id          Int     @id @default(autoincrement())
+  name        String  @unique @db.VarChar(80)
+  slug        String  @unique @db.VarChar(90)
+  description String? @db.VarChar(255)
+  icon        String? @db.VarChar(60)
+  imageUrl    String? @map("image_url")
+  isActive    Boolean @default(true) @map("is_active")
+  order       Int     @default(0)
+
+  properties Property[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("categories")
+}
+
+model Amenity {
+  id       Int     @id @default(autoincrement())
+  name     String  @unique @db.VarChar(80)
+  slug     String  @unique @db.VarChar(90)
+  icon     String? @db.VarChar(60)
+  group    String? @db.VarChar(60)
+  isActive Boolean @default(true) @map("is_active")
+
+  properties PropertyAmenity[]
+
+  @@map("amenities")
+}
+
+model PropertyAmenity {
+  propertyId String @map("property_id") @db.Uuid
+  amenityId  Int    @map("amenity_id")
+
+  property Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  amenity  Amenity  @relation(fields: [amenityId], references: [id], onDelete: Cascade)
+
+  @@id([propertyId, amenityId])
+  @@index([amenityId])
+  @@map("property_amenities")
+}
+
+// ----------------------- ALOJAMIENTOS ------------------------
+
+model Property {
+  id              String         @id @default(uuid()) @db.Uuid
+  title           String         @db.VarChar(160)
+  slug            String         @unique @db.VarChar(180)
+  shortDescription String?       @map("short_description") @db.VarChar(255)
+  description     String
+  pricePerNight   Decimal        @map("price_per_night") @db.Decimal(10, 2)
+  currency        Currency       @default(PEN)
+  cleaningFee     Decimal        @default(0) @map("cleaning_fee") @db.Decimal(10, 2)
+  maxGuests       Int            @map("max_guests")
+  bedrooms        Int
+  beds            Int            @default(1)
+  bathrooms       Int
+  minNights       Int            @default(1) @map("min_nights")
+  maxNights       Int?           @map("max_nights")
+  status          PropertyStatus @default(DRAFT)
+  isFeatured      Boolean        @default(false) @map("is_featured")
+  views           Int            @default(0)
+  ratingAvg       Float          @default(0) @map("rating_avg")
+  reviewsCount    Int            @default(0) @map("reviews_count")
+  whatsappPhone   String?        @map("whatsapp_phone") @db.VarChar(30)
+  checkInTime     String         @default("15:00") @map("check_in_time") @db.VarChar(5)
+  checkOutTime    String         @default("11:00") @map("check_out_time") @db.VarChar(5)
+
+  ownerId    String @map("owner_id") @db.Uuid
+  categoryId Int    @map("category_id")
+  locationId String @unique @map("location_id") @db.Uuid
+
+  owner     User     @relation("PropertyOwner", fields: [ownerId], references: [id])
+  category  Category @relation(fields: [categoryId], references: [id])
+  location  Location @relation(fields: [locationId], references: [id], onDelete: Cascade)
+
+  images       PropertyImage[]
+  amenities    PropertyAmenity[]
+  reservations Reservation[]
+  reviews      Review[]
+  favorites    Favorite[]
+  blocks       AvailabilityBlock[]
+
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  @@index([status, deletedAt])
+  @@index([categoryId])
+  @@index([pricePerNight])
+  @@index([maxGuests])
+  @@index([isFeatured])
+  @@map("properties")
+}
+
+model PropertyImage {
+  id         String  @id @default(uuid()) @db.Uuid
+  propertyId String  @map("property_id") @db.Uuid
+  url        String
+  publicId   String? @map("public_id")
+  alt        String? @db.VarChar(160)
+  order      Int     @default(0)
+  isMain     Boolean @default(false) @map("is_main")
+  width      Int?
+  height     Int?
+
+  property Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([propertyId, order])
+  @@map("property_images")
+}
+
+// -------------------- DISPONIBILIDAD -------------------------
+
+/// Bloqueos manuales del propietario/administrador (mantenimiento, uso propio...).
+model AvailabilityBlock {
+  id         String   @id @default(uuid()) @db.Uuid
+  propertyId String   @map("property_id") @db.Uuid
+  startDate  DateTime @map("start_date") @db.Date
+  endDate    DateTime @map("end_date") @db.Date
+  reason     String?  @db.VarChar(160)
+
+  property Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([propertyId, startDate, endDate])
+  @@map("availability_blocks")
+}
+
+// ------------------------ RESERVAS ---------------------------
+
+model Reservation {
+  id          String            @id @default(uuid()) @db.Uuid
+  code        String            @unique @db.VarChar(20)
+  propertyId  String            @map("property_id") @db.Uuid
+  userId      String            @map("user_id") @db.Uuid
+  checkIn     DateTime          @map("check_in") @db.Date
+  checkOut    DateTime          @map("check_out") @db.Date
+  guests      Int
+  nights      Int
+  pricePerNight Decimal         @map("price_per_night") @db.Decimal(10, 2)
+  cleaningFee Decimal           @default(0) @map("cleaning_fee") @db.Decimal(10, 2)
+  totalPrice  Decimal           @map("total_price") @db.Decimal(10, 2)
+  currency    Currency          @default(PEN)
+  status      ReservationStatus @default(PENDING)
+  notes       String?           @db.VarChar(500)
+  cancelledAt DateTime?         @map("cancelled_at")
+  cancelReason String?          @map("cancel_reason") @db.VarChar(255)
+
+  property Property @relation(fields: [propertyId], references: [id])
+  user     User     @relation(fields: [userId], references: [id])
+  review   Review?
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([propertyId, checkIn, checkOut])
+  @@index([userId])
+  @@index([status])
+  @@map("reservations")
+}
+
+// ------------------------- RESEÑAS ---------------------------
+
+model Review {
+  id            String  @id @default(uuid()) @db.Uuid
+  propertyId    String  @map("property_id") @db.Uuid
+  userId        String  @map("user_id") @db.Uuid
+  reservationId String  @unique @map("reservation_id") @db.Uuid
+  rating        Int
+  comment       String  @db.VarChar(1000)
+  isVisible     Boolean @default(true) @map("is_visible")
+
+  property    Property    @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  reservation Reservation @relation(fields: [reservationId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([propertyId])
+  @@map("reviews")
+}
+
+// ------------------------ FAVORITOS --------------------------
+
+model Favorite {
+  userId     String @map("user_id") @db.Uuid
+  propertyId String @map("property_id") @db.Uuid
+
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  property Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@id([userId, propertyId])
+  @@index([propertyId])
+  @@map("favorites")
+}
+
+// --------------------- MENSAJES / CONTACTO --------------------
+
+model ContactMessage {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String?  @map("user_id") @db.Uuid
+  name      String   @db.VarChar(120)
+  email     String   @db.VarChar(160)
+  phone     String?  @db.VarChar(30)
+  subject   String   @db.VarChar(160)
+  message   String   @db.VarChar(2000)
+  isRead    Boolean  @default(false) @map("is_read")
+
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([isRead])
+  @@map("contact_messages")
+}
+
+// -------------------- CONFIGURACIÓN ADMIN ---------------------
+
+model Setting {
+  key       String   @id @db.VarChar(80)
+  value     String
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("settings")
+}
