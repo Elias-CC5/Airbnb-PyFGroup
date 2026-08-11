@@ -13,6 +13,7 @@ import { toast } from 'sonner';
 import { PropertyAmenities } from './PropertyAmenities';
 import { PropertyGallery } from './PropertyGallery';
 import { PropertyGrid } from './PropertyGrid';
+import { PropertyMap } from './PropertyMap';
 
 interface Props {
   property: PropertyDetail;
@@ -43,7 +44,8 @@ export function PropertyDetailView({ property, similar, place }: Props) {
   ];
 
   return (
-    <div className="container-page py-6 sm:py-8">
+    // pt-28: deja hueco a la barra de navegación flotante.
+    <div className="container-page pb-8 pt-28">
       {/* Encabezado */}
       <nav aria-label="Ruta de navegación" className="mb-4 text-sm text-ink-500">
         <Link href="/alojamientos" className="hover:text-ink-900 hover:underline">
@@ -60,7 +62,9 @@ export function PropertyDetailView({ property, similar, place }: Props) {
 
       <div className="mb-5 flex flex-wrap items-start justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight text-ink-900 sm:text-[2rem]">{property.title}</h1>
+          <h1 className="text-2xl font-semibold tracking-tight text-ink-900 sm:text-[2rem]">
+            {property.title}
+          </h1>
           <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-ink-600">
             <Rating value={property.ratingAvg} count={property.reviewsCount} />
             <span className="inline-flex items-center gap-1.5">
@@ -137,30 +141,28 @@ export function PropertyDetailView({ property, similar, place }: Props) {
             <PropertyAmenities amenities={property.amenities.map((a) => a.amenity)} />
           </div>
 
-          {property.location.reference && (
-            <section className="border-b border-ink-200 pb-9">
-              <h2 className="text-xl font-semibold text-ink-900">Dónde te hospedarás</h2>
-              <p className="mt-3 text-sm leading-relaxed text-ink-700">
-                {place}. {property.location.reference}
-              </p>
-              <p className="mt-2 text-xs text-ink-500">
-                Por seguridad, la dirección exacta se comparte una vez confirmada la reserva.
-              </p>
-            </section>
-          )}
+          <section className="border-b border-ink-200 pb-9">
+            <PropertyMap
+              location={property.location}
+              place={place}
+              reference={property.location.reference}
+            />
+          </section>
 
           <ReviewsSection propertyId={property.id} />
         </div>
 
         {/* Card de reserva (sticky en desktop) */}
-        <aside className="lg:sticky lg:top-24 lg:self-start">
+        <aside className="lg:sticky lg:top-28 lg:self-start">
           <BookingCard property={property} />
         </aside>
       </div>
 
       {similar.length > 0 && (
         <section className="mt-20 border-t border-ink-200 pt-12">
-          <h2 className="mb-7 text-2xl font-semibold tracking-tight text-ink-900">Alojamientos similares</h2>
+          <h2 className="mb-7 text-2xl font-semibold tracking-tight text-ink-900">
+            Alojamientos similares
+          </h2>
           <PropertyGrid properties={similar} />
         </section>
       )}
@@ -169,11 +171,13 @@ export function PropertyDetailView({ property, similar, place }: Props) {
       <div className="fixed inset-x-0 bottom-0 z-30 flex items-center justify-between gap-4 border-t border-ink-200 bg-white px-5 py-3 lg:hidden">
         <div>
           <p className="text-base font-semibold text-ink-900">
-            {formatPrice(property.pricePerNight)} <span className="text-sm font-normal text-ink-500">noche</span>
+            {formatPrice(property.pricePerNight)}{' '}
+            <span className="text-sm font-normal text-ink-500">noche</span>
           </p>
           <Rating value={property.ratingAvg} count={property.reviewsCount} />
         </div>
-        <a
+
+        <Link
           href="#contenido"
           onClick={(e) => {
             e.preventDefault();
@@ -182,7 +186,7 @@ export function PropertyDetailView({ property, similar, place }: Props) {
           className="rounded-xl bg-clay-600 px-6 py-3 text-sm font-medium text-white"
         >
           Reservar
-        </a>
+        </Link>
       </div>
     </div>
   );

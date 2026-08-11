@@ -1,4 +1,5 @@
 export * from './site';
+export * from './geo';
 
 export const CURRENCY = 'PEN';
 export const CURRENCY_SYMBOL = 'S/';

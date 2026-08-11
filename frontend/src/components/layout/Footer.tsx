@@ -30,7 +30,6 @@ export function Footer() {
   const year = new Date().getFullYear();
 
   return (
-    // Sin bordes: la separación la dan el espaciado y el degradado del fondo.
     <footer className="relative mt-24 overflow-hidden bg-gradient-to-b from-white to-ink-50">
       {/* Bloque central */}
       <div className="container-page relative pt-16 text-center">
@@ -74,17 +73,13 @@ export function Footer() {
         </nav>
       </div>
 
-      {/* Wordmark gigante recortado + placa del logo */}
-      <div className="relative mt-14 flex items-end justify-center overflow-hidden">
-        {/*
-          El SVG con `textLength` fuerza al texto a ocupar exactamente el ancho
-          disponible, así el nombre nunca se desborda ni se queda corto.
-        */}
+      {/* Wordmark gigante recortado + placa del logo centrada correctamente */}
+      <div className="relative mt-14 flex justify-center overflow-hidden pb-8">
         <svg
           aria-hidden
           viewBox="0 0 1000 150"
           preserveAspectRatio="xMidYMax meet"
-          className="w-full translate-y-[14%] select-none"
+          className="w-full select-none"
         >
           <text
             x="500"
@@ -99,13 +94,13 @@ export function Footer() {
           </text>
         </svg>
 
-        <span className="absolute bottom-0 translate-y-[35%]">
+        <div className="absolute inset-x-0 bottom-0 flex justify-center">
           <LogoTile />
-        </span>
+        </div>
       </div>
 
       {/* Barra inferior */}
-      <div className="container-page relative flex flex-col items-center justify-between gap-2 pb-6 pt-16 text-xs text-ink-500 sm:flex-row">
+      <div className="container-page relative flex flex-col items-center justify-between gap-2 pb-6 pt-12 text-xs text-ink-500 sm:flex-row">
         <p>
           © {year} {SITE.name}. Todos los derechos reservados.
         </p>

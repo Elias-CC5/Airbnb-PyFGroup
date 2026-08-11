@@ -47,7 +47,7 @@ export function Hero({ destinations = [] }: { destinations?: Department[] }) {
 
         <h1 className="mx-auto mt-5 max-w-4xl text-[2.75rem] leading-[0.98] tracking-tight text-ink-950 sm:text-6xl lg:text-[4.5rem]">
           <span className="text-display block font-normal">Donde quieras ir</span>
-          <span className="block font-semibold">en el Perú, hay un wasi.</span>
+          <span className="block font-semibold">en el Perú, hay un Airbnb PyFGroup.</span>
         </h1>
 
         <p className="mx-auto mt-6 max-w-xl text-lg leading-relaxed text-ink-600">
