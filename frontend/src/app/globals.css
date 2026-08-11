@@ -1,7 +1,9 @@
 @import "tailwindcss";
 
 @theme {
-  /* --- Tokens compatibles con shadcn/ui ---     Mapeados a la paleta propia para poder pegar componentes de terceros     sin que pierdan el estilo ni duplicar el design system. --- */
+  /* --- Tokens compatibles con shadcn/ui ---
+     Mapeados a la paleta propia para poder pegar componentes de terceros
+     sin que pierdan el estilo ni duplicar el design system. --- */
   --color-background: #ffffff;
   --color-foreground: var(--color-ink-900);
   --color-card: #ffffff;
@@ -20,9 +22,10 @@
   --color-destructive-foreground: #ffffff;
   --color-border: var(--color-ink-200);
   --color-input: var(--color-ink-300);
-  --color-ring: var(--color-clay-500);
+  --color-ring: var(--color-ink-900);
 
-  /* Alias sin prefijo: algunos componentes de terceros usan var(--foreground) en lugar de var(--color-foreground). */
+  /* Alias sin prefijo: algunos componentes de terceros usan var(--foreground)
+     en lugar de var(--color-foreground). */
   --foreground: var(--color-ink-900);
   --background: #ffffff;
   --primary: var(--color-clay-600);
@@ -31,41 +34,44 @@
   --muted-foreground: var(--color-ink-500);
   --border: var(--color-ink-200);
 
-  /* --- Neutros --- */
-  --color-ink-950: #100e0c;
-  --color-ink-900: #1c1917;
-  --color-ink-800: #292524;
-  --color-ink-700: #44403c;
-  --color-ink-600: #57534e;
-  --color-ink-500: #78716c;
-  --color-ink-400: #a8a29e;
-  --color-ink-300: #d6d3d1;
-  --color-ink-200: #e7e5e4;
-  --color-ink-100: #f5f4f2;
-  --color-ink-50:  #faf9f7;
+  /* --- Neutros: gris puro, sin temperatura --- */
+  --color-ink-950: #0a0a0a;
+  --color-ink-900: #171717;
+  --color-ink-800: #262626;
+  --color-ink-700: #404040;
+  --color-ink-600: #525252;
+  --color-ink-500: #737373;
+  --color-ink-400: #a3a3a3;
+  --color-ink-300: #d4d4d4;
+  --color-ink-200: #e5e5e5;
+  --color-ink-100: #f5f5f5;
+  --color-ink-50:  #fafafa;
 
-  /* --- Acento principal (terracota) --- */
-  --color-clay-50:  #fdf5f2;
-  --color-clay-100: #fbe8e1;
-  --color-clay-200: #f6cdbe;
-  --color-clay-300: #eeab93;
-  --color-clay-400: #e08161;
-  --color-clay-500: #cf5f3c;
-  --color-clay-600: #b94a29;
-  --color-clay-700: #993a20;
-  --color-clay-800: #7c3220;
-  --color-clay-900: #672d1f;
+  /* --- Acento principal: monocromo, termina en negro ---
+     Conserva el nombre `clay` para no reescribir los componentes. --- */
+  --color-clay-50:  #fafafa;
+  --color-clay-100: #f0f0f0;
+  --color-clay-200: #dcdcdc;
+  --color-clay-300: #bdbdbd;
+  --color-clay-400: #8a8a8a;
+  --color-clay-500: #4a4a4a;
+  --color-clay-600: #171717;
+  --color-clay-700: #000000;
+  --color-clay-800: #000000;
+  --color-clay-900: #000000;
 
-  /* --- Estados --- */
-  --color-success-50:  #ecfdf3;
-  --color-success-500: #12b76a;
-  --color-success-700: #027a48;
-  --color-warning-50:  #fffaeb;
-  --color-warning-500: #f79009;
-  --color-warning-700: #b54708;
-  --color-danger-50:   #fef3f2;
-  --color-danger-500:  #f04438;
-  --color-danger-700:  #b42318;
+  /* --- Estados ---
+     Sólo el rojo de error conserva color: es información que el usuario
+     necesita distinguir de un vistazo. --- */
+  --color-success-50:  #f5f5f5;
+  --color-success-500: #525252;
+  --color-success-700: #262626;
+  --color-warning-50:  #f5f5f5;
+  --color-warning-500: #737373;
+  --color-warning-700: #404040;
+  --color-danger-50:   #fdf2f2;
+  --color-danger-500:  #dc2626;
+  --color-danger-700:  #991b1b;
 
   /* --- Tipografía --- */
   --font-sans: var(--font-inter), ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
@@ -79,61 +85,59 @@
   --radius-xl: 28px;
 
   /* --- Sombras suaves (nada de sombras duras) --- */
-  --shadow-xs: 0 1px 2px rgba(28, 25, 23, 0.05);
-  --shadow-sm: 0 2px 8px rgba(28, 25, 23, 0.06);
-  --shadow-md: 0 8px 24px -8px rgba(28, 25, 23, 0.12);
-  --shadow-lg: 0 20px 48px -16px rgba(28, 25, 23, 0.18);
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.06);
+  --shadow-md: 0 8px 24px -8px rgba(0, 0, 0, 0.12);
+  --shadow-lg: 0 20px 48px -16px rgba(0, 0, 0, 0.18);
 
   /* --- Animaciones --- */
   --animate-fade-up: fade-up 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
   --animate-fade-in: fade-in 0.4s ease both;
   --animate-shimmer: shimmer 1.6s linear infinite;
-  --animate-earth-rotate: earth-rotate 42s linear infinite;
   --animate-marquee-up: marquee-up 30s linear infinite;
 }
 
+/* ---------------------------- Keyframes ---------------------------- */
 @keyframes fade-up {
   from { opacity: 0; transform: translateY(12px); }
   to   { opacity: 1; transform: none; }
 }
+
 @keyframes fade-in {
   from { opacity: 0; }
   to   { opacity: 1; }
 }
+
 @keyframes shimmer {
   from { background-position: -200% 0; }
   to   { background-position: 200% 0; }
 }
-@keyframes earth-rotate {
-  from { background-position: 0 0; }
-  to   { background-position: var(--globe-shift, 400px) 0; }
-}
+
 @keyframes marquee-up {
   from { transform: translateY(0); }
   to   { transform: translateY(-50%); }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .animate-marquee-up { animation: none; }
+/* Marquesina horizontal en bucle: la fila se duplica y recorre media anchura. */
+@keyframes marquee-left {
+  from { transform: translate3d(0, 0, 0); }
+  to   { transform: translate3d(-50%, 0, 0); }
 }
 
-/* Esfera del globo: textura en bucle + sombras internas que simulan volumen. */
-.globe-sphere {
-  background-image: url('https://pub-940ccf6255b54fa799a9b01050e6c227.r2.dev/globe.jpeg');
-  background-size: cover;
-  background-position: left center;
-  animation: var(--animate-earth-rotate);
-  box-shadow:
-    0 0 24px rgba(255, 255, 255, 0.18),
-    -5px 0 8px #c3f4ff inset,
-    15px 2px 25px #000 inset,
-    -24px -2px 34px #c3f4ff99 inset,
-    250px 0 44px #00000066 inset,
-    150px 0 38px #000000aa inset;
+@keyframes marquee-right {
+  from { transform: translate3d(-50%, 0, 0); }
+  to   { transform: translate3d(0, 0, 0); }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .globe-sphere { animation: none; }
+/* Revelado por mosaico: cada forma del clip-path entra escalando desde el centro. */
+@keyframes clip-in {
+  from { transform: scale(0); }
+  to   { transform: scale(1); }
+}
+
+@keyframes ambient-breathe {
+  0%   { transform: translate(-50%, -50%) scale(1);    opacity: 0.55; }
+  100% { transform: translate(-50%, -50%) scale(1.12); opacity: 1; }
 }
 
 /* ---------------------------- Base ---------------------------- */
@@ -164,14 +168,14 @@
   p { text-wrap: pretty; }
 
   :focus-visible {
-    outline: 2px solid var(--color-clay-500);
+    outline: 2px solid var(--color-ink-900);
     outline-offset: 2px;
     border-radius: 4px;
   }
 
   ::selection {
-    background-color: var(--color-clay-200);
-    color: var(--color-ink-900);
+    background-color: var(--color-ink-900);
+    color: #ffffff;
   }
 
   /* Scrollbar discreta */
@@ -223,16 +227,7 @@
   &::-webkit-scrollbar { display: none; }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-    scroll-behavior: auto !important;
-  }
-}
-
-/* Patrón de tramado (dithering) para acentos técnicos. */
+/* Patrón de tramado para acentos técnicos. */
 @utility dither-pattern {
   background-image:
     repeating-linear-gradient(0deg, transparent 0 1px, currentColor 1px 2px),
@@ -240,27 +235,12 @@
   background-size: 3px 3px;
 }
 
-/* Campo de estrellas generado con gradientes: sin imágenes ni scripts. */
-@utility starfield {
-  background-image:
-    radial-gradient(1px 1px at 20% 30%, white, transparent),
-    radial-gradient(1px 1px at 60% 70%, white, transparent),
-    radial-gradient(1px 1px at 50% 50%, white, transparent),
-    radial-gradient(1px 1px at 80% 10%, white, transparent),
-    radial-gradient(1px 1px at 90% 60%, white, transparent),
-    radial-gradient(1px 1px at 33% 80%, white, transparent),
-    radial-gradient(1px 1px at 15% 60%, white, transparent),
-    radial-gradient(1px 1px at 70% 40%, white, transparent);
-  background-size: 200% 200%, 180% 180%, 250% 250%, 220% 220%, 190% 190%, 240% 240%, 210% 210%, 230% 230%;
-  background-position: 0% 0%, 40% 40%, 60% 60%, 20% 20%, 80% 80%, 30% 30%, 70% 70%, 50% 50%;
-}
-
-/* Aurora ambiental: halo suave que respira detrás de una sección. */
+/* Halo ambiental que respira detrás de una sección. */
 @utility bg-aurora {
   background: radial-gradient(
     circle at 50% 50%,
-    color-mix(in oklch, var(--primary) 18%, transparent) 0%,
-    color-mix(in oklch, var(--secondary) 10%, transparent) 40%,
+    color-mix(in oklch, var(--foreground) 8%, transparent) 0%,
+    color-mix(in oklch, var(--foreground) 4%, transparent) 40%,
     transparent 70%
   );
 }
@@ -288,7 +268,8 @@
     inset 0 1px 1px color-mix(in oklch, #fff 60%, transparent);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  transition: background 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+  transition:
+    background 0.4s cubic-bezier(0.16, 1, 0.3, 1),
     border-color 0.4s cubic-bezier(0.16, 1, 0.3, 1),
     box-shadow 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
@@ -303,7 +284,7 @@
   box-shadow: 0 20px 40px -12px color-mix(in oklch, var(--foreground) 25%, transparent);
 }
 
-/* Texto gigante de fondo: solo contorno y un degradado que se apaga. */
+/* Texto gigante de fondo: sólo contorno y un degradado que se apaga. */
 @utility text-giant-outline {
   font-weight: 900;
   line-height: 0.75;
@@ -315,23 +296,19 @@
   background-clip: text;
 }
 
-@keyframes ambient-breathe {
-  0%   { transform: translate(-50%, -50%) scale(1);   opacity: 0.55; }
-  100% { transform: translate(-50%, -50%) scale(1.12); opacity: 1; }
-}
-
 @utility animate-breathe {
   animation: ambient-breathe 9s ease-in-out infinite alternate;
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .animate-breathe { animation: none; }
-}
-@keyframes clip-in {
-  from { transform: scale(0); }
-  to   { transform: scale(1); }
+@utility animate-marquee-left {
+  animation: marquee-left var(--speed, 120s) linear infinite;
 }
 
+@utility animate-marquee-right {
+  animation: marquee-right var(--speed, 120s) linear infinite;
+}
+
+/* Formas del clip-path animado. No es utilidad: se aplica por clase directa. */
 .clip-shape {
   /* Sin esto el origen sería el del lienzo SVG y las formas volarían. */
   transform-box: fill-box;
@@ -339,27 +316,20 @@
   animation: clip-in 0.75s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
+/* ------------------------ Movimiento reducido ------------------------ */
 @media (prefers-reduced-motion: reduce) {
-  .clip-shape { animation: none; }
-}
-/* Marquesina horizontal en bucle: la fila se duplica y recorre media anchura. */
-@keyframes marquee-left {
-  from { transform: translate3d(0, 0, 0); }
-  to   { transform: translate3d(-50%, 0, 0); }
-}
-@keyframes marquee-right {
-  from { transform: translate3d(-50%, 0, 0); }
-  to   { transform: translate3d(0, 0, 0); }
-}
-
-@utility animate-marquee-left {
-  animation: marquee-left var(--speed, 120s) linear infinite;
-}
-@utility animate-marquee-right {
-  animation: marquee-right var(--speed, 120s) linear infinite;
-}
-
-@media (prefers-reduced-motion: reduce) {
+  .animate-marquee-up,
   .animate-marquee-left,
-  .animate-marquee-right { animation: none; }
+  .animate-marquee-right,
+  .animate-breathe,
+  .clip-shape {
+    animation: none;
+  }
+
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
