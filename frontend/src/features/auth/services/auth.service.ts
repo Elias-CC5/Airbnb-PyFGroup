@@ -1,33 +1,22 @@
-import { api } from '@/lib/api-client';
-import type { User } from '@/types';
-import type { AuthResponse } from '../types/auth.types';
-import type {
-  ForgotPasswordInput,
-  LoginInput,
-  RegisterInput,
-  ResetPasswordInput,
-} from '../schemas/auth.schemas';
+import { AuthScrollShell } from '@/features/auth/components/AuthScrollShell';
+import { LoginForm } from '@/features/auth/components/LoginForm';
+import { buildMetadata } from '@/lib/seo';
+import { Suspense } from 'react';
 
-export const authService = {
-  login: (input: LoginInput) => api.post<AuthResponse>('/auth/login', input, { auth: false }),
+export const metadata = buildMetadata({ title: 'Iniciar sesión', path: '/login', noIndex: true });
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  register: ({ confirmPassword, phone, ...input }: RegisterInput) =>
-    api.post<AuthResponse>('/auth/register', { ...input, phone: phone || undefined }, { auth: false }),
-
-  refresh: () => api.post<AuthResponse>('/auth/refresh', {}, { auth: false, skipRefresh: true }),
-
-  logout: () => api.post<{ message: string }>('/auth/logout', {}, { auth: false }),
-
-  me: () => api.get<User>('/auth/me'),
-
-  forgotPassword: (input: ForgotPasswordInput) =>
-    api.post<{ message: string; devToken?: string }>('/auth/forgot-password', input, { auth: false }),
-
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  resetPassword: ({ confirmPassword, ...input }: ResetPasswordInput) =>
-    api.post<{ message: string }>('/auth/reset-password', input, { auth: false }),
-
-  changePassword: (input: { currentPassword: string; newPassword: string }) =>
-    api.post<{ message: string }>('/auth/change-password', input),
-};
+export default function LoginPage() {
+  return (
+    <AuthScrollShell
+      headline={
+        <span>
+          Tus reservas, en un solo lugar. <br /> Entra y continúa.
+        </span>
+      }
+    >
+      <Suspense fallback={null}>
+        <LoginForm />
+      </Suspense>
+    </AuthScrollShell>
+  );
+}
