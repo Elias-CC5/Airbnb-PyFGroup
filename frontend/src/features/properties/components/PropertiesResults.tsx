@@ -18,11 +18,11 @@ export function PropertiesResults() {
   const total = data?.meta.total ?? 0;
 
   return (
-    <div className="container-page py-6 sm:py-8">
+    <div className="container-page pt-24 sm:pt-28 pb-6 sm:pb-8">
       <div className="mx-auto max-w-4xl">
       </div>
 
-      <div className="mt-8 space-y-4">
+      <div className="mt-4 space-y-4">
         <CategoryChips />
 
         <div className="flex flex-wrap items-center justify-between gap-3">

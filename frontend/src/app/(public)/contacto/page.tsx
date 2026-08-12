@@ -11,7 +11,7 @@ export const metadata = buildMetadata({
 
 export default function ContactPage() {
   return (
-    <div className="container-page py-12">
+    <div className="container-page pt-28 pb-12 sm:pt-32">
       <div className="grid gap-12 lg:grid-cols-[1fr_1.2fr]">
         <div>
           <h1 className="text-3xl font-semibold tracking-tight text-ink-900 sm:text-4xl">
