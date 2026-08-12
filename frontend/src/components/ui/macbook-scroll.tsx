@@ -1,5 +1,5 @@
 'use client';
-
+import React, { useRef } from 'react';
 import { cn } from '@/lib/utils';
 import {
   IconBrightnessDown,
@@ -23,7 +23,6 @@ import {
   IconWorld,
 } from '@tabler/icons-react';
 import { MotionValue, motion, useScroll, useTransform } from 'motion/react';
-import React, { useEffect, useRef } from 'react';
 export const MacbookScroll = ({
   src,
   showGradient,

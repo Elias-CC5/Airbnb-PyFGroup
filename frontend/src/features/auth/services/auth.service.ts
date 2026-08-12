@@ -11,7 +11,8 @@ import type {
 export const authService = {
   login: (input: LoginInput) => api.post<AuthResponse>('/auth/login', input, { auth: false }),
 
-  register: ({ confirmPassword: _confirmPassword, phone, ...input }: RegisterInput) =>
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  register: ({ confirmPassword, phone, ...input }: RegisterInput) =>
     api.post<AuthResponse>('/auth/register', { ...input, phone: phone || undefined }, { auth: false }),
 
   refresh: () => api.post<AuthResponse>('/auth/refresh', {}, { auth: false, skipRefresh: true }),
@@ -23,7 +24,8 @@ export const authService = {
   forgotPassword: (input: ForgotPasswordInput) =>
     api.post<{ message: string; devToken?: string }>('/auth/forgot-password', input, { auth: false }),
 
-  resetPassword: ({ confirmPassword: _confirmPassword, ...input }: ResetPasswordInput) =>
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  resetPassword: ({ confirmPassword, ...input }: ResetPasswordInput) =>
     api.post<{ message: string }>('/auth/reset-password', input, { auth: false }),
 
   changePassword: (input: { currentPassword: string; newPassword: string }) =>
