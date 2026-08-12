@@ -2,7 +2,6 @@
 
 import {
   Badge,
-  Button,
   EmptyState,
   Input,
   Pagination,

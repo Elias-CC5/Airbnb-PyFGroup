@@ -1,6 +1,6 @@
 'use client';
 
-import { Button, ConfirmDialog } from '@/components/ui';
+import { ConfirmDialog } from '@/components/ui';
 import { cn } from '@/lib/utils';
 import type { PropertyImage } from '@/types';
 import { useMutation, useQueryClient } from '@tanstack/react-query';

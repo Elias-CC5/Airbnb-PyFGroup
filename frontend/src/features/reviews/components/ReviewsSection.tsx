@@ -1,6 +1,6 @@
 'use client';
 
-import { Avatar, Button, Pagination, Spinner } from '@/components/ui';
+import { Avatar, Pagination, Spinner } from '@/components/ui';
 import { formatDate } from '@/lib/format';
 import { Star } from 'lucide-react';
 import { useState } from 'react';

@@ -23,8 +23,7 @@ import {
   IconWorld,
 } from '@tabler/icons-react';
 import { MotionValue, motion, useScroll, useTransform } from 'motion/react';
-import React, { useEffect, useRef, useState } from 'react';
-
+import React, { useEffect, useRef } from 'react';
 export const MacbookScroll = ({
   src,
   showGradient,
@@ -41,11 +40,7 @@ export const MacbookScroll = ({
 }) => {
   const ref = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({ target: ref, offset: ['start start', 'end start'] });
-  const [isMobile, setIsMobile] = useState(false);
-
-  useEffect(() => {
-    if (window && window.innerWidth < 768) setIsMobile(true);
-  }, []);
+  
 
   // Transiciones adaptadas al nuevo alto y ancho
   const scaleX = useTransform(scrollYProgress, [0, 0.3], [1.15, 1]);
