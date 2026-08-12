@@ -1,4 +1,4 @@
-import { AuthScrollShell } from '@/features/auth/components/AuthScrollShell';
+﻿import { AuthScrollShell } from '@/features/auth/components/AuthScrollShell';
 import { LoginForm } from '@/features/auth/components/LoginForm';
 import { buildMetadata } from '@/lib/seo';
 import { Suspense } from 'react';
