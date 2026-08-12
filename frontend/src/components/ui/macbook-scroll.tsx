@@ -47,11 +47,10 @@ export const MacbookScroll = ({
     if (window && window.innerWidth < 768) setIsMobile(true);
   }, []);
 
-    const scaleX = useTransform(scrollYProgress, [0, 0.3], [1.2, 1]);
-
-   const scaleY = useTransform(scrollYProgress, [0, 0.3], [0.6, 1]);
-
-  const translate = useTransform(scrollYProgress, [0, 1], [0, 1500]);
+  // Transiciones adaptadas al nuevo alto y ancho
+  const scaleX = useTransform(scrollYProgress, [0, 0.3], [1.15, 1]);
+  const scaleY = useTransform(scrollYProgress, [0, 0.3], [0.6, 1]);
+  const translate = useTransform(scrollYProgress, [0, 0.3], [0, 850]);
   const rotate = useTransform(scrollYProgress, [0.1, 0.12, 0.3], [-28, -28, 0]);
   const textTransform = useTransform(scrollYProgress, [0, 0.3], [0, 100]);
   const textOpacity = useTransform(scrollYProgress, [0, 0.2], [1, 0]);
@@ -59,24 +58,23 @@ export const MacbookScroll = ({
   return (
     <div
       ref={ref}
-      // pt-32 deja hueco a la marca fija; antes el titular quedaba pegado al borde.
-      className="flex min-h-[150vh] shrink-0 scale-[0.4] transform flex-col items-center justify-start pt-32 [perspective:800px] sm:scale-[0.6] md:scale-125 md:pt-44"
+      className="flex min-h-[250vh] w-full shrink-0 flex-col items-center justify-start pt-8 [perspective:1200px]"
     >
-      <motion.h2
-        style={{ translateY: textTransform, opacity: textOpacity }}
-        className="mb-14 text-center text-3xl font-bold text-ink-900"
-      >
-        {title}
-      </motion.h2>
+    <motion.h2
+  style={{ translateY: textTransform, opacity: textOpacity }}
+  className="mb-10 max-w-2xl text-center font-sans font-bold text-4xl leading-tight tracking-tight text-[#1A1A1A] md:text-5xl"
+>
+  {title}
+</motion.h2>
 
       <Lid src={src} scaleX={scaleX} scaleY={scaleY} rotate={rotate} translate={translate}>
         {children}
       </Lid>
 
-      {/* Base */}
-      <div className="relative -z-10 h-[22rem] w-[32rem] overflow-hidden rounded-2xl bg-[#272729]">
-        <div className="relative h-10 w-full">
-          <div className="absolute inset-x-0 mx-auto h-4 w-[80%] bg-[#050505]" />
+      {/* Base Gigante de la Laptop (w-[50rem] / 800px) */}
+      <div className="relative -z-10 h-[30rem] w-[50rem] overflow-hidden rounded-3xl bg-[#272729]">
+        <div className="relative h-12 w-full">
+          <div className="absolute inset-x-0 mx-auto h-5 w-[80%] bg-[#050505]" />
         </div>
 
         <div className="relative flex">
@@ -93,7 +91,7 @@ export const MacbookScroll = ({
 
         <Trackpad />
 
-        <div className="absolute inset-x-0 bottom-0 mx-auto h-2 w-20 rounded-tl-3xl rounded-tr-3xl bg-gradient-to-t from-[#272729] to-[#050505]" />
+        <div className="absolute inset-x-0 bottom-0 mx-auto h-3 w-32 rounded-tl-3xl rounded-tr-3xl bg-gradient-to-t from-[#272729] to-[#050505]" />
 
         {showGradient && (
           <div className="absolute inset-x-0 bottom-0 z-50 h-40 w-full bg-gradient-to-t from-white via-white to-transparent" />
@@ -121,25 +119,25 @@ export const Lid = ({
   children?: React.ReactNode;
 }) => {
   return (
-    <div className="relative [perspective:800px]">
+    <div className="relative [perspective:1200px]">
       {/* Tapa vista desde atrás */}
       <div
         style={{
-          transform: 'perspective(800px) rotateX(-25deg) translateZ(0px)',
+          transform: 'perspective(1200px) rotateX(-25deg) translateZ(0px)',
           transformOrigin: 'bottom',
           transformStyle: 'preserve-3d',
         }}
-        className="relative h-[12rem] w-[32rem] rounded-2xl bg-[#010101] p-2"
+        className="relative h-[18rem] w-[50rem] rounded-3xl bg-[#010101] p-3"
       >
         <div
           style={{ boxShadow: '0px 2px 0px 2px #171717 inset' }}
-          className="absolute inset-0 flex items-center justify-center rounded-lg bg-[#010101]"
+          className="absolute inset-0 flex items-center justify-center rounded-xl bg-[#010101]"
         >
           <BrandMark />
         </div>
       </div>
 
-      {/* Pantalla que se abre con el scroll */}
+      {/* Pantalla Gigante con Marco Negro */}
       <motion.div
         style={{
           scaleX,
@@ -149,26 +147,26 @@ export const Lid = ({
           transformStyle: 'preserve-3d',
           transformOrigin: 'top',
         }}
-        className="absolute inset-0 h-[28rem] w-[32rem] rounded-2xl bg-[#010101] p-2"
+        className="absolute inset-0 h-[38rem] w-[50rem] overflow-hidden rounded-3xl border-[16px] border-black bg-black shadow-2xl"
       >
-        <div className="absolute inset-0 overflow-hidden rounded-lg bg-white flex flex-col">
+        <div className="relative flex size-full flex-col overflow-hidden rounded-xl bg-white">
           {children ? (
             <>
-              {/* Barra superior estilo macOS para anclar el diseño */}
-              <div className="relative z-25 flex shrink-0 items-center gap-2 border-b border-neutral-200 bg-neutral-100 px-4 py-2">
-                <span className="flex gap-1.5">
-                  <span className="size-2.5 rounded-full bg-rose-400" />
-                  <span className="size-2.5 rounded-full bg-amber-400" />
-                  <span className="size-2.5 rounded-full bg-emerald-400" />
+              {/* Barra superior estilo macOS */}
+              <div className="relative z-25 flex shrink-0 items-center gap-2 border-b border-neutral-200 bg-neutral-100 px-5 py-2.5">
+                <span className="flex gap-2">
+                  <span className="size-3 rounded-full bg-rose-400" />
+                  <span className="size-3 rounded-full bg-amber-400" />
+                  <span className="size-3 rounded-full bg-emerald-400" />
                 </span>
-                <span className="mx-auto rounded-md bg-white px-3 py-0.5 text-[10px] font-medium text-neutral-500 shadow-sm ring-1 ring-neutral-200/60">
+                <span className="mx-auto rounded-md bg-white px-4 py-1 text-xs font-medium text-neutral-500 shadow-sm ring-1 ring-neutral-200/60">
                   localhost:3000/login
                 </span>
               </div>
 
-              {/* Contenedor con scroll interno para que el footer y el contenido queden dentro y no se corten */}
-              <div className="flex size-full flex-1 flex-col overflow-y-auto px-8 py-6">
-                <div className="m-auto w-full max-w-[26rem]">{children}</div>
+              {/* Contenido amplio del formulario */}
+              <div className="flex size-full flex-1 flex-col overflow-y-auto px-10 py-8">
+                <div className="m-auto w-full max-w-lg">{children}</div>
               </div>
             </>
           ) : (
@@ -183,17 +181,17 @@ export const Lid = ({
 
 export const Trackpad = () => (
   <div
-    className="mx-auto my-1 h-32 w-[40%] rounded-xl"
+    className="mx-auto my-2 h-40 w-[40%] rounded-2xl"
     style={{ boxShadow: '0px 0px 1px 1px #00000020 inset' }}
   />
 );
 
 export const SpeakerGrid = () => (
   <div
-    className="mt-2 flex h-40 gap-[2px] px-[0.5px]"
+    className="mt-3 flex h-52 gap-[2px] px-[0.5px]"
     style={{
       backgroundImage: 'radial-gradient(circle, #08080A 0.5px, transparent 0.5px)',
-      backgroundSize: '3px 3px',
+      backgroundSize: '4px 4px',
     }}
   />
 );
@@ -211,17 +209,17 @@ export const KBtn = ({
 }) => (
   <div
     className={cn(
-      '[transform:translateZ(0)] rounded-[4px] p-[0.5px] [will-change:transform]',
+      '[transform:translateZ(0)] rounded-[6px] p-[0.5px] [will-change:transform]',
       backlit && 'bg-white/[0.2] shadow-xl shadow-white',
     )}
   >
     <div
-      className={cn('flex h-6 w-6 items-center justify-center rounded-[3.5px] bg-[#0A090D]', className)}
+      className={cn('flex h-9 w-9 items-center justify-center rounded-[5px] bg-[#0A090D]', className)}
       style={{ boxShadow: '0px -0.5px 2px 0 #0D0D0F inset, -0.5px 0px 2px 0 #0D0D0F inset' }}
     >
       <div
         className={cn(
-          'flex w-full flex-col items-center justify-center text-[5px] text-neutral-200',
+          'flex w-full flex-col items-center justify-center text-[8px] text-neutral-200',
           childrenClassName,
           backlit && 'text-white',
         )}
@@ -244,9 +242,8 @@ export const OptionKey = ({ className }: { className: string }) => (
   </svg>
 );
 
-/** Monograma de la marca en la tapa. */
 const BrandMark = () => (
-  <svg viewBox="0 0 32 32" fill="none" className="h-4 w-4 text-white" aria-hidden>
+  <svg viewBox="0 0 32 32" fill="none" className="h-6 w-6 text-white" aria-hidden>
     <path
       d="M4 24.5 8.2 8h3.4l3 11.2L17.6 8h3.4L24.2 19.2 27.2 8h3.4L26.4 24.5h-3.5l-2.6-9.6-2.9 9.6h-3.3l-2.7-9.6-2.5 9.6H4Z"
       fill="currentColor"
@@ -255,13 +252,12 @@ const BrandMark = () => (
 );
 
 export const Keypad = () => {
-  const icon = 'h-[6px] w-[6px]';
+  const icon = 'h-2.5 w-2.5';
 
   return (
-    <div className="mx-1 h-full [transform:translateZ(0)] rounded-md bg-[#050505] p-1 [will-change:transform]">
-      {/* Fila de función */}
-      <div className="mb-[2px] flex w-full shrink-0 gap-[2px]">
-        <KBtn className="w-10 items-end justify-start pb-[2px] pl-[4px]" childrenClassName="items-start">
+    <div className="mx-2 h-full [transform:translateZ(0)] rounded-lg bg-[#050505] p-1.5 [will-change:transform]">
+      <div className="mb-[3px] flex w-full shrink-0 gap-[3px]">
+        <KBtn className="w-14 items-end justify-start pb-[3px] pl-[6px]" childrenClassName="items-start">
           esc
         </KBtn>
         {(
@@ -286,14 +282,13 @@ export const Keypad = () => {
           </KBtn>
         ))}
         <KBtn>
-          <div className="h-4 w-4 rounded-full bg-gradient-to-b from-neutral-900 from-20% via-black via-50% to-neutral-900 to-95% p-px">
+          <div className="h-5 w-5 rounded-full bg-gradient-to-b from-neutral-900 from-20% via-black via-50% to-neutral-900 to-95% p-px">
             <div className="size-full rounded-full bg-black" />
           </div>
         </KBtn>
       </div>
 
-      {/* Números */}
-      <div className="mb-[2px] flex w-full shrink-0 gap-[2px]">
+      <div className="mb-[3px] flex w-full shrink-0 gap-[3px]">
         {[
           ['~', '`'],
           ['!', '1'],
@@ -314,14 +309,13 @@ export const Keypad = () => {
             <span className="block">{bottom}</span>
           </KBtn>
         ))}
-        <KBtn className="w-10 items-end justify-end pb-[2px] pr-[4px]" childrenClassName="items-end">
+        <KBtn className="w-14 items-end justify-end pb-[3px] pr-[6px]" childrenClassName="items-end">
           delete
         </KBtn>
       </div>
 
-      {/* QWERTY */}
-      <div className="mb-[2px] flex w-full shrink-0 gap-[2px]">
-        <KBtn className="w-10 items-end justify-start pb-[2px] pl-[4px]" childrenClassName="items-start">
+      <div className="mb-[3px] flex w-full shrink-0 gap-[3px]">
+        <KBtn className="w-14 items-end justify-start pb-[3px] pl-[6px]" childrenClassName="items-start">
           tab
         </KBtn>
         {['Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P'].map((key) => (
@@ -341,9 +335,8 @@ export const Keypad = () => {
         ))}
       </div>
 
-      {/* ASDF */}
-      <div className="mb-[2px] flex w-full shrink-0 gap-[2px]">
-        <KBtn className="w-[2.8rem] items-end justify-start pb-[2px] pl-[4px]" childrenClassName="items-start">
+      <div className="mb-[3px] flex w-full shrink-0 gap-[3px]">
+        <KBtn className="w-[4.2rem] items-end justify-start pb-[3px] pl-[6px]" childrenClassName="items-start">
           caps lock
         </KBtn>
         {['A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L'].map((key) => (
@@ -360,14 +353,13 @@ export const Keypad = () => {
             <span className="block">{bottom}</span>
           </KBtn>
         ))}
-        <KBtn className="w-[2.85rem] items-end justify-end pb-[2px] pr-[4px]" childrenClassName="items-end">
+        <KBtn className="w-[4.25rem] items-end justify-end pb-[3px] pr-[6px]" childrenClassName="items-end">
           return
         </KBtn>
       </div>
 
-      {/* ZXCV */}
-      <div className="mb-[2px] flex w-full shrink-0 gap-[2px]">
-        <KBtn className="w-[3.65rem] items-end justify-start pb-[2px] pl-[4px]" childrenClassName="items-start">
+      <div className="mb-[3px] flex w-full shrink-0 gap-[3px]">
+        <KBtn className="w-[5.4rem] items-end justify-start pb-[3px] pl-[6px]" childrenClassName="items-start">
           shift
         </KBtn>
         {['Z', 'X', 'C', 'V', 'B', 'N', 'M'].map((key) => (
@@ -385,14 +377,13 @@ export const Keypad = () => {
             <span className="block">{bottom}</span>
           </KBtn>
         ))}
-        <KBtn className="w-[3.65rem] items-end justify-end pb-[2px] pr-[4px]" childrenClassName="items-end">
+        <KBtn className="w-[5.4rem] items-end justify-end pb-[3px] pr-[6px]" childrenClassName="items-end">
           shift
         </KBtn>
       </div>
 
-      {/* Modificadores */}
-      <div className="mb-[2px] flex w-full shrink-0 gap-[2px]">
-        <KBtn childrenClassName="h-full justify-between py-[4px]">
+      <div className="mb-[3px] flex w-full shrink-0 gap-[3px]">
+        <KBtn childrenClassName="h-full justify-between py-[6px]">
           <div className="flex w-full justify-end pr-1">
             <span className="block">fn</span>
           </div>
@@ -400,7 +391,7 @@ export const Keypad = () => {
             <IconWorld className={icon} />
           </div>
         </KBtn>
-        <KBtn childrenClassName="h-full justify-between py-[4px]">
+        <KBtn childrenClassName="h-full justify-between py-[6px]">
           <div className="flex w-full justify-end pr-1">
             <IconChevronUp className={icon} />
           </div>
@@ -408,7 +399,7 @@ export const Keypad = () => {
             <span className="block">control</span>
           </div>
         </KBtn>
-        <KBtn childrenClassName="h-full justify-between py-[4px]">
+        <KBtn childrenClassName="h-full justify-between py-[6px]">
           <div className="flex w-full justify-end pr-1">
             <OptionKey className={icon} />
           </div>
@@ -416,7 +407,7 @@ export const Keypad = () => {
             <span className="block">option</span>
           </div>
         </KBtn>
-        <KBtn className="w-8" childrenClassName="h-full justify-between py-[4px]">
+        <KBtn className="w-12" childrenClassName="h-full justify-between py-[6px]">
           <div className="flex w-full justify-end pr-1">
             <IconCommand className={icon} />
           </div>
@@ -425,9 +416,9 @@ export const Keypad = () => {
           </div>
         </KBtn>
 
-        <KBtn className="w-[8.2rem]" />
+        <KBtn className="w-[12.8rem]" />
 
-        <KBtn className="w-8" childrenClassName="h-full justify-between py-[4px]">
+        <KBtn className="w-12" childrenClassName="h-full justify-between py-[6px]">
           <div className="flex w-full justify-start pl-1">
             <IconCommand className={icon} />
           </div>
@@ -435,7 +426,7 @@ export const Keypad = () => {
             <span className="block">command</span>
           </div>
         </KBtn>
-        <KBtn childrenClassName="h-full justify-between py-[4px]">
+        <KBtn childrenClassName="h-full justify-between py-[6px]">
           <div className="flex w-full justify-start pl-1">
             <OptionKey className={icon} />
           </div>
@@ -444,18 +435,18 @@ export const Keypad = () => {
           </div>
         </KBtn>
 
-        <div className="mt-[2px] flex h-6 w-[4.9rem] flex-col items-center justify-end rounded-[4px] p-[0.5px]">
-          <KBtn className="h-3 w-6">
+        <div className="mt-[3px] flex h-9 w-[7.3rem] flex-col items-center justify-end rounded-[6px] p-[0.5px]">
+          <KBtn className="h-4 w-9">
             <IconCaretUpFilled className={icon} />
           </KBtn>
           <div className="flex">
-            <KBtn className="h-3 w-6">
+            <KBtn className="h-4 w-9">
               <IconCaretLeftFilled className={icon} />
             </KBtn>
-            <KBtn className="h-3 w-6">
+            <KBtn className="h-4 w-9">
               <IconCaretDownFilled className={icon} />
             </KBtn>
-            <KBtn className="h-3 w-6">
+            <KBtn className="h-4 w-9">
               <IconCaretRightFilled className={icon} />
             </KBtn>
           </div>
