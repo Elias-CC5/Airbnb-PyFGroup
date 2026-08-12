@@ -1,7 +1,7 @@
 'use client';
 
 import { SITE } from '@/constants';
-import { MessageCircle } from 'lucide-react';
+import { WhatsappIcon } from './icons/WhatsappIcon';
 import { useEffect, useState } from 'react';
 
 /** Botón flotante de soporte. Aparece tras un pequeño scroll para no molestar en el hero. */
@@ -29,7 +29,7 @@ export function WhatsappFloating() {
         visible ? 'translate-y-0 opacity-100' : 'pointer-events-none translate-y-4 opacity-0'
       }`}
     >
-      <MessageCircle className="size-6" />
+      <WhatsappIcon className="size-6" />
     </a>
   );
 }

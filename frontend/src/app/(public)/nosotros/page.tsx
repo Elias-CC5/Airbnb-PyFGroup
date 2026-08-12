@@ -30,7 +30,7 @@ const VALUES = [
 
 export default function AboutPage() {
   return (
-    <div className="container-page py-12">
+    <div className="container-page pt-28 pb-12 sm:pt-32">
       <section className="grid items-center gap-10 lg:grid-cols-2">
         <div>
           <h1 className="text-3xl font-semibold leading-tight tracking-tight text-ink-900 sm:text-4xl">

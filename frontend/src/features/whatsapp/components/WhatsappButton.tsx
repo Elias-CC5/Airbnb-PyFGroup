@@ -1,8 +1,8 @@
 'use client';
 
 import { Button } from '@/components/ui';
+import { WhatsappIcon } from './icons/WhatsappIcon';
 import { cn } from '@/lib/utils';
-import { MessageCircle } from 'lucide-react';
 import { buildWhatsappUrl } from '../services/whatsapp.service';
 
 interface WhatsappButtonProps {
@@ -34,7 +34,7 @@ export function WhatsappButton({
   return (
     <Button asChild variant={variant} size="lg" fullWidth className={cn(className)}>
       <a href={url} target="_blank" rel="noopener noreferrer">
-        <MessageCircle className="size-4.5" />
+        <WhatsappIcon className="size-4.5" />
         {label}
       </a>
     </Button>

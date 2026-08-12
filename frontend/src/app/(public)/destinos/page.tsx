@@ -15,7 +15,7 @@ export default async function DestinationsPage() {
   const departments = (await catalogServerService.departments()) ?? [];
 
   return (
-    <div className="container-page py-12">
+    <div className="container-page pt-28 pb-12 sm:pt-32">
       <header className="mx-auto max-w-2xl text-center">
         <h1 className="text-3xl font-semibold tracking-tight text-ink-900 sm:text-4xl">
           <span className="text-display">Todo el Perú,</span> un destino a la vez
