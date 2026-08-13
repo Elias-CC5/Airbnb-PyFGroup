@@ -5,7 +5,7 @@ export const SITE = {
     'Encuentra casas, departamentos y cabañas para alquilar en todo el Perú. Reserva en línea, paga en soles y coordina directo con el anfitrión.',
   url: process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000',
   locale: 'es_PE',
-  whatsapp: process.env.NEXT_PUBLIC_WHATSAPP_PHONE ?? '51999888777',
+  whatsapp: process.env.NEXT_PUBLIC_WHATSAPP_PHONE ?? '51930983811',
   // Un correo no admite espacios ni mayúsculas en el dominio.
   email: 'hola@airbnbpyfgroup.com',
   // Datos legales — Aviso Legal, Términos y Condiciones, Libro de Reclamaciones.

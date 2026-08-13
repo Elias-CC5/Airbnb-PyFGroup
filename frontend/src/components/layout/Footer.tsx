@@ -1,14 +1,17 @@
 import { FOOTER_LEGAL_LINKS, NAV_LINKS, SITE } from '@/constants';
-import { Facebook, Instagram, Mail, MessageCircle } from 'lucide-react';
+import { TikTokIcon } from '@/components/icons/TikTokIcon';
+import { WhatsappIcon } from '@/features/whatsapp/components/icons/WhatsappIcon';
+import { Facebook, Instagram, Mail } from 'lucide-react';
 import Link from 'next/link';
 
 /** Texto del wordmark de fondo. Se ajusta solo al ancho, sea cual sea su largo. */
 const WORDMARK = 'Airbnb PyFGroup';
 
 const SOCIALS = [
-  { href: `https://wa.me/${SITE.whatsapp}`, label: 'WhatsApp', icon: MessageCircle },
-  { href: 'https://instagram.com', label: 'Instagram', icon: Instagram },
-  { href: 'https://facebook.com', label: 'Facebook', icon: Facebook },
+  { href: `https://wa.me/${SITE.whatsapp}`, label: 'WhatsApp', icon: WhatsappIcon },
+  { href: 'https://www.instagram.com/pyfgroupsac/', label: 'Instagram', icon: Instagram },
+  { href: 'https://www.facebook.com/people/PYF-GROUP-SAC/61584334442465/', label: 'Facebook', icon: Facebook },
+  { href: 'https://www.tiktok.com/@pyf.group.sac', label: 'TikTok', icon: TikTokIcon },
   { href: `mailto:${SITE.email}`, label: 'Correo', icon: Mail },
 ];
 
