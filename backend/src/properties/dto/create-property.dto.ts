@@ -81,7 +81,7 @@ export class CreatePropertyDto {
   @IsOptional() @IsEnum(PropertyStatus)
   status?: PropertyStatus;
 
-  @ApiPropertyOptional({ example: '51999888777' })
+  @ApiPropertyOptional({ example: '' })
   @IsOptional() @IsString() @MaxLength(30)
   whatsappPhone?: string;
 
