@@ -7,7 +7,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   return (
     <>
       <Navbar />
-      <main id="contenido" className="container-page min-h-[60vh] py-10">
+      <main id="contenido" className="container-page min-h-[60vh] pt-28 pb-10 sm:pt-32">
         <RequireAuth>
           <div className="grid gap-10 lg:grid-cols-[220px_1fr]">
             <AccountNav />
