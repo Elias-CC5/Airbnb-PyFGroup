@@ -1,4 +1,4 @@
-import { NAV_LINKS, SITE } from '@/constants';
+import { FOOTER_LEGAL_LINKS, NAV_LINKS, SITE } from '@/constants';
 import { Facebook, Instagram, Mail, MessageCircle } from 'lucide-react';
 import Link from 'next/link';
 
@@ -100,11 +100,29 @@ export function Footer() {
       </div>
 
       {/* Barra inferior */}
-      <div className="container-page relative flex flex-col items-center justify-between gap-2 pb-6 pt-12 text-xs text-ink-500 sm:flex-row">
-        <p>
-          © {year} {SITE.name}. Todos los derechos reservados.
-        </p>
-        <p>Hecho en Perú · Precios en soles (PEN)</p>
+      <div className="container-page relative border-t border-ink-100 pb-6 pt-6 text-xs text-ink-500">
+        <div className="flex flex-col items-center justify-between gap-3 sm:flex-row">
+          <p>
+            © {year} {SITE.name}. Todos los derechos reservados.
+          </p>
+          <p>Hecho en Perú · Precios en soles (PEN)</p>
+        </div>
+
+        {/* Enlaces legales */}
+        <nav aria-label="Enlaces legales" className="mt-4 flex justify-center border-t border-ink-100 pt-4 sm:justify-start">
+          <ul className="flex flex-wrap items-center justify-center gap-x-5 gap-y-1.5">
+            {FOOTER_LEGAL_LINKS.map((link) => (
+              <li key={link.href}>
+                <Link
+                  href={link.href}
+                  className="text-xs text-ink-400 transition-colors duration-200 hover:text-ink-700"
+                >
+                  {link.label}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </nav>
       </div>
     </footer>
   );

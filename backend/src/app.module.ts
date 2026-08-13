@@ -15,6 +15,7 @@ import { CommonModule } from './common/common.module';
 import { AllExceptionsFilter } from './common/filters/http-exception.filter';
 import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
 import { appConfig, jwtConfig, storageConfig, validateEnv, whatsappConfig } from './config';
+import { ComplaintsModule } from './complaints/complaints.module';
 import { DatabaseModule } from './database/database.module';
 import { FavoritesModule } from './favorites/favorites.module';
 import { LocationsModule } from './locations/locations.module';
@@ -64,6 +65,7 @@ import { WhatsappModule } from './whatsapp/whatsapp.module';
     FavoritesModule,
     UploadsModule,
     WhatsappModule,
+    ComplaintsModule,
     AdminModule,
   ],
   providers: [

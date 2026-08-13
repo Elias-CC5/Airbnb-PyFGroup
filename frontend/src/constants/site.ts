@@ -8,6 +8,12 @@ export const SITE = {
   whatsapp: process.env.NEXT_PUBLIC_WHATSAPP_PHONE ?? '51999888777',
   // Un correo no admite espacios ni mayúsculas en el dominio.
   email: 'hola@airbnbpyfgroup.com',
+  // Datos legales — Aviso Legal, Términos y Condiciones, Libro de Reclamaciones.
+  legalName: 'PONCE & FIGUEROA GROUP S.A.C.',
+  ruc: '20615113078',
+  fiscalAddress: 'Av. Arequipa Nro. 768 Dpto. 1706 Urb. Santa Beatriz, Lima - Lima - Lima',
+  legalEmail: 'contacto@pyfgroupsac.com',
+  phone: '+51 930 983 811',
 } as const;
 
 export const NAV_LINKS = [
@@ -31,4 +37,11 @@ export const ADMIN_LINKS = [
   { href: '/admin/usuarios', label: 'Usuarios', icon: 'users' },
   { href: '/admin/categorias', label: 'Categorías', icon: 'tags' },
   { href: '/admin/estadisticas', label: 'Estadísticas', icon: 'chart-line' },
+] as const;
+
+export const FOOTER_LEGAL_LINKS = [
+  { href: '/aviso-legal', label: 'Aviso legal' },
+  { href: '/terminos-y-condiciones', label: 'Términos y condiciones' },
+  { href: '/privacidad', label: 'Política de privacidad' },
+  { href: '/libro-reclamaciones', label: 'Libro de reclamaciones' },
 ] as const;

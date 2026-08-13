@@ -9,7 +9,9 @@ import {
   Res,
   UseGuards,
 } from '@nestjs/common';
+
 import { ConfigService } from '@nestjs/config';
+import { AuthGuard } from '@nestjs/passport';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Throttle } from '@nestjs/throttler';
 import { Request, Response } from 'express';
@@ -75,6 +77,40 @@ export class AuthController {
     return this.authService.logout(token);
   }
 
+  // --------------------------- login social (Google) --------------------
+  @Public()
+  @Get('google')
+  @UseGuards(AuthGuard('google'))
+  @ApiOperation({ summary: 'Inicia el flujo OAuth de Google' })
+  googleAuth() {
+    // Passport redirige automáticamente a Google.
+  }
+
+  @Public()
+  @Get('google/callback')
+  @UseGuards(AuthGuard('google'))
+  async googleCallback(@Req() req: Request, @Res() res: Response) {
+    const result = await this.authService.oauthLogin(req.user as any, this.meta(req));
+    this.redirectWithToken(res, result);
+  }
+
+  // --------------------------- login social (GitHub) --------------------
+  @Public()
+  @Get('github')
+  @UseGuards(AuthGuard('github'))
+  @ApiOperation({ summary: 'Inicia el flujo OAuth de GitHub' })
+  githubAuth() {
+    // Passport redirige automáticamente a GitHub.
+  }
+
+  @Public()
+  @Get('github/callback')
+  @UseGuards(AuthGuard('github'))
+  async githubCallback(@Req() req: Request, @Res() res: Response) {
+    const result = await this.authService.oauthLogin(req.user as any, this.meta(req));
+    this.redirectWithToken(res, result);
+  }
+
   @Public()
   @Post('forgot-password')
   @HttpCode(HttpStatus.OK)
@@ -134,5 +170,21 @@ export class AuthController {
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
     return result;
+  }
+
+  /**
+   * Usado por los callbacks de OAuth (Google/GitHub): en vez de devolver JSON,
+   * redirige de vuelta al frontend con el access token en la URL.
+   */
+  private redirectWithToken(res: Response, result: AuthResult) {
+    res.cookie(REFRESH_COOKIE, result.tokens.refreshToken, {
+      httpOnly: true,
+      sameSite: 'lax',
+      secure: this.config.get<boolean>('jwt.cookieSecure') ?? false,
+      path: '/',
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    });
+    const frontendUrl = this.config.get<string>('app.frontendUrl') ?? 'http://localhost:3000';
+    res.redirect(`${frontendUrl}/auth/callback?token=${result.tokens.accessToken}`);
   }
 }

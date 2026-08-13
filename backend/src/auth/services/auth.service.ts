@@ -57,10 +57,48 @@ export class AuthService {
 
     // Mensaje genérico: no revelamos si el correo existe (evita enumeración de usuarios).
     const invalid = new UnauthorizedException('Correo o contraseña incorrectos');
-    if (!user || user.deletedAt) throw invalid;
+    if (!user || user.deletedAt || !user.password) throw invalid;
     if (!(await this.passwords.verify(user.password, dto.password))) throw invalid;
     if (!user.isActive) throw new UnauthorizedException('Tu cuenta está desactivada');
 
+    return this.buildResult(user, meta);
+  }
+
+  // --------------------------- login social (OAuth) --------------------
+  /**
+   * Login/registro vía Google o GitHub. Si ya existe un usuario con ese
+   * proveedor o ese correo, vincula la cuenta; si no, crea uno nuevo sin contraseña.
+   */
+  async oauthLogin(
+    profile: { googleId?: string; githubId?: string; email: string; firstName: string; lastName: string; avatarUrl?: string },
+    meta: RequestMeta = {},
+  ): Promise<AuthResult> {
+    const provider = profile.googleId ? { googleId: profile.googleId } : { githubId: profile.githubId };
+
+    let user = await this.prisma.user.findFirst({
+      where: { OR: [provider, { email: profile.email }] },
+    });
+
+    if (user) {
+      user = await this.prisma.user.update({
+        where: { id: user.id },
+        data: { ...provider, avatarUrl: user.avatarUrl ?? profile.avatarUrl },
+      });
+    } else {
+      user = await this.prisma.user.create({
+        data: {
+          firstName: profile.firstName,
+          lastName: profile.lastName || '.',
+          email: profile.email,
+          avatarUrl: profile.avatarUrl,
+          role: Role.USER,
+          emailVerified: true,
+          ...provider,
+        },
+      });
+    }
+
+    if (!user.isActive) throw new UnauthorizedException('Tu cuenta está desactivada');
     return this.buildResult(user, meta);
   }
 
@@ -139,7 +177,7 @@ export class AuthService {
 
   async changePassword(userId: string, dto: ChangePasswordDto): Promise<{ message: string }> {
     const user = await this.prisma.user.findUniqueOrThrow({ where: { id: userId } });
-    if (!(await this.passwords.verify(user.password, dto.currentPassword))) {
+    if (!user.password || !(await this.passwords.verify(user.password, dto.currentPassword))) {
       throw new BadRequestException('La contraseña actual no es correcta');
     }
     await this.prisma.user.update({
