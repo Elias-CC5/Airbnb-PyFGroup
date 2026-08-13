@@ -26,27 +26,28 @@ async function bootstrap() {
   logger.log(`CORS permitido para: ${origins.join(', ') || '(ninguno)'}`);
 
   app.enableCors({
-    origin: (origin, callback) => {
-      // Herramientas sin origin (Postman, curl, SSR del propio frontend).
-      if (!origin) return callback(null, true);
+  origin: (origin, callback) => {
+    if (!origin) return callback(null, true);
 
-      if (origins.includes(origin)) return callback(null, true);
+    if (origins.includes(origin)) return callback(null, true);
 
-      // En desarrollo aceptamos cualquier puerto de localhost (3000, 3001, ...),
-      // así cambiar de puerto no rompe el frontend.
-      if (isDev && /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin)) {
-        return callback(null, true);
-      }
+    if (isDev && /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin)) {
+      return callback(null, true);
+    }
 
-      // Rechazo limpio: se omiten las cabeceras CORS, sin lanzar un 500.
-      logger.warn(`Origen bloqueado por CORS: ${origin}`);
-      return callback(null, false);
-    },
-    credentials: true,
-    methods: ['GET', 'POST', 'PATCH', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
-    optionsSuccessStatus: 204,
-  });
+    // Cualquier deploy (producción o preview) de tu proyecto en Vercel
+    if (/^https:\/\/airbnb-py-f-group[a-z0-9-]*\.vercel\.app$/.test(origin)) {
+      return callback(null, true);
+    }
+
+    logger.warn(`Origen bloqueado por CORS: ${origin}`);
+    return callback(null, false);
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PATCH', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
+  optionsSuccessStatus: 204,
+});
 
   // -------------------------- validación DTO --------------------------
   app.useGlobalPipes(
