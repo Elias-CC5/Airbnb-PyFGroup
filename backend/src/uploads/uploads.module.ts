@@ -1,27 +1,45 @@
 import { Module } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { MulterModule } from '@nestjs/platform-express';
-import { diskStorage } from 'multer';
-import { extname } from 'path';
-import { UploadsController } from './uploads.controller';
-import { UploadsService } from './uploads.service';
+import { memoryStorage } from 'multer';
+
+import { AuthModule } from '../auth/auth.module';
+import { PropertiesModule } from '../properties/properties.module';
+import { UploadsController } from './controllers/uploads.controller';
+import { STORAGE_PROVIDER } from './interfaces/storage-provider.interface';
+import { CloudinaryStorageService } from './services/cloudinary-storage.service';
+import { LocalStorageService } from './services/local-storage.service';
+import { UploadsService } from './services/uploads.service';
 
 @Module({
   imports: [
+    AuthModule,
+    PropertiesModule,
+    // memoryStorage: los drivers reciben el archivo en `file.buffer` y deciden
+    // ellos mismos dónde guardarlo (disco local o Cloudinary).
     MulterModule.register({
-      storage: diskStorage({
-        destination: './uploads',
-        filename: (req, file, cb) => {
-          const unique = `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
-          cb(null, `${unique}${extname(file.originalname)}`);
-        },
-      }),
+      storage: memoryStorage(),
       limits: {
         fileSize: (Number(process.env.MAX_UPLOAD_SIZE_MB) || 5) * 1024 * 1024,
       },
     }),
   ],
   controllers: [UploadsController],
-  providers: [UploadsService],
+  providers: [
+    UploadsService,
+    LocalStorageService,
+    CloudinaryStorageService,
+    {
+      // El driver se elige con STORAGE_DRIVER=local|cloudinary
+      provide: STORAGE_PROVIDER,
+      inject: [ConfigService, LocalStorageService, CloudinaryStorageService],
+      useFactory: (
+        config: ConfigService,
+        local: LocalStorageService,
+        cloudinary: CloudinaryStorageService,
+      ) => (config.get<string>('storage.driver') === 'cloudinary' ? cloudinary : local),
+    },
+  ],
   exports: [UploadsService],
 })
 export class UploadsModule {}

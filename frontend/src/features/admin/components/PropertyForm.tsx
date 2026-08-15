@@ -26,9 +26,12 @@ import type { PropertyDetail } from '@/types';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
+import { useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { propertyFormSchema, type PropertyFormInput } from '../schemas/property.schema';
+import { uploadsService } from '../services/uploads.service';
+import { PendingImagesPicker, type PendingImage } from './PendingImagesPicker';
 import { PropertyImagesManager } from './PropertyImagesManager';
 
 interface PropertyFormProps {
@@ -42,6 +45,9 @@ interface PropertyFormProps {
 export function PropertyForm({ property }: PropertyFormProps) {
   const router = useRouter();
   const queryClient = useQueryClient();
+
+  // Imágenes elegidas antes de que el alojamiento exista en el servidor.
+  const [pendingImages, setPendingImages] = useState<PendingImage[]>([]);
 
   const { data: categories } = useCategories();
   const { data: departments } = useDepartments();
@@ -101,7 +107,7 @@ export function PropertyForm({ property }: PropertyFormProps) {
   const { data: districts } = useDistricts(provinceId ? Number(provinceId) : undefined);
 
   const save = useMutation({
-    mutationFn: (values: PropertyFormInput) => {
+    mutationFn: async (values: PropertyFormInput) => {
       const payload = {
         ...values,
         shortDescription: values.shortDescription || undefined,
@@ -113,7 +119,31 @@ export function PropertyForm({ property }: PropertyFormProps) {
           reference: values.location.reference || undefined,
         },
       };
-      return property ? propertiesService.update(property.id, payload) : propertiesService.create(payload);
+
+      if (property) return propertiesService.update(property.id, payload);
+
+      const created = await propertiesService.create(payload);
+
+      // El endpoint de imágenes necesita el ID, así que las subimos recién creado.
+      if (pendingImages.length > 0) {
+        try {
+          const uploaded = await uploadsService.uploadPropertyImages(
+            created.id,
+            pendingImages.map((image) => image.file),
+          );
+
+          const mainIndex = pendingImages.findIndex((image) => image.isMain);
+          if (mainIndex > 0 && uploaded.length === pendingImages.length) {
+            await uploadsService.setMain(uploaded[mainIndex].id);
+          }
+        } catch {
+          toast.error(
+            'El alojamiento se creó, pero falló la subida de imágenes. Inténtalo de nuevo desde su ficha.',
+          );
+        }
+      }
+
+      return created;
     },
     onSuccess: (saved) => {
       toast.success(property ? 'Alojamiento actualizado' : 'Alojamiento creado');
@@ -410,9 +440,11 @@ export function PropertyForm({ property }: PropertyFormProps) {
               {property ? (
                 <PropertyImagesManager propertyId={property.id} images={property.images} />
               ) : (
-                <p className="text-sm leading-relaxed text-ink-500">
-                  Guarda el alojamiento primero y luego podrás subir sus fotos.
-                </p>
+                <PendingImagesPicker
+                  value={pendingImages}
+                  onChange={setPendingImages}
+                  disabled={save.isPending}
+                />
               )}
             </CardContent>
           </Card>

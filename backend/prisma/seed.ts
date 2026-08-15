@@ -104,6 +104,53 @@ const DEPARTMENT_THEME: Record<string, PhotoTheme> = {
 };
 
 // ------------------------- Ubicaciones (Perú) -------------------------
+/** Los 43 distritos de la provincia de Lima. */
+const LIMA_DISTRICTS = [
+  'Cercado de Lima',
+  'Ancón',
+  'Ate',
+  'Barranco',
+  'Breña',
+  'Carabayllo',
+  'Chaclacayo',
+  'Chorrillos',
+  'Cieneguilla',
+  'Comas',
+  'El Agustino',
+  'Independencia',
+  'Jesús María',
+  'La Molina',
+  'La Victoria',
+  'Lince',
+  'Los Olivos',
+  'Lurigancho',
+  'Lurín',
+  'Magdalena del Mar',
+  'Miraflores',
+  'Pachacámac',
+  'Pucusana',
+  'Pueblo Libre',
+  'Puente Piedra',
+  'Punta Hermosa',
+  'Punta Negra',
+  'Rímac',
+  'San Bartolo',
+  'San Borja',
+  'San Isidro',
+  'San Juan de Lurigancho',
+  'San Juan de Miraflores',
+  'San Luis',
+  'San Martín de Porres',
+  'San Miguel',
+  'Santa Anita',
+  'Santa María del Mar',
+  'Santa Rosa',
+  'Santiago de Surco',
+  'Surquillo',
+  'Villa El Salvador',
+  'Villa María del Triunfo',
+];
+
 const GEO: Record<string, Record<string, string[]>> = {
   Cusco: {
     Cusco: ['Cusco', 'San Blas', 'Wanchaq', 'San Jerónimo'],
@@ -111,7 +158,7 @@ const GEO: Record<string, Record<string, string[]>> = {
     Calca: ['Calca', 'Pisac'],
   },
   Lima: {
-    Lima: ['Miraflores', 'Barranco', 'San Isidro', 'Surco'],
+    Lima: LIMA_DISTRICTS,
     Cañete: ['Asia', 'Cerro Azul'],
     Huaral: ['Huaral', 'Chancay'],
   },
