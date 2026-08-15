@@ -73,7 +73,9 @@ export class AuthController {
   @ApiOperation({ summary: 'Cerrar sesión e invalidar el refresh token' })
   async logout(@Body() dto: RefreshTokenDto, @Req() req: Request, @Res({ passthrough: true }) res: Response) {
     const token = dto.refreshToken ?? (req.cookies?.[REFRESH_COOKIE] as string | undefined);
-    res.clearCookie(REFRESH_COOKIE, { path: '/' });
+    // Debe repetir sameSite/secure o el navegador no la borra.
+    const { maxAge: _ignored, ...options } = this.cookieOptions();
+    res.clearCookie(REFRESH_COOKIE, options);
     return this.authService.logout(token);
   }
 
@@ -162,14 +164,25 @@ export class AuthController {
    * El access token se devuelve en el body para que el cliente lo mantenga en memoria.
    */
   private withCookie(res: Response, result: AuthResult): AuthResult {
-    res.cookie(REFRESH_COOKIE, result.tokens.refreshToken, {
+    res.cookie(REFRESH_COOKIE, result.tokens.refreshToken, this.cookieOptions());
+    return result;
+  }
+
+  /**
+   * En producción el frontend (Vercel) y la API (Render) viven en dominios
+   * distintos, así que la cookie es "de terceros": con SameSite=Lax el
+   * navegador no la envía en las peticiones fetch y la sesión se pierde.
+   * SameSite=None exige Secure, de ahí que ambos vayan juntos.
+   */
+  private cookieOptions() {
+    const secure = this.config.get<boolean>('jwt.cookieSecure') ?? false;
+    return {
       httpOnly: true,
-      sameSite: 'lax',
-      secure: this.config.get<boolean>('jwt.cookieSecure') ?? false,
+      sameSite: secure ? ('none' as const) : ('lax' as const),
+      secure,
       path: '/',
       maxAge: 7 * 24 * 60 * 60 * 1000,
-    });
-    return result;
+    };
   }
 
   /**
@@ -177,13 +190,7 @@ export class AuthController {
    * redirige de vuelta al frontend con el access token en la URL.
    */
   private redirectWithToken(res: Response, result: AuthResult) {
-    res.cookie(REFRESH_COOKIE, result.tokens.refreshToken, {
-      httpOnly: true,
-      sameSite: 'lax',
-      secure: this.config.get<boolean>('jwt.cookieSecure') ?? false,
-      path: '/',
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-    });
+    res.cookie(REFRESH_COOKIE, result.tokens.refreshToken, this.cookieOptions());
     const frontendUrl = this.config.get<string>('app.frontendUrl') ?? 'http://localhost:3000';
     res.redirect(`${frontendUrl}/auth/callback?token=${result.tokens.accessToken}`);
   }
