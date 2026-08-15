@@ -4,7 +4,7 @@ import { WhatsappIcon } from '@/features/whatsapp/components/icons/WhatsappIcon'
 import { Facebook, Instagram, Mail } from 'lucide-react';
 import Link from 'next/link';
 
-/** Texto del wordmark de fondo. Se ajusta solo al ancho, sea cual sea su largo. */
+/** Texto del wordmark de fondo. Si lo cambias, ajusta el fontSize del <text>. */
 const WORDMARK = 'PyFGroup';
 
 const SOCIALS = [
@@ -78,20 +78,20 @@ export function Footer() {
 
       {/* Wordmark gigante recortado + placa del logo centrada correctamente */}
       <div className="relative mt-14 flex justify-center overflow-hidden pb-8">
+        {/* Sin textLength: las letras conservan su proporción y el SVG escala
+            el conjunto. Estirarlas al ancho exacto las deformaba. */}
         <svg
           aria-hidden
-          viewBox="0 0 1000 150"
+          viewBox="0 0 1000 200"
           preserveAspectRatio="xMidYMax meet"
           className="w-full select-none"
         >
           <text
             x="500"
-            y="128"
+            y="155"
             textAnchor="middle"
-            textLength="980"
-            lengthAdjust="spacingAndGlyphs"
             className="fill-ink-950/[0.055] font-black"
-            style={{ fontSize: 140, letterSpacing: '-0.03em' }}
+            style={{ fontSize: 165, letterSpacing: '-0.04em' }}
           >
             {WORDMARK}
           </text>
