@@ -137,7 +137,9 @@ export class OccupancyImportService {
         const dataRow = sheet.getRow(current);
         const dpto = this.number(dataRow.getCell(2).value);
 
-        if (dpto) {
+        // Los departamentos son de tres o cuatro dígitos (201, 1104…). Un número
+        // suelto de una o dos cifras es un día o un contador, no una habitación.
+        if (dpto && dpto >= 100 && dpto <= 9999) {
           for (const [column, day] of days) {
             const guestCell = dataRow.getCell(column);
             const guest = this.text(guestCell.value);
