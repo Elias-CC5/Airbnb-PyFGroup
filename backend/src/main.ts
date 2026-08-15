@@ -62,7 +62,7 @@ async function bootstrap() {
   // ----------------------------- Swagger ------------------------------
   if (isDev) {
     const swaggerConfig = new DocumentBuilder()
-      .setTitle('Airbnb PyFGroup')
+      .setTitle('PyFGroup')
       .setDescription('API REST de la plataforma de alquiler de alojamientos en Perú')
       .setVersion('1.0.0')
       .addBearerAuth()

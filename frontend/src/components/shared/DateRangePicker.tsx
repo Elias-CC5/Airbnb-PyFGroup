@@ -32,7 +32,7 @@ export function DateRangePicker({
       onSelect={onChange}
       numberOfMonths={numberOfMonths}
       disabled={[{ before: today }, ...disabledRanges]}
-      className={cn('Airbnb PyFGroup-daypicker', className)}
+      className={cn('pyfgroup-daypicker', className)}
       classNames={{
         months: 'flex flex-col sm:flex-row gap-8',
         month_caption: 'flex justify-center py-2 mb-2 text-sm font-semibold text-ink-900 capitalize',

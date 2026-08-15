@@ -1,5 +1,5 @@
 export const SITE = {
-  name: process.env.NEXT_PUBLIC_SITE_NAME ?? 'Airbnb PyFGroup',
+  name: process.env.NEXT_PUBLIC_SITE_NAME ?? 'PyFGroup',
   tagline: 'Alojamientos con alma peruana',
   description:
     'Encuentra casas, departamentos y cabañas para alquilar en todo el Perú. Reserva en línea, paga en soles y coordina directo con el anfitrión.',
@@ -7,7 +7,7 @@ export const SITE = {
   locale: 'es_PE',
   whatsapp: process.env.NEXT_PUBLIC_WHATSAPP_PHONE ?? '+51 974 467 762',
   // Un correo no admite espacios ni mayúsculas en el dominio.
-  email: 'hola@airbnbpyfgroup.com',
+  email: 'hola@pyfgroupsac.com',
   // Datos legales — Aviso Legal, Términos y Condiciones, Libro de Reclamaciones.
   legalName: 'PONCE & FIGUEROA GROUP S.A.C.',
   ruc: '20615113078',

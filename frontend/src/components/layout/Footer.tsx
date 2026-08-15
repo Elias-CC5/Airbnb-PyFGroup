@@ -5,7 +5,7 @@ import { Facebook, Instagram, Mail } from 'lucide-react';
 import Link from 'next/link';
 
 /** Texto del wordmark de fondo. Se ajusta solo al ancho, sea cual sea su largo. */
-const WORDMARK = 'Airbnb PyFGroup';
+const WORDMARK = 'PyFGroup';
 
 const SOCIALS = [
   { href: `https://wa.me/${SITE.whatsapp}`, label: 'WhatsApp', icon: WhatsappIcon },

@@ -25,7 +25,7 @@ export function useAuth() {
     mutationFn: (input: RegisterInput) => authService.register(input),
     onSuccess: ({ user: newUser, tokens }) => {
       setSession(newUser, tokens.accessToken);
-      toast.success('¡Cuenta creada! Bienvenido a Airbnb PyFGroup');
+      toast.success('¡Cuenta creada! Bienvenido a PyFGroup');
     },
     onError: (error: Error) => toast.error(error.message),
   });

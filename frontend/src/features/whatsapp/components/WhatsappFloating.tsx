@@ -16,7 +16,7 @@ export function WhatsappFloating() {
   }, []);
 
   const url = `https://wa.me/${SITE.whatsapp}?text=${encodeURIComponent(
-    'Hola, necesito ayuda con una reserva en Airbnb PyFGroup.',
+    'Hola, necesito ayuda con una reserva en PyFGroup.',
   )}`;
 
   return (

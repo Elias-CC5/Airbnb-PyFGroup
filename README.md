@@ -1,4 +1,4 @@
-# Airbnb PyFGroup — Plataforma de alquiler de alojamientos
+# PyFGroup — Plataforma de alquiler de alojamientos
 
 Plataforma web completa de alquiler de alojamientos vacacionales y turísticos en Perú.
 Arquitectura cliente-servidor **totalmente separada**: NestJS + PostgreSQL + Prisma en el backend,

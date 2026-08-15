@@ -79,7 +79,7 @@ export class WhatsappService {
   support(): WhatsappLink {
     return this.buildLink(
       this.normalizePhone(null),
-      'Hola, necesito ayuda con una reserva en Airbnb PyFGroup.',
+      'Hola, necesito ayuda con una reserva en PyFGroup.',
     );
   }
 

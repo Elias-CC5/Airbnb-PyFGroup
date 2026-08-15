@@ -67,7 +67,7 @@ export function PropertyDetailView({ property, similar, place }: Props) {
     ...(property.hasElevator ? [{ icon: ArrowUpDown, label: 'Con ascensor' }] : []),
   ];
 
-  /** Reglas en formato "permitido / no permitido", como en la ficha de Airbnb. */
+  /** Reglas en formato "permitido / no permitido", con iconos de permitido y no permitido. */
   const rules = [
     { allowed: property.petsAllowed, label: 'mascotas' },
     { allowed: property.smokingAllowed, label: 'fumar' },
