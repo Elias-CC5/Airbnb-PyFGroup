@@ -71,5 +71,7 @@ export const ENDPOINTS = {
     calendar: '/admin/calendar',
     calendarExport: '/admin/calendar/export',
     calendarImport: '/admin/calendar/import',
+    calendarEntries: '/admin/calendar/entries',
+    calendarEntry: (id: string) => `/admin/calendar/entries/${id}`,
   },
 } as const;

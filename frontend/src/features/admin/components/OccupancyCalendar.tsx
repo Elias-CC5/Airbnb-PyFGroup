@@ -9,6 +9,7 @@ import Link from 'next/link';
 import { useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { adminService, type BookingChannel, type OccupancyNight } from '../services/admin.service';
+import { OccupancyEntryDialog, type EntryDraft } from './OccupancyEntryDialog';
 
 /** Colores de la leyenda, alineados con los del Excel exportado. */
 const CHANNEL: Record<BookingChannel, { label: string; dot: string; cell: string }> = {
@@ -46,6 +47,7 @@ export function OccupancyCalendar() {
   const [downloading, setDownloading] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
   const queryClient = useQueryClient();
+  const [draft, setDraft] = useState<EntryDraft | null>(null);
 
   const { data, isLoading } = useQuery({
     queryKey: ['admin', 'calendar', month],
@@ -63,6 +65,25 @@ export function OccupancyCalendar() {
             : ''),
         { description: `Meses importados: ${months}`, duration: 8000 },
       );
+      void queryClient.invalidateQueries({ queryKey: ['admin'] });
+    },
+    onError: (error: Error) => toast.error(error.message),
+  });
+
+  const move = useMutation({
+    mutationFn: ({
+      reservationId,
+      propertyId,
+      checkIn,
+      checkOut,
+    }: {
+      reservationId: string;
+      propertyId: string;
+      checkIn: string;
+      checkOut: string;
+    }) => adminService.updateEntry(reservationId, { propertyId, checkIn, checkOut }),
+    onSuccess: () => {
+      toast.success('Estadía movida');
       void queryClient.invalidateQueries({ queryKey: ['admin'] });
     },
     onError: (error: Error) => toast.error(error.message),
@@ -155,16 +176,56 @@ export function OccupancyCalendar() {
               No hay alojamientos publicados todavía.
             </p>
           ) : (
-            <CalendarGrid data={data} />
+            <CalendarGrid
+              data={data}
+              onPick={setDraft}
+              onMove={(reservationId, propertyId, checkIn, checkOut) =>
+                move.mutate({ reservationId, propertyId, checkIn, checkOut })
+              }
+            />
           )}
         </CardContent>
       </Card>
+
+      <OccupancyEntryDialog draft={draft} onClose={() => setDraft(null)} />
     </div>
   );
 }
 
-function CalendarGrid({ data }: { data: NonNullable<Awaited<ReturnType<typeof adminService.calendar>>> }) {
+interface GridProps {
+  data: NonNullable<Awaited<ReturnType<typeof adminService.calendar>>>;
+  onPick: (draft: EntryDraft) => void;
+  onMove: (reservationId: string, propertyId: string, checkIn: string, checkOut: string) => void;
+}
+
+/** Suma días a una fecha YYYY-MM-DD sin salirse de UTC. */
+function addDays(date: string, days: number): string {
+  const next = new Date(`${date}T00:00:00Z`);
+  next.setUTCDate(next.getUTCDate() + days);
+  return next.toISOString().slice(0, 10);
+}
+
+function CalendarGrid({ data, onPick, onMove }: GridProps) {
   const today = new Date().toISOString().slice(0, 10);
+  const [dragging, setDragging] = useState<OccupancyNight | null>(null);
+
+  /** Al soltar, la estadía conserva sus noches y empieza en el día destino. */
+  const drop = (propertyId: string, day: string) => {
+    if (!dragging) return;
+    const offset = Math.round(
+      (new Date(`${day}T00:00:00Z`).getTime() - new Date(`${dragging.date}T00:00:00Z`).getTime()) /
+        86_400_000,
+    );
+    if (offset === 0 && propertyId === dragging.propertyId) return;
+
+    onMove(
+      dragging.reservationId,
+      propertyId,
+      addDays(dragging.checkIn, offset),
+      addDays(dragging.checkOut, offset),
+    );
+    setDragging(null);
+  };
 
   return (
     // overflow-x-auto: en un mes de 31 días la tabla no cabe en pantalla.
@@ -213,7 +274,41 @@ function CalendarGrid({ data }: { data: NonNullable<Awaited<ReturnType<typeof ad
 
               {data.days.map((day) => {
                 const night = row.nights.find((n) => n.date === day);
-                return <NightCell key={day} night={night} />;
+                return (
+                  <NightCell
+                    key={day}
+                    night={night}
+                    onDragStart={() => setDragging(night ?? null)}
+                    onDragEnd={() => setDragging(null)}
+                    onDrop={() => drop(row.propertyId, day)}
+                    onClick={() =>
+                      onPick(
+                        night
+                          ? {
+                              reservationId: night.reservationId,
+                              propertyId: row.propertyId,
+                              propertyTitle: row.title,
+                              guestName: night.guest,
+                              checkIn: night.checkIn,
+                              checkOut: night.checkOut,
+                              pricePerNight: night.pricePerNight,
+                              channel: night.channel,
+                              status: night.status,
+                            }
+                          : {
+                              propertyId: row.propertyId,
+                              propertyTitle: row.title,
+                              guestName: '',
+                              checkIn: day,
+                              checkOut: addDays(day, 1),
+                              pricePerNight: 0,
+                              channel: 'DIRECT',
+                              status: 'CONFIRMED',
+                            },
+                      )
+                    }
+                  />
+                );
               })}
             </tr>
           ))}
@@ -240,19 +335,54 @@ function CalendarGrid({ data }: { data: NonNullable<Awaited<ReturnType<typeof ad
   );
 }
 
-function NightCell({ night }: { night?: OccupancyNight }) {
+interface NightCellProps {
+  night?: OccupancyNight;
+  onClick: () => void;
+  onDragStart: () => void;
+  onDragEnd: () => void;
+  onDrop: () => void;
+}
+
+function NightCell({ night, onClick, onDragStart, onDragEnd, onDrop }: NightCellProps) {
+  // preventDefault en dragOver es lo que habilita el drop en HTML nativo.
+  const dropProps = {
+    onDragOver: (event: React.DragEvent) => event.preventDefault(),
+    onDrop: (event: React.DragEvent) => {
+      event.preventDefault();
+      onDrop();
+    },
+  };
+
   if (!night) {
-    return <td className="border-b border-r border-ink-200 p-2" />;
+    return (
+      <td className="border-b border-r border-ink-200 p-1" {...dropProps}>
+        <button
+          type="button"
+          onClick={onClick}
+          aria-label="Registrar estadía"
+          className="h-11 w-full rounded-md text-ink-300 transition hover:bg-ink-100 hover:text-ink-600"
+        >
+          +
+        </button>
+      </td>
+    );
   }
 
   const channel = CHANNEL[night.channel] ?? CHANNEL.OTHER;
 
   return (
-    <td className="border-b border-r border-ink-200 p-1 align-top">
+    <td className="border-b border-r border-ink-200 p-1 align-top" {...dropProps}>
       <div
+        draggable
+        onDragStart={onDragStart}
+        onDragEnd={onDragEnd}
+        onClick={onClick}
+        role="button"
+        tabIndex={0}
+        onKeyDown={(event) => event.key === 'Enter' && onClick()}
         title={`${night.guest} · ${night.code} · ${night.nights} noche(s) · ${channel.label}`}
         className={cn(
-          'rounded-md border-l-[3px] px-2 py-1.5 leading-tight',
+          'cursor-grab rounded-md border-l-[3px] px-2 py-1.5 leading-tight transition hover:brightness-95 active:cursor-grabbing',
           channel.cell,
           night.status === 'PENDING' && 'opacity-60',
         )}

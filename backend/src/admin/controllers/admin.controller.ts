@@ -1,7 +1,12 @@
 import {
   BadRequestException,
+  Body,
   Controller,
+  Delete,
   Get,
+  Param,
+  ParseUUIDPipe,
+  Patch,
   Post,
   Query,
   Res,
@@ -17,6 +22,8 @@ import { Response } from 'express';
 import { Roles } from '../../common/decorators';
 import { RolesGuard } from '../../common/guards/roles.guard';
 import { DashboardService } from '../services/dashboard.service';
+import { CreateOccupancyEntryDto, UpdateOccupancyEntryDto } from '../dto/occupancy-entry.dto';
+import { OccupancyEntriesService } from '../services/occupancy-entries.service';
 import { OccupancyExportService } from '../services/occupancy-export.service';
 import { OccupancyImportService } from '../services/occupancy-import.service';
 import { OccupancyService } from '../services/occupancy.service';
@@ -32,6 +39,7 @@ export class AdminController {
     private readonly occupancyService: OccupancyService,
     private readonly occupancyExport: OccupancyExportService,
     private readonly occupancyImport: OccupancyImportService,
+    private readonly occupancyEntries: OccupancyEntriesService,
   ) {}
 
   @Get('dashboard')
@@ -89,5 +97,24 @@ export class AdminController {
   ) {
     if (!file) throw new BadRequestException('Adjunta el archivo .xlsx');
     return this.occupancyImport.import(file.buffer, dryRun === 'true');
+  }
+
+  // --------------------- edición manual sobre el calendario ---------------------
+  @Post('calendar/entries')
+  @ApiOperation({ summary: 'Registra una estadía a mano desde el calendario' })
+  createEntry(@Body() dto: CreateOccupancyEntryDto) {
+    return this.occupancyEntries.create(dto);
+  }
+
+  @Patch('calendar/entries/:id')
+  @ApiOperation({ summary: 'Edita o mueve una estadía del calendario' })
+  updateEntry(@Param('id', ParseUUIDPipe) id: string, @Body() dto: UpdateOccupancyEntryDto) {
+    return this.occupancyEntries.update(id, dto);
+  }
+
+  @Delete('calendar/entries/:id')
+  @ApiOperation({ summary: 'Elimina una estadía del calendario' })
+  removeEntry(@Param('id', ParseUUIDPipe) id: string) {
+    return this.occupancyEntries.remove(id);
   }
 }

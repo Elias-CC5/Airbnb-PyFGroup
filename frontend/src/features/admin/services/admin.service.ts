@@ -25,14 +25,29 @@ export type BookingChannel = 'DIRECT' | 'AIRBNB' | 'BOOKING' | 'EXPEDIA' | 'TIKT
 export interface OccupancyNight {
   date: string;
   reservationId: string;
+  propertyId: string;
   code: string;
   guest: string;
   channel: BookingChannel;
   status: string;
   pricePerNight: number;
   nights: number;
+  checkIn: string;
+  checkOut: string;
   isCheckIn: boolean;
   isCheckOut: boolean;
+}
+
+export interface OccupancyEntryPayload {
+  propertyId: string;
+  guestName: string;
+  checkIn: string;
+  checkOut: string;
+  pricePerNight: number;
+  channel: BookingChannel;
+  status: string;
+  guests?: number;
+  notes?: string;
 }
 
 export interface ImportSummary {
@@ -56,6 +71,13 @@ export const adminService = {
     api.get<OccupancyCalendar>(ENDPOINTS.admin.calendar, { query: { month } }),
   downloadCalendar: (month: string) =>
     apiDownload(ENDPOINTS.admin.calendarExport, `ocupacion_${month}.xls`, { month }),
+  createEntry: (payload: OccupancyEntryPayload) =>
+    api.post<{ id: string }>(ENDPOINTS.admin.calendarEntries, payload),
+  updateEntry: (id: string, payload: Partial<OccupancyEntryPayload>) =>
+    api.patch<{ id: string }>(ENDPOINTS.admin.calendarEntry(id), payload),
+  removeEntry: (id: string) =>
+    api.delete<{ message: string }>(ENDPOINTS.admin.calendarEntry(id)),
+
   importCalendar: (file: File, dryRun = false) => {
     const formData = new FormData();
     formData.append('file', file);

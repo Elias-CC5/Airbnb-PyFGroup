@@ -6,12 +6,16 @@ import { PrismaService } from '../../database/prisma.service';
 export interface OccupancyNight {
   date: string;
   reservationId: string;
+  propertyId: string;
   code: string;
   guest: string;
   channel: string;
   status: ReservationStatus;
   pricePerNight: number;
   nights: number;
+  /** Rango completo de la estadía, para editarla o moverla desde el panel. */
+  checkIn: string;
+  checkOut: string;
   isCheckIn: boolean;
   isCheckOut: boolean;
 }
@@ -87,12 +91,15 @@ export class OccupancyService {
         list.push({
           date,
           reservationId: reservation.id,
+          propertyId: reservation.propertyId,
           code: reservation.code,
           guest,
           channel: reservation.channel,
           status: reservation.status,
           pricePerNight: Number(reservation.pricePerNight),
           nights: reservation.nights,
+          checkIn: this.toKey(reservation.checkIn),
+          checkOut: this.toKey(reservation.checkOut),
           isCheckIn: date === this.toKey(reservation.checkIn),
           isCheckOut: date === this.previousDay(reservation.checkOut),
         });
