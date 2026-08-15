@@ -110,7 +110,7 @@ export function FeaturedProperties({ properties }: { properties: PropertyCardTyp
                             'block text-2xl font-black uppercase leading-[0.95] tracking-tight transition-all duration-500 sm:text-3xl lg:text-4xl',
                             isActive
                               ? 'translate-x-2 text-ink-950'
-                              : 'text-ink-400 opacity-50 group-hover:opacity-80',
+                              : 'text-ink-500 group-hover:text-ink-700',
                           )}
                         >
                           {property.title}
@@ -119,7 +119,7 @@ export function FeaturedProperties({ properties }: { properties: PropertyCardTyp
                         <span
                           className={cn(
                             'mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm transition-all duration-500',
-                            isActive ? 'translate-x-2 text-ink-600' : 'text-ink-400',
+                            isActive ? 'translate-x-2 text-ink-600' : 'text-ink-500',
                           )}
                         >
                           <span className="inline-flex items-center gap-1.5">

@@ -279,7 +279,7 @@ export function PropertyForm({ property }: PropertyFormProps) {
                 </div>
                 <div>
                   <Label htmlFor="whatsappPhone">WhatsApp del anfitrión</Label>
-                  <Input id="whatsappPhone" placeholder="51930983811" {...register('whatsappPhone')} />
+                  <Input id="whatsappPhone" placeholder="+51 974 467 762" {...register('whatsappPhone')} />
                 </div>
               </div>
             </CardContent>

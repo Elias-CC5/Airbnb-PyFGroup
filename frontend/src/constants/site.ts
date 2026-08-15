@@ -5,7 +5,7 @@ export const SITE = {
     'Encuentra casas, departamentos y cabañas para alquilar en todo el Perú. Reserva en línea, paga en soles y coordina directo con el anfitrión.',
   url: process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000',
   locale: 'es_PE',
-  whatsapp: process.env.NEXT_PUBLIC_WHATSAPP_PHONE ?? '51930983811',
+  whatsapp: process.env.NEXT_PUBLIC_WHATSAPP_PHONE ?? '+51 974 467 762',
   // Un correo no admite espacios ni mayúsculas en el dominio.
   email: 'hola@airbnbpyfgroup.com',
   // Datos legales — Aviso Legal, Términos y Condiciones, Libro de Reclamaciones.
@@ -13,7 +13,7 @@ export const SITE = {
   ruc: '20615113078',
   fiscalAddress: 'Av. Arequipa Nro. 768 Dpto. 1706 Urb. Santa Beatriz, Lima - Lima - Lima',
   legalEmail: 'contacto@pyfgroupsac.com',
-  phone: '+51 930 983 811',
+  phone: '+51 974 467 762',
 } as const;
 
 export const NAV_LINKS = [

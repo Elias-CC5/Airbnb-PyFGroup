@@ -418,7 +418,7 @@ async function main() {
         status: PropertyStatus.ACTIVE,
         isFeatured: p.featured,
         views: 40 + index * 17,
-        whatsappPhone: '51930983811',
+        whatsappPhone: '+51 974 467 762',
         ownerId: index % 3 === 0 ? host.id : admin.id,
         categoryId: categoryIds.get(p.cat)!,
         locationId: location.id,
