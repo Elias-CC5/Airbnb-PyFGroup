@@ -95,8 +95,10 @@ export function PropertyDetailView({ property, similar, place }: Props) {
       <PropertyGallery images={property.images} title={property.title} />
 
       {/* Contenido + card de reserva */}
-      <div className="mt-10 grid gap-12 lg:grid-cols-[1fr_384px] lg:gap-16">
-        <div className="space-y-10">
+      {/* minmax(0,1fr) evita que un texto largo sin espacios ensanche la columna
+          izquierda y empuje la card de reserva fuera de la pantalla. */}
+      <div className="mt-10 grid gap-12 lg:grid-cols-[minmax(0,1fr)_384px] lg:gap-16">
+        <div className="min-w-0 space-y-10">
           <section>
             <div className="flex items-start justify-between gap-6 border-b border-ink-200 pb-7">
               <div>
@@ -131,7 +133,10 @@ export function PropertyDetailView({ property, similar, place }: Props) {
           <section className="border-b border-ink-200 pb-9">
             <h2 className="sr-only">Descripción</h2>
             {property.description.split('\n\n').map((paragraph, i) => (
-              <p key={i} className="mb-4 text-[0.95rem] leading-relaxed text-ink-700 last:mb-0">
+              <p
+                key={i}
+                className="mb-4 break-words text-[0.95rem] leading-relaxed text-ink-700 last:mb-0"
+              >
                 {paragraph}
               </p>
             ))}
