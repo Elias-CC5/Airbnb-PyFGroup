@@ -12,6 +12,28 @@ export const PROPERTY_STATUS_LABEL: Record<string, string> = {
   INACTIVE: 'Inactivo',
 };
 
+export const BED_TYPE_LABEL: Record<string, string> = {
+  SINGLE: 'Individual',
+  DOUBLE: 'Doble',
+  QUEEN: 'Queen',
+  KING: 'King',
+  BUNK: 'Camarote',
+  SOFA_BED: 'Sofá cama',
+};
+
+export const CANCELLATION_POLICY_LABEL: Record<string, string> = {
+  FLEXIBLE: 'Flexible',
+  MODERATE: 'Moderada',
+  STRICT: 'Estricta',
+};
+
+/** Explicación que se muestra al huésped en la ficha del alojamiento. */
+export const CANCELLATION_POLICY_DETAIL: Record<string, string> = {
+  FLEXIBLE: 'Cancelación gratuita hasta 24 horas antes del check-in.',
+  MODERATE: 'Cancelación gratuita hasta 5 días antes del check-in.',
+  STRICT: 'Cancelación gratuita solo dentro de las 48 horas siguientes a la reserva.',
+};
+
 export const RESERVATION_STATUS_LABEL: Record<string, string> = {
   PENDING: 'Pendiente',
   CONFIRMED: 'Confirmada',

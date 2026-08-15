@@ -4,10 +4,27 @@ import { Avatar, Badge, Rating } from '@/components/ui';
 import { useFavoriteIds, useToggleFavorite } from '@/features/favorites/hooks/useFavorites';
 import { BookingCard } from '@/features/reservations/components/BookingCard';
 import { ReviewsSection } from '@/features/reviews/components/ReviewsSection';
+import { BED_TYPE_LABEL, CANCELLATION_POLICY_DETAIL, CANCELLATION_POLICY_LABEL } from '@/constants';
 import { formatPrice } from '@/lib/format';
 import { cn } from '@/lib/utils';
 import type { PropertyCard as PropertyCardType, PropertyDetail } from '@/types';
-import { Bath, BedDouble, Clock, Heart, MapPin, Share2, Users } from 'lucide-react';
+import {
+  ArrowUpDown,
+  Bath,
+  BedDouble,
+  Building2,
+  Check,
+  Clock,
+  Eye,
+  Heart,
+  MapPin,
+  Moon,
+  Ruler,
+  Share2,
+  ShieldCheck,
+  Users,
+  X,
+} from 'lucide-react';
 import Link from 'next/link';
 import { toast } from 'sonner';
 import { PropertyAmenities } from './PropertyAmenities';
@@ -41,7 +58,27 @@ export function PropertyDetailView({ property, similar, place }: Props) {
     { icon: BedDouble, label: `${property.bedrooms} habitaciones · ${property.beds} camas` },
     { icon: Bath, label: `${property.bathrooms} baños` },
     { icon: Clock, label: `Check-in ${property.checkInTime} · Check-out ${property.checkOutTime}` },
+    ...(property.areaM2 ? [{ icon: Ruler, label: `${property.areaM2} m²` }] : []),
+    ...(property.floor != null ? [{ icon: Building2, label: `Piso ${property.floor}` }] : []),
+    ...(property.bedType
+      ? [{ icon: BedDouble, label: `Cama ${BED_TYPE_LABEL[property.bedType].toLowerCase()}` }]
+      : []),
+    ...(property.viewType ? [{ icon: Eye, label: property.viewType }] : []),
+    ...(property.hasElevator ? [{ icon: ArrowUpDown, label: 'Con ascensor' }] : []),
   ];
+
+  /** Reglas en formato "permitido / no permitido", como en la ficha de Airbnb. */
+  const rules = [
+    { allowed: property.petsAllowed, label: 'mascotas' },
+    { allowed: property.smokingAllowed, label: 'fumar' },
+    { allowed: property.partiesAllowed, label: 'fiestas o eventos' },
+    { allowed: property.suitableForChildren, label: 'niños' },
+  ];
+
+  const deposit = Number(property.securityDeposit);
+  const extraGuest = Number(property.extraGuestFee);
+  const hasExtraFees = deposit > 0 || extraGuest > 0;
+  const hasDiscounts = property.weeklyDiscount > 0 || property.monthlyDiscount > 0;
 
   return (
     // pt-28: deja hueco a la barra de navegación flotante.
@@ -152,6 +189,69 @@ export function PropertyDetailView({ property, similar, place }: Props) {
               place={place}
               reference={property.location.reference}
             />
+          </section>
+
+          {/* Reglas de la casa */}
+          <section className="border-b border-ink-200 pb-9">
+            <h2 className="text-xl font-semibold text-ink-900">Reglas de la casa</h2>
+            <ul className="mt-4 grid gap-3 text-sm text-ink-700 sm:grid-cols-2">
+              {rules.map((rule) => (
+                <li key={rule.label} className="flex items-center gap-2.5">
+                  {rule.allowed ? (
+                    <Check className="size-4 shrink-0 text-ink-900" aria-hidden />
+                  ) : (
+                    <X className="size-4 shrink-0 text-ink-400" aria-hidden />
+                  )}
+                  <span className={cn(!rule.allowed && 'text-ink-500')}>
+                    {rule.allowed ? 'Se permiten' : 'No se permiten'} {rule.label}
+                  </span>
+                </li>
+              ))}
+
+              {property.quietHoursFrom && property.quietHoursTo && (
+                <li className="flex items-center gap-2.5">
+                  <Moon className="size-4 shrink-0 text-ink-900" aria-hidden />
+                  <span>
+                    Silencio de {property.quietHoursFrom} a {property.quietHoursTo}
+                  </span>
+                </li>
+              )}
+            </ul>
+
+            {property.houseRules && (
+              <p className="mt-4 whitespace-pre-line break-words text-sm leading-relaxed text-ink-600">
+                {property.houseRules}
+              </p>
+            )}
+          </section>
+
+          {/* Cancelación y cobros adicionales */}
+          <section className="border-b border-ink-200 pb-9">
+            <h2 className="text-xl font-semibold text-ink-900">Política de cancelación</h2>
+            <div className="mt-4 flex items-start gap-2.5 text-sm text-ink-700">
+              <ShieldCheck className="mt-0.5 size-4 shrink-0 text-ink-900" aria-hidden />
+              <p>
+                <span className="font-medium text-ink-900">
+                  {CANCELLATION_POLICY_LABEL[property.cancellationPolicy]}.
+                </span>{' '}
+                {CANCELLATION_POLICY_DETAIL[property.cancellationPolicy]}
+              </p>
+            </div>
+
+            {(hasExtraFees || hasDiscounts) && (
+              <ul className="mt-4 space-y-2 text-sm text-ink-600">
+                {deposit > 0 && <li>Depósito de garantía: {formatPrice(deposit)}</li>}
+                {extraGuest > 0 && (
+                  <li>Huésped adicional: {formatPrice(extraGuest)} por noche</li>
+                )}
+                {property.weeklyDiscount > 0 && (
+                  <li>{property.weeklyDiscount}% de descuento en estadías de 7 noches o más</li>
+                )}
+                {property.monthlyDiscount > 0 && (
+                  <li>{property.monthlyDiscount}% de descuento en estadías de 28 noches o más</li>
+                )}
+              </ul>
+            )}
           </section>
 
           <ReviewsSection propertyId={property.id} />

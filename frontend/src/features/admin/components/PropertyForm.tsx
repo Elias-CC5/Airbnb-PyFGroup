@@ -12,7 +12,12 @@ import {
   Switch,
   Textarea,
 } from '@/components/ui';
-import { PROPERTY_STATUS_LABEL } from '@/constants';
+import {
+  BED_TYPE_LABEL,
+  CANCELLATION_POLICY_DETAIL,
+  CANCELLATION_POLICY_LABEL,
+  PROPERTY_STATUS_LABEL,
+} from '@/constants';
 import {
   useAmenitiesGrouped,
   useCategories,
@@ -37,6 +42,14 @@ import { PropertyImagesManager } from './PropertyImagesManager';
 interface PropertyFormProps {
   property?: PropertyDetail;
 }
+
+/** Interruptores de reglas; se renderizan en bucle para no repetir markup. */
+const HOUSE_RULE_TOGGLES = [
+  { name: 'petsAllowed', label: 'Mascotas', hint: 'Se admiten animales' },
+  { name: 'smokingAllowed', label: 'Fumar', hint: 'Permitido dentro' },
+  { name: 'partiesAllowed', label: 'Fiestas', hint: 'Eventos y reuniones' },
+  { name: 'suitableForChildren', label: 'Apto para niños', hint: 'Espacio seguro' },
+] as const;
 
 /**
  * Formulario dividido en secciones. En creación guarda primero el alojamiento
@@ -81,12 +94,35 @@ export function PropertyForm({ property }: PropertyFormProps) {
           checkInTime: property.checkInTime,
           checkOutTime: property.checkOutTime,
           amenityIds: property.amenities.map((a) => a.amenity.id),
+
+          petsAllowed: property.petsAllowed,
+          smokingAllowed: property.smokingAllowed,
+          partiesAllowed: property.partiesAllowed,
+          suitableForChildren: property.suitableForChildren,
+          quietHoursFrom: property.quietHoursFrom ?? '',
+          quietHoursTo: property.quietHoursTo ?? '',
+          houseRules: property.houseRules ?? '',
+
+          areaM2: property.areaM2 ?? undefined,
+          floor: property.floor ?? undefined,
+          hasElevator: property.hasElevator,
+          bedType: property.bedType ?? '',
+          viewType: property.viewType ?? '',
+
+          cancellationPolicy: property.cancellationPolicy,
+          securityDeposit: Number(property.securityDeposit),
+          extraGuestFee: Number(property.extraGuestFee),
+          weeklyDiscount: property.weeklyDiscount,
+          monthlyDiscount: property.monthlyDiscount,
+
           location: {
             departmentId: property.location.department.id,
             provinceId: property.location.province.id,
             districtId: property.location.district?.id,
             address: property.location.address ?? '',
             reference: property.location.reference ?? '',
+            latitude: property.location.latitude ?? undefined,
+            longitude: property.location.longitude ?? undefined,
           },
         }
       : {
@@ -97,6 +133,16 @@ export function PropertyForm({ property }: PropertyFormProps) {
           checkInTime: '15:00',
           checkOutTime: '11:00',
           amenityIds: [],
+          petsAllowed: false,
+          smokingAllowed: false,
+          partiesAllowed: false,
+          suitableForChildren: true,
+          hasElevator: false,
+          cancellationPolicy: 'MODERATE',
+          securityDeposit: 0,
+          extraGuestFee: 0,
+          weeklyDiscount: 0,
+          monthlyDiscount: 0,
           location: {},
         },
   });
@@ -112,6 +158,12 @@ export function PropertyForm({ property }: PropertyFormProps) {
         ...values,
         shortDescription: values.shortDescription || undefined,
         whatsappPhone: values.whatsappPhone || undefined,
+        // Los campos opcionales de texto llegan como '' y el backend espera undefined.
+        quietHoursFrom: values.quietHoursFrom || undefined,
+        quietHoursTo: values.quietHoursTo || undefined,
+        houseRules: values.houseRules || undefined,
+        bedType: values.bedType || undefined,
+        viewType: values.viewType || undefined,
         location: {
           ...values.location,
           districtId: values.location.districtId ? Number(values.location.districtId) : undefined,
@@ -343,6 +395,177 @@ export function PropertyForm({ property }: PropertyFormProps) {
               <div>
                 <Label htmlFor="reference">Referencia</Label>
                 <Input id="reference" placeholder="A dos cuadras de la plaza" {...register('location.reference')} />
+              </div>
+
+              <div>
+                <Label htmlFor="latitude">Latitud</Label>
+                <Input
+                  id="latitude"
+                  type="number"
+                  step="any"
+                  placeholder="-12.0464"
+                  error={errors.location?.latitude?.message}
+                  {...register('location.latitude')}
+                />
+              </div>
+              <div>
+                <Label htmlFor="longitude">Longitud</Label>
+                <Input
+                  id="longitude"
+                  type="number"
+                  step="any"
+                  placeholder="-77.0428"
+                  error={errors.location?.longitude?.message}
+                  {...register('location.longitude')}
+                />
+              </div>
+              <p className="self-end text-xs leading-relaxed text-ink-500 sm:col-span-1">
+                Opcional. En Google Maps, clic derecho sobre el punto exacto y copia las coordenadas.
+              </p>
+            </CardContent>
+          </Card>
+
+          {/* Detalles del espacio */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Detalles del espacio</CardTitle>
+            </CardHeader>
+            <CardContent className="grid gap-4 sm:grid-cols-3">
+              <div>
+                <Label htmlFor="areaM2">Área (m²)</Label>
+                <Input id="areaM2" type="number" min={1} placeholder="85" {...register('areaM2')} />
+              </div>
+              <div>
+                <Label htmlFor="floor">Piso</Label>
+                <Input id="floor" type="number" min={0} placeholder="4" {...register('floor')} />
+              </div>
+              <div>
+                <Label htmlFor="bedType">Tipo de cama principal</Label>
+                <Select id="bedType" {...register('bedType')}>
+                  <option value="">Sin especificar</option>
+                  {Object.entries(BED_TYPE_LABEL).map(([value, label]) => (
+                    <option key={value} value={value}>
+                      {label}
+                    </option>
+                  ))}
+                </Select>
+              </div>
+              <div className="sm:col-span-2">
+                <Label htmlFor="viewType">Vista</Label>
+                <Input id="viewType" placeholder="Vista al parque" {...register('viewType')} />
+              </div>
+              <div className="flex items-center justify-between self-end rounded-xl border border-ink-200 px-4 py-3">
+                <p className="text-sm font-medium text-ink-900">Ascensor</p>
+                <Controller
+                  control={control}
+                  name="hasElevator"
+                  render={({ field }) => (
+                    <Switch checked={field.value ?? false} onChange={field.onChange} label="Ascensor" />
+                  )}
+                />
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Reglas de la casa */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Reglas de la casa</CardTitle>
+            </CardHeader>
+            <CardContent className="grid gap-4">
+              <div className="grid gap-3 sm:grid-cols-2">
+                {HOUSE_RULE_TOGGLES.map((rule) => (
+                  <div
+                    key={rule.name}
+                    className="flex items-center justify-between rounded-xl border border-ink-200 px-4 py-3"
+                  >
+                    <div>
+                      <p className="text-sm font-medium text-ink-900">{rule.label}</p>
+                      <p className="text-xs text-ink-500">{rule.hint}</p>
+                    </div>
+                    <Controller
+                      control={control}
+                      name={rule.name}
+                      render={({ field }) => (
+                        <Switch
+                          checked={field.value ?? false}
+                          onChange={field.onChange}
+                          label={rule.label}
+                        />
+                      )}
+                    />
+                  </div>
+                ))}
+              </div>
+
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div>
+                  <Label htmlFor="quietHoursFrom">Silencio desde</Label>
+                  <Input id="quietHoursFrom" placeholder="22:00" {...register('quietHoursFrom')} />
+                </div>
+                <div>
+                  <Label htmlFor="quietHoursTo">Silencio hasta</Label>
+                  <Input id="quietHoursTo" placeholder="08:00" {...register('quietHoursTo')} />
+                </div>
+              </div>
+
+              <div>
+                <Label htmlFor="houseRules">Otras reglas</Label>
+                <Textarea
+                  id="houseRules"
+                  rows={4}
+                  placeholder="Prohibido subir muebles a la terraza, no se permite música alta…"
+                  {...register('houseRules')}
+                />
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Políticas y cobros */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Políticas y cobros</CardTitle>
+            </CardHeader>
+            <CardContent className="grid gap-4 sm:grid-cols-2">
+              <div className="sm:col-span-2">
+                <Label htmlFor="cancellationPolicy">Política de cancelación</Label>
+                <Select id="cancellationPolicy" {...register('cancellationPolicy')}>
+                  {Object.entries(CANCELLATION_POLICY_LABEL).map(([value, label]) => (
+                    <option key={value} value={value}>
+                      {label} — {CANCELLATION_POLICY_DETAIL[value]}
+                    </option>
+                  ))}
+                </Select>
+              </div>
+              <div>
+                <Label htmlFor="securityDeposit">Depósito de garantía (S/)</Label>
+                <Input id="securityDeposit" type="number" min={0} {...register('securityDeposit')} />
+              </div>
+              <div>
+                <Label htmlFor="extraGuestFee">Huésped extra (S/ por noche)</Label>
+                <Input id="extraGuestFee" type="number" min={0} {...register('extraGuestFee')} />
+              </div>
+              <div>
+                <Label htmlFor="weeklyDiscount">Descuento semanal (%)</Label>
+                <Input
+                  id="weeklyDiscount"
+                  type="number"
+                  min={0}
+                  max={90}
+                  error={errors.weeklyDiscount?.message}
+                  {...register('weeklyDiscount')}
+                />
+              </div>
+              <div>
+                <Label htmlFor="monthlyDiscount">Descuento mensual (%)</Label>
+                <Input
+                  id="monthlyDiscount"
+                  type="number"
+                  min={0}
+                  max={90}
+                  error={errors.monthlyDiscount?.message}
+                  {...register('monthlyDiscount')}
+                />
               </div>
             </CardContent>
           </Card>

@@ -1,5 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { Currency, PropertyStatus } from '@prisma/client';
+import { BedType, CancellationPolicy, Currency, PropertyStatus } from '@prisma/client';
 import { Type } from 'class-transformer';
 import {
   IsArray,
@@ -9,6 +9,7 @@ import {
   IsNumber,
   IsOptional,
   IsString,
+  Max,
   MaxLength,
   Min,
   MinLength,
@@ -96,4 +97,75 @@ export class CreatePropertyDto {
   @ApiPropertyOptional({ example: '11:00' })
   @IsOptional() @IsString() @MaxLength(5)
   checkOutTime?: string;
+
+  // --------------------------- reglas de la casa ---------------------------
+  @ApiPropertyOptional({ default: false })
+  @IsOptional() @IsBoolean()
+  petsAllowed?: boolean;
+
+  @ApiPropertyOptional({ default: false })
+  @IsOptional() @IsBoolean()
+  smokingAllowed?: boolean;
+
+  @ApiPropertyOptional({ default: false })
+  @IsOptional() @IsBoolean()
+  partiesAllowed?: boolean;
+
+  @ApiPropertyOptional({ default: true })
+  @IsOptional() @IsBoolean()
+  suitableForChildren?: boolean;
+
+  @ApiPropertyOptional({ example: '22:00' })
+  @IsOptional() @IsString() @MaxLength(5)
+  quietHoursFrom?: string;
+
+  @ApiPropertyOptional({ example: '08:00' })
+  @IsOptional() @IsString() @MaxLength(5)
+  quietHoursTo?: string;
+
+  @ApiPropertyOptional({ example: 'Prohibido subir muebles a la terraza.' })
+  @IsOptional() @IsString() @MaxLength(2000)
+  houseRules?: string;
+
+  // -------------------------- detalles del espacio -------------------------
+  @ApiPropertyOptional({ example: 85 })
+  @IsOptional() @Type(() => Number) @IsInt() @Min(1)
+  areaM2?: number;
+
+  @ApiPropertyOptional({ example: 4 })
+  @IsOptional() @Type(() => Number) @IsInt() @Min(0)
+  floor?: number;
+
+  @ApiPropertyOptional({ default: false })
+  @IsOptional() @IsBoolean()
+  hasElevator?: boolean;
+
+  @ApiPropertyOptional({ enum: BedType })
+  @IsOptional() @IsEnum(BedType)
+  bedType?: BedType;
+
+  @ApiPropertyOptional({ example: 'Vista al parque' })
+  @IsOptional() @IsString() @MaxLength(60)
+  viewType?: string;
+
+  // ---------------------------- políticas y cobros -------------------------
+  @ApiPropertyOptional({ enum: CancellationPolicy, default: CancellationPolicy.MODERATE })
+  @IsOptional() @IsEnum(CancellationPolicy)
+  cancellationPolicy?: CancellationPolicy;
+
+  @ApiPropertyOptional({ example: 200, default: 0 })
+  @IsOptional() @Type(() => Number) @IsNumber() @Min(0)
+  securityDeposit?: number;
+
+  @ApiPropertyOptional({ example: 40, default: 0 })
+  @IsOptional() @Type(() => Number) @IsNumber() @Min(0)
+  extraGuestFee?: number;
+
+  @ApiPropertyOptional({ example: 10, description: 'Descuento % por 7 noches o más' })
+  @IsOptional() @Type(() => Number) @IsInt() @Min(0) @Max(90)
+  weeklyDiscount?: number;
+
+  @ApiPropertyOptional({ example: 25, description: 'Descuento % por 28 noches o más' })
+  @IsOptional() @Type(() => Number) @IsInt() @Min(0) @Max(90)
+  monthlyDiscount?: number;
 }

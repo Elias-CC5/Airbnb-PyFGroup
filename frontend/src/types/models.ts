@@ -103,7 +103,33 @@ export interface PropertyDetail extends PropertyCard {
   owner: { id: string; firstName: string; lastName: string; avatarUrl?: string | null; createdAt: string };
   amenities: Array<{ amenity: Amenity }>;
   reviews: Review[];
+
+  // Reglas de la casa
+  petsAllowed: boolean;
+  smokingAllowed: boolean;
+  partiesAllowed: boolean;
+  suitableForChildren: boolean;
+  quietHoursFrom?: string | null;
+  quietHoursTo?: string | null;
+  houseRules?: string | null;
+
+  // Detalles del espacio
+  areaM2?: number | null;
+  floor?: number | null;
+  hasElevator: boolean;
+  bedType?: BedType | null;
+  viewType?: string | null;
+
+  // Políticas y cobros
+  cancellationPolicy: CancellationPolicy;
+  securityDeposit: string | number;
+  extraGuestFee: string | number;
+  weeklyDiscount: number;
+  monthlyDiscount: number;
 }
+
+export type BedType = 'SINGLE' | 'DOUBLE' | 'QUEEN' | 'KING' | 'BUNK' | 'SOFA_BED';
+export type CancellationPolicy = 'FLEXIBLE' | 'MODERATE' | 'STRICT';
 
 export interface Review {
   id: string;

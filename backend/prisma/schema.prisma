@@ -23,6 +23,23 @@ enum PropertyStatus {
   INACTIVE
 }
 
+/// Política de cancelación mostrada al huésped antes de reservar.
+enum CancellationPolicy {
+  FLEXIBLE
+  MODERATE
+  STRICT
+}
+
+/// Tipo de cama principal del alojamiento.
+enum BedType {
+  SINGLE
+  DOUBLE
+  QUEEN
+  KING
+  BUNK
+  SOFA_BED
+}
+
 enum ReservationStatus {
   PENDING
   CONFIRMED
@@ -232,6 +249,29 @@ model Property {
   whatsappPhone   String?        @map("whatsapp_phone") @db.VarChar(30)
   checkInTime     String         @default("15:00") @map("check_in_time") @db.VarChar(5)
   checkOutTime    String         @default("11:00") @map("check_out_time") @db.VarChar(5)
+
+  // --------------------------- reglas de la casa ---------------------------
+  petsAllowed         Boolean @default(false) @map("pets_allowed")
+  smokingAllowed      Boolean @default(false) @map("smoking_allowed")
+  partiesAllowed      Boolean @default(false) @map("parties_allowed")
+  suitableForChildren Boolean @default(true) @map("suitable_for_children")
+  quietHoursFrom      String? @map("quiet_hours_from") @db.VarChar(5)
+  quietHoursTo        String? @map("quiet_hours_to") @db.VarChar(5)
+  houseRules          String? @map("house_rules")
+
+  // -------------------------- detalles del espacio -------------------------
+  areaM2      Int?     @map("area_m2")
+  floor       Int?
+  hasElevator Boolean  @default(false) @map("has_elevator")
+  bedType     BedType? @map("bed_type")
+  viewType    String?  @map("view_type") @db.VarChar(60)
+
+  // ---------------------------- políticas y cobros -------------------------
+  cancellationPolicy CancellationPolicy @default(MODERATE) @map("cancellation_policy")
+  securityDeposit    Decimal            @default(0) @map("security_deposit") @db.Decimal(10, 2)
+  extraGuestFee      Decimal            @default(0) @map("extra_guest_fee") @db.Decimal(10, 2)
+  weeklyDiscount     Int                @default(0) @map("weekly_discount")
+  monthlyDiscount    Int                @default(0) @map("monthly_discount")
 
   ownerId    String @map("owner_id") @db.Uuid
   categoryId Int    @map("category_id")
