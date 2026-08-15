@@ -100,6 +100,42 @@ async function refreshSession(): Promise<boolean> {
   return refreshPromise;
 }
 
+/**
+ * Descarga un archivo autenticado y dispara el "Guardar como" del navegador.
+ * No usa apiFetch porque la respuesta es binaria, no JSON.
+ */
+export async function apiDownload(
+  path: string,
+  filename: string,
+  query?: Record<string, unknown>,
+): Promise<void> {
+  const request = () =>
+    fetch(buildUrl(path, query), {
+      credentials: 'include',
+      headers: tokenStore.get() ? { Authorization: `Bearer ${tokenStore.get()}` } : {},
+    });
+
+  let response = await request();
+
+  if (response.status === 401 && (await refreshSession())) {
+    response = await request();
+  }
+
+  if (!response.ok) {
+    throw new ApiError(response.status, 'No se pudo generar el archivo');
+  }
+
+  const blob = await response.blob();
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(url);
+}
+
 export async function apiFetch<T>(path: string, options: RequestOptions = {}): Promise<T> {
   const { body, query, skipRefresh, auth = true, headers, ...rest } = options;
 

@@ -40,6 +40,16 @@ enum BedType {
   SOFA_BED
 }
 
+/// Plataforma por la que llegó el huésped. Se usa en el calendario de ocupación.
+enum BookingChannel {
+  DIRECT
+  AIRBNB
+  BOOKING
+  EXPEDIA
+  TIKTOK
+  OTHER
+}
+
 enum ReservationStatus {
   PENDING
   CONFIRMED
@@ -353,6 +363,10 @@ model Reservation {
   totalPrice  Decimal           @map("total_price") @db.Decimal(10, 2)
   currency    Currency          @default(PEN)
   status      ReservationStatus @default(PENDING)
+  channel     BookingChannel    @default(DIRECT)
+  /// Nombre a mostrar en el calendario cuando la reserva viene de otra plataforma
+  /// y no corresponde a un usuario registrado.
+  guestName   String?           @map("guest_name") @db.VarChar(120)
   notes       String?           @db.VarChar(500)
   cancelledAt DateTime?         @map("cancelled_at")
   cancelReason String?          @map("cancel_reason") @db.VarChar(255)

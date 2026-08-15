@@ -34,6 +34,7 @@ export const ADMIN_LINKS = [
   { href: '/admin', label: 'Dashboard', icon: 'layout-dashboard' },
   { href: '/admin/alojamientos', label: 'Alojamientos', icon: 'house' },
   { href: '/admin/reservas', label: 'Reservas', icon: 'calendar-days' },
+  { href: '/admin/calendario', label: 'Calendario', icon: 'calendar-range' },
   { href: '/admin/usuarios', label: 'Usuarios', icon: 'users' },
   { href: '/admin/categorias', label: 'Categorías', icon: 'tags' },
   { href: '/admin/estadisticas', label: 'Estadísticas', icon: 'chart-line' },

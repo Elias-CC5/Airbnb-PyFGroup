@@ -5,6 +5,7 @@ import { useAuth } from '@/features/auth/hooks/useAuth';
 import { cn } from '@/lib/utils';
 import {
   CalendarDays,
+  CalendarRange,
   ChartLine,
   House,
   LayoutDashboard,
@@ -20,6 +21,7 @@ const LINKS = [
   { href: '/admin', label: 'Dashboard', icon: LayoutDashboard, exact: true },
   { href: '/admin/alojamientos', label: 'Alojamientos', icon: House },
   { href: '/admin/reservas', label: 'Reservas', icon: CalendarDays },
+  { href: '/admin/calendario', label: 'Calendario', icon: CalendarRange },
   { href: '/admin/usuarios', label: 'Usuarios', icon: Users },
   { href: '/admin/categorias', label: 'Categorías', icon: Tags },
   { href: '/admin/estadisticas', label: 'Estadísticas', icon: ChartLine },

@@ -107,6 +107,8 @@ export class ReservationsService {
           totalPrice,
           currency: property.currency,
           notes: dto.notes,
+          channel: dto.channel,
+          guestName: dto.guestName,
           status: ReservationStatus.PENDING,
         },
         include: reservationInclude,

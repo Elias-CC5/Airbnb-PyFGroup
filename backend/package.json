@@ -16,7 +16,8 @@
     "prisma:deploy": "prisma migrate deploy",
     "prisma:studio": "prisma studio",
     "seed": "ts-node prisma/seed.ts",
-    "seed:lima": "ts-node prisma/add-lima-districts.ts"
+    "seed:lima": "ts-node prisma/add-lima-districts.ts",
+    "import:ocupacion": "ts-node prisma/import-occupancy.ts"
   },
   "prisma": {
     "seed": "ts-node prisma/seed.ts"

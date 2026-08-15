@@ -1,6 +1,16 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsDateString, IsInt, IsOptional, IsString, IsUUID, MaxLength, Min } from 'class-validator';
+import { BookingChannel } from '@prisma/client';
+import {
+  IsDateString,
+  IsEnum,
+  IsInt,
+  IsOptional,
+  IsString,
+  IsUUID,
+  MaxLength,
+  Min,
+} from 'class-validator';
 
 export class CreateReservationDto {
   @ApiProperty({ format: 'uuid' })
@@ -22,4 +32,15 @@ export class CreateReservationDto {
   @ApiPropertyOptional({ example: 'Llegaremos alrededor de las 8 pm' })
   @IsOptional() @IsString() @MaxLength(500)
   notes?: string;
+
+  @ApiPropertyOptional({ enum: BookingChannel, default: BookingChannel.DIRECT })
+  @IsOptional() @IsEnum(BookingChannel)
+  channel?: BookingChannel;
+
+  @ApiPropertyOptional({
+    example: 'Alejandra R.',
+    description: 'Nombre del huésped cuando la reserva llega por otra plataforma',
+  })
+  @IsOptional() @IsString() @MaxLength(120)
+  guestName?: string;
 }

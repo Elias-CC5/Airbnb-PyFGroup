@@ -1,0 +1,1245 @@
+{
+  "month": "2026-08",
+  "reservations": [
+    {
+      "dpto": "201",
+      "guest": "Yadira Regalado",
+      "checkIn": "2026-08-01",
+      "checkOut": "2026-08-04",
+      "nights": 3,
+      "pricePerNight": 135.0,
+      "channel": "DIRECT",
+      "paymentCode": 1
+    },
+    {
+      "dpto": "201",
+      "guest": "Violeta",
+      "checkIn": "2026-08-04",
+      "checkOut": "2026-08-05",
+      "nights": 1,
+      "pricePerNight": 150.0,
+      "channel": "DIRECT",
+      "paymentCode": 1
+    },
+    {
+      "dpto": "201",
+      "guest": "Jacky Medina",
+      "checkIn": "2026-08-05",
+      "checkOut": "2026-08-07",
+      "nights": 2,
+      "pricePerNight": 145.0,
+      "channel": "TIKTOK",
+      "paymentCode": 1
+    },
+    {
+      "dpto": "201",
+      "guest": "Enzo",
+      "checkIn": "2026-08-08",
+      "checkOut": "2026-08-10",
+      "nights": 2,
+      "pricePerNight": 170.0,
+      "channel": "DIRECT",
+      "paymentCode": 1
+    },
+    {
+      "dpto": "201",
+      "guest": "Alex Bances",
+      "checkIn": "2026-08-14",
+      "checkOut": "2026-08-15",
+      "nights": 1,
+      "pricePerNight": 0,
+      "channel": "BOOKING",
+      "paymentCode": null
+    },
+    {
+      "dpto": "201",
+      "guest": "Yanely",
+      "checkIn": "2026-08-29",
+      "checkOut": "2026-08-30",
+      "nights": 1,
+      "pricePerNight": 160.0,
+      "channel": "OTHER",
+      "paymentCode": null
+    },
+    {
+      "dpto": "306",
+      "guest": "jenry",
+      "checkIn": "2026-08-01",
+      "checkOut": "2026-08-02",
+      "nights": 1,
+      "pricePerNight": 170.0,
+      "channel": "DIRECT",
+      "paymentCode": 1
+    },
+    {
+      "dpto": "306",
+      "guest": "Avril Gomez",
+      "checkIn": "2026-08-02",
+      "checkOut": "2026-08-07",
+      "nights": 5,
+      "pricePerNight": 160.0,
+      "channel": "DIRECT",
+      "paymentCode": 1
+    },
+    {
+      "dpto": "306",
+      "guest": "stefany ss-110",
+      "checkIn": "2026-08-08",
+      "checkOut": "2026-08-09",
+      "nights": 1,
+      "pricePerNight": 155.0,
+      "channel": "OTHER",
+      "paymentCode": 4
+    },
+    {
+      "dpto": "306",
+      "guest": "Deysi Rios",
+      "checkIn": "2026-08-13",
+      "checkOut": "2026-08-15",
+      "nights": 2,
+      "pricePerNight": 170.0,
+      "channel": "DIRECT",
+      "paymentCode": 1
+    },
+    {
+      "dpto": "705",
+      "guest": "Paola",
+      "checkIn": "2026-08-01",
+      "checkOut": "2026-08-02",
+      "nights": 1,
+      "pricePerNight": 180.0,
+      "channel": "DIRECT",
+      "paymentCode": 1
+    },
+    {
+      "dpto": "705",
+      "guest": "Rafael",
+      "checkIn": "2026-08-03",
+      "checkOut": "2026-08-05",
+      "nights": 2,
+      "pricePerNight": 160.0,
+      "channel": "DIRECT",
+      "paymentCode": 1
+    },
+    {
+      "dpto": "705",
+      "guest": "Romel Reyes",
+      "checkIn": "2026-08-05",
+      "checkOut": "2026-08-06",
+      "nights": 1,
+      "pricePerNight": 152.0,
+      "channel": "AIRBNB",
+      "paymentCode": 4
+    },
+    {
+      "dpto": "705",
+      "guest": "Brandon Bendezu",
+      "checkIn": "2026-08-06",
+      "checkOut": "2026-08-07",
+      "nights": 1,
+      "pricePerNight": 164.0,
+      "channel": "AIRBNB",
+      "paymentCode": 4
+    },
+    {
+      "dpto": "705",
+      "guest": "Yesy Caycho",
+      "checkIn": "2026-08-07",
+      "checkOut": "2026-08-08",
+      "nights": 1,
+      "pricePerNight": 169.0,
+      "channel": "AIRBNB",
+      "paymentCode": 4
+    },
+    {
+      "dpto": "705",
+      "guest": "Albert s2-202",
+      "checkIn": "2026-08-08",
+      "checkOut": "2026-08-09",
+      "nights": 1,
+      "pricePerNight": 177.0,
+      "channel": "AIRBNB",
+      "paymentCode": 4
+    },
+    {
+      "dpto": "705",
+      "guest": "sven",
+      "checkIn": "2026-08-12",
+      "checkOut": "2026-08-13",
+      "nights": 1,
+      "pricePerNight": 170.0,
+      "channel": "AIRBNB",
+      "paymentCode": 1
+    },
+    {
+      "dpto": "705",
+      "guest": "Hugo",
+      "checkIn": "2026-08-13",
+      "checkOut": "2026-08-14",
+      "nights": 1,
+      "pricePerNight": 150.0,
+      "channel": "DIRECT",
+      "paymentCode": 1
+    },
+    {
+      "dpto": "705",
+      "guest": "Fredy",
+      "checkIn": "2026-08-14",
+      "checkOut": "2026-08-15",
+      "nights": 1,
+      "pricePerNight": 190.0,
+      "channel": "AIRBNB",
+      "paymentCode": 4
+    },
+    {
+      "dpto": "705",
+      "guest": "Daniel Japay",
+      "checkIn": "2026-08-15",
+      "checkOut": "2026-08-17",
+      "nights": 2,
+      "pricePerNight": 0,
+      "channel": "AIRBNB",
+      "paymentCode": 4
+    },
+    {
+      "dpto": "905",
+      "guest": "Nelson",
+      "checkIn": "2026-08-01",
+      "checkOut": "2026-08-03",
+      "nights": 2,
+      "pricePerNight": 181.5,
+      "channel": "AIRBNB",
+      "paymentCode": 4
+    },
+    {
+      "dpto": "905",
+      "guest": "Nelson s1-101",
+      "checkIn": "2026-08-03",
+      "checkOut": "2026-08-04",
+      "nights": 1,
+      "pricePerNight": 200.0,
+      "channel": "DIRECT",
+      "paymentCode": 1
+    },
+    {
+      "dpto": "905",
+      "guest": "Nelson",
+      "checkIn": "2026-08-04",
+      "checkOut": "2026-08-07",
+      "nights": 3,
+      "pricePerNight": 200.0,
+      "channel": "DIRECT",
+      "paymentCode": 1
+    },
+    {
+      "dpto": "905",
+      "guest": "Nelsons1-101",
+      "checkIn": "2026-08-07",
+      "checkOut": "2026-08-09",
+      "nights": 2,
+      "pricePerNight": 200.0,
+      "channel": "DIRECT",
+      "paymentCode": 1
+    },
+    {
+      "dpto": "905",
+      "guest": "Nelson",
+      "checkIn": "2026-08-09",
+      "checkOut": "2026-08-13",
+      "nights": 4,
+      "pricePerNight": 190.0,
+      "channel": "DIRECT",
+      "paymentCode": 1
+    },
+    {
+      "dpto": "905",
+      "guest": "Nestor Avendaño",
+      "checkIn": "2026-08-14",
+      "checkOut": "2026-08-16",
+      "nights": 2,
+      "pricePerNight": 0,
+      "channel": "AIRBNB",
+      "paymentCode": 4
+    },
+    {
+      "dpto": "905",
+      "guest": "Katty Tan",
+      "checkIn": "2026-08-16",
+      "checkOut": "2026-08-17",
+      "nights": 1,
+      "pricePerNight": 180.0,
+      "channel": "TIKTOK",
+      "paymentCode": 1
+    },
+    {
+      "dpto": "905",
+      "guest": "Britney Marin",
+      "checkIn": "2026-08-31",
+      "checkOut": "2026-09-01",
+      "nights": 1,
+      "pricePerNight": 146.0,
+      "channel": "AIRBNB",
+      "paymentCode": 1
+    },
+    {
+      "dpto": "1104",
+      "guest": "JESÚS FUENTES QUIROZ",
+      "checkIn": "2026-08-01",
+      "checkOut": "2026-08-02",
+      "nights": 1,
+      "pricePerNight": 241.0,
+      "channel": "AIRBNB",
+      "paymentCode": 4
+    },
+    {
+      "dpto": "1104",
+      "guest": "Maria Arones-s2-222",
+      "checkIn": "2026-08-02",
+      "checkOut": "2026-08-04",
+      "nights": 2,
+      "pricePerNight": 230.0,
+      "channel": "TIKTOK",
+      "paymentCode": 4
+    },
+    {
+      "dpto": "1104",
+      "guest": "Maria Arones",
+      "checkIn": "2026-08-04",
+      "checkOut": "2026-08-05",
+      "nights": 1,
+      "pricePerNight": 230.0,
+      "channel": "TIKTOK",
+      "paymentCode": 4
+    },
+    {
+      "dpto": "1104",
+      "guest": "Vannia",
+      "checkIn": "2026-08-05",
+      "checkOut": "2026-08-16",
+      "nights": 11,
+      "pricePerNight": 250.0,
+      "channel": "DIRECT",
+      "paymentCode": 1
+    },
+    {
+      "dpto": "1106",
+      "guest": "Aron Mendoza",
+      "checkIn": "2026-08-01",
+      "checkOut": "2026-08-02",
+      "nights": 1,
+      "pricePerNight": 0,
+      "channel": "AIRBNB",
+      "paymentCode": 4
+    },
+    {
+      "dpto": "1106",
+      "guest": "Aron Mendozas1-101",
+      "checkIn": "2026-08-02",
+      "checkOut": "2026-08-03",
+      "nights": 1,
+      "pricePerNight": 0,
+      "channel": "AIRBNB",
+      "paymentCode": 4
+    },
+    {
+      "dpto": "1106",
+      "guest": "Cecilia",
+      "checkIn": "2026-08-03",
+      "checkOut": "2026-08-05",
+      "nights": 2,
+      "pricePerNight": 160.0,
+      "channel": "DIRECT",
+      "paymentCode": 1
+    },
+    {
+      "dpto": "1106",
+      "guest": "Angie Diaz",
+      "checkIn": "2026-08-05",
+      "checkOut": "2026-08-08",
+      "nights": 3,
+      "pricePerNight": 166.67,
+      "channel": "TIKTOK",
+      "paymentCode": 1
+    },
+    {
+      "dpto": "1106",
+      "guest": "Hillary s2-211",
+      "checkIn": "2026-08-08",
+      "checkOut": "2026-08-09",
+      "nights": 1,
+      "pricePerNight": 159.0,
+      "channel": "AIRBNB",
+      "paymentCode": 4
+    },
+    {
+      "dpto": "1106",
+      "guest": "Ingrid Prieto",
+      "checkIn": "2026-08-10",
+      "checkOut": "2026-08-11",
+      "nights": 1,
+      "pricePerNight": 200.0,
+      "channel": "DIRECT",
+      "paymentCode": 1
+    },
+    {
+      "dpto": "1106",
+      "guest": "William",
+      "checkIn": "2026-08-11",
+      "checkOut": "2026-08-12",
+      "nights": 1,
+      "pricePerNight": 140.0,
+      "channel": "AIRBNB",
+      "paymentCode": 4
+    },
+    {
+      "dpto": "1106",
+      "guest": "Ainee",
+      "checkIn": "2026-08-12",
+      "checkOut": "2026-08-14",
+      "nights": 2,
+      "pricePerNight": 145.0,
+      "channel": "AIRBNB",
+      "paymentCode": 4
+    },
+    {
+      "dpto": "1106",
+      "guest": "Leslie",
+      "checkIn": "2026-08-14",
+      "checkOut": "2026-08-15",
+      "nights": 1,
+      "pricePerNight": 155.0,
+      "channel": "AIRBNB",
+      "paymentCode": 4
+    },
+    {
+      "dpto": "1106",
+      "guest": "Paola Ramirez",
+      "checkIn": "2026-08-15",
+      "checkOut": "2026-08-16",
+      "nights": 1,
+      "pricePerNight": 180.0,
+      "channel": "DIRECT",
+      "paymentCode": 1
+    },
+    {
+      "dpto": "1106",
+      "guest": "Rafael",
+      "checkIn": "2026-08-17",
+      "checkOut": "2026-08-18",
+      "nights": 1,
+      "pricePerNight": 0,
+      "channel": "OTHER",
+      "paymentCode": null
+    },
+    {
+      "dpto": "1106",
+      "guest": "Wilfredo",
+      "checkIn": "2026-08-22",
+      "checkOut": "2026-08-23",
+      "nights": 1,
+      "pricePerNight": 177.0,
+      "channel": "AIRBNB",
+      "paymentCode": 4
+    },
+    {
+      "dpto": "1106",
+      "guest": "Isabel Maza",
+      "checkIn": "2026-08-23",
+      "checkOut": "2026-09-01",
+      "nights": 9,
+      "pricePerNight": 160.0,
+      "channel": "DIRECT",
+      "paymentCode": 1
+    },
+    {
+      "dpto": "1204",
+      "guest": "Luis Sanchez",
+      "checkIn": "2026-08-01",
+      "checkOut": "2026-08-02",
+      "nights": 1,
+      "pricePerNight": 170.0,
+      "channel": "TIKTOK",
+      "paymentCode": 1
+    },
+    {
+      "dpto": "1204",
+      "guest": "Josue Hernandezs1-117",
+      "checkIn": "2026-08-02",
+      "checkOut": "2026-08-06",
+      "nights": 4,
+      "pricePerNight": 0,
+      "channel": "AIRBNB",
+      "paymentCode": 4
+    },
+    {
+      "dpto": "1204",
+      "guest": "Flor de Maria",
+      "checkIn": "2026-08-06",
+      "checkOut": "2026-08-07",
+      "nights": 1,
+      "pricePerNight": 181.0,
+      "channel": "AIRBNB",
+      "paymentCode": 4
+    },
+    {
+      "dpto": "1204",
+      "guest": "Bryan Cavero",
+      "checkIn": "2026-08-07",
+      "checkOut": "2026-08-08",
+      "nights": 1,
+      "pricePerNight": 192.0,
+      "channel": "AIRBNB",
+      "paymentCode": 4
+    },
+    {
+      "dpto": "1204",
+      "guest": "Yanet zapata",
+      "checkIn": "2026-08-08",
+      "checkOut": "2026-08-11",
+      "nights": 3,
+      "pricePerNight": 200.0,
+      "channel": "DIRECT",
+      "paymentCode": 1
+    },
+    {
+      "dpto": "1204",
+      "guest": "Nataly Gonzales",
+      "checkIn": "2026-08-12",
+      "checkOut": "2026-08-13",
+      "nights": 1,
+      "pricePerNight": 200.0,
+      "channel": "TIKTOK",
+      "paymentCode": 1
+    },
+    {
+      "dpto": "1204",
+      "guest": "Aquiles",
+      "checkIn": "2026-08-15",
+      "checkOut": "2026-08-16",
+      "nights": 1,
+      "pricePerNight": 117.0,
+      "channel": "AIRBNB",
+      "paymentCode": 4
+    },
+    {
+      "dpto": "1204",
+      "guest": "chechi",
+      "checkIn": "2026-08-21",
+      "checkOut": "2026-08-24",
+      "nights": 3,
+      "pricePerNight": 200.0,
+      "channel": "OTHER",
+      "paymentCode": null
+    },
+    {
+      "dpto": "1305",
+      "guest": "Vannia",
+      "checkIn": "2026-08-01",
+      "checkOut": "2026-08-05",
+      "nights": 4,
+      "pricePerNight": 233.0,
+      "channel": "DIRECT",
+      "paymentCode": 1
+    },
+    {
+      "dpto": "1305",
+      "guest": "Esmeralda s2-211",
+      "checkIn": "2026-08-05",
+      "checkOut": "2026-08-07",
+      "nights": 2,
+      "pricePerNight": 180.0,
+      "channel": "DIRECT",
+      "paymentCode": 1
+    },
+    {
+      "dpto": "1305",
+      "guest": "Joe Diaz",
+      "checkIn": "2026-08-09",
+      "checkOut": "2026-08-10",
+      "nights": 1,
+      "pricePerNight": 134.0,
+      "channel": "AIRBNB",
+      "paymentCode": 4
+    },
+    {
+      "dpto": "1305",
+      "guest": "Renato Manzanares",
+      "checkIn": "2026-08-11",
+      "checkOut": "2026-08-12",
+      "nights": 1,
+      "pricePerNight": 180.0,
+      "channel": "DIRECT",
+      "paymentCode": 1
+    },
+    {
+      "dpto": "1305",
+      "guest": "Edson Ramirez",
+      "checkIn": "2026-08-12",
+      "checkOut": "2026-08-13",
+      "nights": 1,
+      "pricePerNight": 160.0,
+      "channel": "DIRECT",
+      "paymentCode": 1
+    },
+    {
+      "dpto": "1305",
+      "guest": "Santiago Huatay",
+      "checkIn": "2026-08-14",
+      "checkOut": "2026-08-15",
+      "nights": 1,
+      "pricePerNight": 171.0,
+      "channel": "AIRBNB",
+      "paymentCode": 4
+    },
+    {
+      "dpto": "1305",
+      "guest": "Sebastian",
+      "checkIn": "2026-08-15",
+      "checkOut": "2026-08-16",
+      "nights": 1,
+      "pricePerNight": 172.0,
+      "channel": "AIRBNB",
+      "paymentCode": 4
+    },
+    {
+      "dpto": "1305",
+      "guest": "Luis llerena",
+      "checkIn": "2026-08-22",
+      "checkOut": "2026-08-23",
+      "nights": 1,
+      "pricePerNight": 170.0,
+      "channel": "OTHER",
+      "paymentCode": null
+    },
+    {
+      "dpto": "1505",
+      "guest": "Carlos Carbajal",
+      "checkIn": "2026-08-01",
+      "checkOut": "2026-08-02",
+      "nights": 1,
+      "pricePerNight": 180.0,
+      "channel": "DIRECT",
+      "paymentCode": 1
+    },
+    {
+      "dpto": "1505",
+      "guest": "Luis Azabaches2-221",
+      "checkIn": "2026-08-02",
+      "checkOut": "2026-08-05",
+      "nights": 3,
+      "pricePerNight": 0,
+      "channel": "AIRBNB",
+      "paymentCode": 4
+    },
+    {
+      "dpto": "1505",
+      "guest": "Jhony Gonzales",
+      "checkIn": "2026-08-05",
+      "checkOut": "2026-08-07",
+      "nights": 2,
+      "pricePerNight": 0,
+      "channel": "DIRECT",
+      "paymentCode": 1
+    },
+    {
+      "dpto": "1505",
+      "guest": "Leoamrdo Escribar",
+      "checkIn": "2026-08-07",
+      "checkOut": "2026-08-10",
+      "nights": 3,
+      "pricePerNight": 0,
+      "channel": "AIRBNB",
+      "paymentCode": 4
+    },
+    {
+      "dpto": "1505",
+      "guest": "Rafael",
+      "checkIn": "2026-08-22",
+      "checkOut": "2026-08-23",
+      "nights": 1,
+      "pricePerNight": 160.0,
+      "channel": "OTHER",
+      "paymentCode": null
+    },
+    {
+      "dpto": "1505",
+      "guest": "Rafel",
+      "checkIn": "2026-08-23",
+      "checkOut": "2026-08-24",
+      "nights": 1,
+      "pricePerNight": 160.0,
+      "channel": "OTHER",
+      "paymentCode": null
+    },
+    {
+      "dpto": "1505",
+      "guest": "yury",
+      "checkIn": "2026-08-24",
+      "checkOut": "2026-08-27",
+      "nights": 3,
+      "pricePerNight": 140.0,
+      "channel": "DIRECT",
+      "paymentCode": 1
+    },
+    {
+      "dpto": "1602",
+      "guest": "Aurora",
+      "checkIn": "2026-08-01",
+      "checkOut": "2026-08-02",
+      "nights": 1,
+      "pricePerNight": 220.0,
+      "channel": "TIKTOK",
+      "paymentCode": 1
+    },
+    {
+      "dpto": "1602",
+      "guest": "Aurora ss-108",
+      "checkIn": "2026-08-02",
+      "checkOut": "2026-08-04",
+      "nights": 2,
+      "pricePerNight": 220.0,
+      "channel": "TIKTOK",
+      "paymentCode": 1
+    },
+    {
+      "dpto": "1602",
+      "guest": "Aurora",
+      "checkIn": "2026-08-04",
+      "checkOut": "2026-08-07",
+      "nights": 3,
+      "pricePerNight": 220.0,
+      "channel": "TIKTOK",
+      "paymentCode": 1
+    },
+    {
+      "dpto": "1602",
+      "guest": "Esmeralda",
+      "checkIn": "2026-08-07",
+      "checkOut": "2026-08-08",
+      "nights": 1,
+      "pricePerNight": 200.0,
+      "channel": "DIRECT",
+      "paymentCode": 1
+    },
+    {
+      "dpto": "1602",
+      "guest": "Miguel",
+      "checkIn": "2026-08-08",
+      "checkOut": "2026-08-09",
+      "nights": 1,
+      "pricePerNight": 200.0,
+      "channel": "OTHER",
+      "paymentCode": 1
+    },
+    {
+      "dpto": "1602",
+      "guest": "Joshua Rojas",
+      "checkIn": "2026-08-10",
+      "checkOut": "2026-08-11",
+      "nights": 1,
+      "pricePerNight": 200.0,
+      "channel": "DIRECT",
+      "paymentCode": 1
+    },
+    {
+      "dpto": "1602",
+      "guest": "Maria Cabanillas",
+      "checkIn": "2026-08-11",
+      "checkOut": "2026-08-12",
+      "nights": 1,
+      "pricePerNight": 170.0,
+      "channel": "AIRBNB",
+      "paymentCode": 1
+    },
+    {
+      "dpto": "1602",
+      "guest": "Amparo Bejar",
+      "checkIn": "2026-08-14",
+      "checkOut": "2026-08-16",
+      "nights": 2,
+      "pricePerNight": 200.0,
+      "channel": "TIKTOK",
+      "paymentCode": 1
+    },
+    {
+      "dpto": "1602",
+      "guest": "Alyda leon",
+      "checkIn": "2026-08-26",
+      "checkOut": "2026-08-28",
+      "nights": 2,
+      "pricePerNight": 200.0,
+      "channel": "OTHER",
+      "paymentCode": null
+    },
+    {
+      "dpto": "1602",
+      "guest": "Imanol Santa cruz",
+      "checkIn": "2026-08-29",
+      "checkOut": "2026-08-31",
+      "nights": 2,
+      "pricePerNight": 220.0,
+      "channel": "TIKTOK",
+      "paymentCode": 1
+    },
+    {
+      "dpto": "1603",
+      "guest": "ester",
+      "checkIn": "2026-08-01",
+      "checkOut": "2026-08-02",
+      "nights": 1,
+      "pricePerNight": 220.0,
+      "channel": "TIKTOK",
+      "paymentCode": null
+    },
+    {
+      "dpto": "1603",
+      "guest": "Esther",
+      "checkIn": "2026-08-02",
+      "checkOut": "2026-08-03",
+      "nights": 1,
+      "pricePerNight": 100.0,
+      "channel": "TIKTOK",
+      "paymentCode": 1
+    },
+    {
+      "dpto": "1603",
+      "guest": "Joshua",
+      "checkIn": "2026-08-03",
+      "checkOut": "2026-08-04",
+      "nights": 1,
+      "pricePerNight": 200.0,
+      "channel": "DIRECT",
+      "paymentCode": 1
+    },
+    {
+      "dpto": "1603",
+      "guest": "Fernanda",
+      "checkIn": "2026-08-04",
+      "checkOut": "2026-08-05",
+      "nights": 1,
+      "pricePerNight": 200.0,
+      "channel": "DIRECT",
+      "paymentCode": 1
+    },
+    {
+      "dpto": "1603",
+      "guest": "Romels2-222",
+      "checkIn": "2026-08-05",
+      "checkOut": "2026-08-06",
+      "nights": 1,
+      "pricePerNight": 0,
+      "channel": "AIRBNB",
+      "paymentCode": 4
+    },
+    {
+      "dpto": "1603",
+      "guest": "Romel",
+      "checkIn": "2026-08-06",
+      "checkOut": "2026-08-07",
+      "nights": 1,
+      "pricePerNight": 0,
+      "channel": "AIRBNB",
+      "paymentCode": 4
+    },
+    {
+      "dpto": "1603",
+      "guest": "Miguel Gonzales",
+      "checkIn": "2026-08-07",
+      "checkOut": "2026-08-09",
+      "nights": 2,
+      "pricePerNight": 0,
+      "channel": "AIRBNB",
+      "paymentCode": 4
+    },
+    {
+      "dpto": "1603",
+      "guest": "Clebert",
+      "checkIn": "2026-08-09",
+      "checkOut": "2026-08-11",
+      "nights": 2,
+      "pricePerNight": 180.0,
+      "channel": "DIRECT",
+      "paymentCode": 1
+    },
+    {
+      "dpto": "1603",
+      "guest": "GABY",
+      "checkIn": "2026-08-13",
+      "checkOut": "2026-08-14",
+      "nights": 1,
+      "pricePerNight": 190.0,
+      "channel": "DIRECT",
+      "paymentCode": 1
+    },
+    {
+      "dpto": "1603",
+      "guest": "Maritza Reyes",
+      "checkIn": "2026-08-15",
+      "checkOut": "2026-08-16",
+      "nights": 1,
+      "pricePerNight": 200.0,
+      "channel": "TIKTOK",
+      "paymentCode": 1
+    },
+    {
+      "dpto": "1603",
+      "guest": "Adriana",
+      "checkIn": "2026-08-28",
+      "checkOut": "2026-08-30",
+      "nights": 2,
+      "pricePerNight": 200.0,
+      "channel": "OTHER",
+      "paymentCode": null
+    },
+    {
+      "dpto": "1610",
+      "guest": "Rosa",
+      "checkIn": "2026-08-01",
+      "checkOut": "2026-08-02",
+      "nights": 1,
+      "pricePerNight": 210.0,
+      "channel": "DIRECT",
+      "paymentCode": 1
+    },
+    {
+      "dpto": "1610",
+      "guest": "Osmar Muñoz",
+      "checkIn": "2026-08-02",
+      "checkOut": "2026-08-03",
+      "nights": 1,
+      "pricePerNight": 207.0,
+      "channel": "AIRBNB",
+      "paymentCode": 4
+    },
+    {
+      "dpto": "1610",
+      "guest": "Milagros",
+      "checkIn": "2026-08-03",
+      "checkOut": "2026-08-04",
+      "nights": 1,
+      "pricePerNight": 220.0,
+      "channel": "DIRECT",
+      "paymentCode": 1
+    },
+    {
+      "dpto": "1610",
+      "guest": "Victor",
+      "checkIn": "2026-08-04",
+      "checkOut": "2026-08-07",
+      "nights": 3,
+      "pricePerNight": 220.0,
+      "channel": "TIKTOK",
+      "paymentCode": 1
+    },
+    {
+      "dpto": "1610",
+      "guest": "Yanet zapata",
+      "checkIn": "2026-08-07",
+      "checkOut": "2026-08-08",
+      "nights": 1,
+      "pricePerNight": 200.0,
+      "channel": "DIRECT",
+      "paymentCode": 1
+    },
+    {
+      "dpto": "1610",
+      "guest": "Rosa",
+      "checkIn": "2026-08-08",
+      "checkOut": "2026-08-10",
+      "nights": 2,
+      "pricePerNight": 195.0,
+      "channel": "DIRECT",
+      "paymentCode": 1
+    },
+    {
+      "dpto": "1610",
+      "guest": "v&v",
+      "checkIn": "2026-08-10",
+      "checkOut": "2026-08-16",
+      "nights": 6,
+      "pricePerNight": 250.0,
+      "channel": "DIRECT",
+      "paymentCode": 4
+    },
+    {
+      "dpto": "1704",
+      "guest": "Fernanda",
+      "checkIn": "2026-08-01",
+      "checkOut": "2026-08-02",
+      "nights": 1,
+      "pricePerNight": 0,
+      "channel": "AIRBNB",
+      "paymentCode": 4
+    },
+    {
+      "dpto": "1704",
+      "guest": "Fernandas2-211",
+      "checkIn": "2026-08-02",
+      "checkOut": "2026-08-04",
+      "nights": 2,
+      "pricePerNight": 0,
+      "channel": "AIRBNB",
+      "paymentCode": 4
+    },
+    {
+      "dpto": "1704",
+      "guest": "Aracely Choque",
+      "checkIn": "2026-08-04",
+      "checkOut": "2026-08-07",
+      "nights": 3,
+      "pricePerNight": 0,
+      "channel": "AIRBNB",
+      "paymentCode": 4
+    },
+    {
+      "dpto": "1704",
+      "guest": "Ronal Aldo",
+      "checkIn": "2026-08-07",
+      "checkOut": "2026-08-08",
+      "nights": 1,
+      "pricePerNight": 0,
+      "channel": "AIRBNB",
+      "paymentCode": 4
+    },
+    {
+      "dpto": "1704",
+      "guest": "Ronal Aldo s1-117",
+      "checkIn": "2026-08-08",
+      "checkOut": "2026-08-09",
+      "nights": 1,
+      "pricePerNight": 0,
+      "channel": "AIRBNB",
+      "paymentCode": 4
+    },
+    {
+      "dpto": "1704",
+      "guest": "Ronal Aldo",
+      "checkIn": "2026-08-09",
+      "checkOut": "2026-08-10",
+      "nights": 1,
+      "pricePerNight": 0,
+      "channel": "AIRBNB",
+      "paymentCode": 4
+    },
+    {
+      "dpto": "1704",
+      "guest": "Violeta",
+      "checkIn": "2026-08-11",
+      "checkOut": "2026-08-12",
+      "nights": 1,
+      "pricePerNight": 200.0,
+      "channel": "DIRECT",
+      "paymentCode": 1
+    },
+    {
+      "dpto": "1704",
+      "guest": "Elizabeth Leon",
+      "checkIn": "2026-08-12",
+      "checkOut": "2026-08-15",
+      "nights": 3,
+      "pricePerNight": 0,
+      "channel": "BOOKING",
+      "paymentCode": 1
+    },
+    {
+      "dpto": "1704",
+      "guest": "FLOR ALATA",
+      "checkIn": "2026-08-15",
+      "checkOut": "2026-08-19",
+      "nights": 4,
+      "pricePerNight": 220.0,
+      "channel": "TIKTOK",
+      "paymentCode": 1
+    },
+    {
+      "dpto": "1706",
+      "guest": "Fernando",
+      "checkIn": "2026-08-01",
+      "checkOut": "2026-08-03",
+      "nights": 2,
+      "pricePerNight": 145.0,
+      "channel": "DIRECT",
+      "paymentCode": 1
+    },
+    {
+      "dpto": "1706",
+      "guest": "Luiggi",
+      "checkIn": "2026-08-03",
+      "checkOut": "2026-08-05",
+      "nights": 2,
+      "pricePerNight": 160.0,
+      "channel": "DIRECT",
+      "paymentCode": 1
+    },
+    {
+      "dpto": "1706",
+      "guest": "Phibita Abadss-108",
+      "checkIn": "2026-08-05",
+      "checkOut": "2026-08-06",
+      "nights": 1,
+      "pricePerNight": 156.0,
+      "channel": "AIRBNB",
+      "paymentCode": 4
+    },
+    {
+      "dpto": "1706",
+      "guest": "Phibita ss-108",
+      "checkIn": "2026-08-06",
+      "checkOut": "2026-08-07",
+      "nights": 1,
+      "pricePerNight": 180.0,
+      "channel": "DIRECT",
+      "paymentCode": 1
+    },
+    {
+      "dpto": "1706",
+      "guest": "Julio Salazarss-108",
+      "checkIn": "2026-08-07",
+      "checkOut": "2026-08-08",
+      "nights": 1,
+      "pricePerNight": 172.0,
+      "channel": "AIRBNB",
+      "paymentCode": 4
+    },
+    {
+      "dpto": "1706",
+      "guest": "Nelzonss-108",
+      "checkIn": "2026-08-08",
+      "checkOut": "2026-08-09",
+      "nights": 1,
+      "pricePerNight": 159.0,
+      "channel": "AIRBNB",
+      "paymentCode": 4
+    },
+    {
+      "dpto": "1706",
+      "guest": "Brenda",
+      "checkIn": "2026-08-10",
+      "checkOut": "2026-08-11",
+      "nights": 1,
+      "pricePerNight": 143.0,
+      "channel": "AIRBNB",
+      "paymentCode": 4
+    },
+    {
+      "dpto": "1706",
+      "guest": "Jorge",
+      "checkIn": "2026-08-12",
+      "checkOut": "2026-08-13",
+      "nights": 1,
+      "pricePerNight": 151.0,
+      "channel": "AIRBNB",
+      "paymentCode": 4
+    },
+    {
+      "dpto": "1706",
+      "guest": "Edson",
+      "checkIn": "2026-08-14",
+      "checkOut": "2026-08-15",
+      "nights": 1,
+      "pricePerNight": 170.0,
+      "channel": "DIRECT",
+      "paymentCode": 1
+    },
+    {
+      "dpto": "1706",
+      "guest": "luiggi",
+      "checkIn": "2026-08-21",
+      "checkOut": "2026-08-24",
+      "nights": 3,
+      "pricePerNight": 160.0,
+      "channel": "OTHER",
+      "paymentCode": null
+    },
+    {
+      "dpto": "1806",
+      "guest": "Jhosip Alarcon",
+      "checkIn": "2026-08-01",
+      "checkOut": "2026-08-02",
+      "nights": 1,
+      "pricePerNight": 190.0,
+      "channel": "DIRECT",
+      "paymentCode": 1
+    },
+    {
+      "dpto": "1806",
+      "guest": "Leonardo s2-202",
+      "checkIn": "2026-08-02",
+      "checkOut": "2026-08-03",
+      "nights": 1,
+      "pricePerNight": 0,
+      "channel": "AIRBNB",
+      "paymentCode": 4
+    },
+    {
+      "dpto": "1806",
+      "guest": "Leonardo ss-108",
+      "checkIn": "2026-08-03",
+      "checkOut": "2026-08-04",
+      "nights": 1,
+      "pricePerNight": 0,
+      "channel": "AIRBNB",
+      "paymentCode": 4
+    },
+    {
+      "dpto": "1806",
+      "guest": "Leonardo Montes",
+      "checkIn": "2026-08-04",
+      "checkOut": "2026-08-05",
+      "nights": 1,
+      "pricePerNight": 0,
+      "channel": "AIRBNB",
+      "paymentCode": 4
+    },
+    {
+      "dpto": "1806",
+      "guest": "Leonardos2-202",
+      "checkIn": "2026-08-05",
+      "checkOut": "2026-08-06",
+      "nights": 1,
+      "pricePerNight": 180.0,
+      "channel": "DIRECT",
+      "paymentCode": 1
+    },
+    {
+      "dpto": "1806",
+      "guest": "Marcia",
+      "checkIn": "2026-08-06",
+      "checkOut": "2026-08-07",
+      "nights": 1,
+      "pricePerNight": 173.0,
+      "channel": "AIRBNB",
+      "paymentCode": 4
+    },
+    {
+      "dpto": "1806",
+      "guest": "Maria del Carmen",
+      "checkIn": "2026-08-07",
+      "checkOut": "2026-08-08",
+      "nights": 1,
+      "pricePerNight": 165.0,
+      "channel": "AIRBNB",
+      "paymentCode": 4
+    },
+    {
+      "dpto": "1806",
+      "guest": "Jacinto Ramos",
+      "checkIn": "2026-08-08",
+      "checkOut": "2026-08-24",
+      "nights": 16,
+      "pricePerNight": 170.0,
+      "channel": "DIRECT",
+      "paymentCode": 1
+    },
+    {
+      "dpto": "2105",
+      "guest": "michael chicchon",
+      "checkIn": "2026-08-01",
+      "checkOut": "2026-09-01",
+      "nights": 31,
+      "pricePerNight": 185.0,
+      "channel": "DIRECT",
+      "paymentCode": 5
+    }
+  ]
+}

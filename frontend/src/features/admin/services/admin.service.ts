@@ -1,4 +1,4 @@
-import { api } from '@/lib/api-client';
+import { api, apiDownload } from '@/lib/api-client';
 import { ENDPOINTS } from '@/services/api';
 import type { DashboardStats, Paginated, User } from '@/types';
 
@@ -20,8 +20,49 @@ export interface TopProperty {
   _count: { reservations: number };
 }
 
+export type BookingChannel = 'DIRECT' | 'AIRBNB' | 'BOOKING' | 'EXPEDIA' | 'TIKTOK' | 'OTHER';
+
+export interface OccupancyNight {
+  date: string;
+  reservationId: string;
+  code: string;
+  guest: string;
+  channel: BookingChannel;
+  status: string;
+  pricePerNight: number;
+  nights: number;
+  isCheckIn: boolean;
+  isCheckOut: boolean;
+}
+
+export interface ImportSummary {
+  sheets: Array<{ sheet: string; month: string; reservations: number }>;
+  propertiesCreated: number;
+  reservationsCreated: number;
+  reservationsUpdated: number;
+  skipped: string[];
+}
+
+export interface OccupancyCalendar {
+  month: string;
+  days: string[];
+  rows: Array<{ propertyId: string; title: string; slug: string; nights: OccupancyNight[] }>;
+  totals: Record<string, number>;
+}
+
 export const adminService = {
   dashboard: () => api.get<DashboardStats>(ENDPOINTS.admin.dashboard),
+  calendar: (month: string) =>
+    api.get<OccupancyCalendar>(ENDPOINTS.admin.calendar, { query: { month } }),
+  downloadCalendar: (month: string) =>
+    apiDownload(ENDPOINTS.admin.calendarExport, `ocupacion_${month}.xls`, { month }),
+  importCalendar: (file: File, dryRun = false) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    return api.post<ImportSummary>(ENDPOINTS.admin.calendarImport, formData, {
+      query: { dryRun },
+    });
+  },
   reservationsSeries: (months = 12) =>
     api.get<MonthlyPoint[]>(ENDPOINTS.admin.reservationsSeries, { query: { months } }),
   usersSeries: (months = 12) =>
