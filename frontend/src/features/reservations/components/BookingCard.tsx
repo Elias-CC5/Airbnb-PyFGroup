@@ -4,6 +4,7 @@ import { DateRangePicker, type DateRange } from '@/components/shared/DateRangePi
 import { Badge, Button, Modal, Rating, Textarea } from '@/components/ui';
 import { useAuth } from '@/features/auth/hooks/useAuth';
 import { WhatsappButton } from '@/features/whatsapp/components/WhatsappButton';
+import { buildReservationWhatsappUrl } from '@/features/whatsapp/services/whatsapp.service';
 import { formatDate, formatPrice, toISODate } from '@/lib/format';
 import { cn } from '@/lib/utils';
 import type { AvailabilityResult, PropertyDetail } from '@/types';
@@ -61,6 +62,10 @@ export function BookingCard({ property }: { property: PropertyDetail }) {
   const confirmReservation = async () => {
     if (!range?.from || !range?.to) return;
 
+    // La pestaña se abre ANTES del await: si se abriera después, el navegador
+    // la bloquearía por no venir directamente de un clic del usuario.
+    const waTab = window.open('', '_blank');
+
     const reservation = await createReservation
       .mutateAsync({
         propertyId: property.id,
@@ -71,10 +76,28 @@ export function BookingCard({ property }: { property: PropertyDetail }) {
       })
       .catch(() => null);
 
-    if (reservation) {
-      setConfirmOpen(false);
-      router.push('/mis-reservas');
+    if (!reservation) {
+      waTab?.close();
+      return;
     }
+
+    const whatsappUrl = buildReservationWhatsappUrl({
+      phone: property.whatsappPhone,
+      code: reservation.code,
+      propertyTitle: property.title,
+      location,
+      checkIn: formatDate(range.from),
+      checkOut: formatDate(range.to),
+      guests,
+      total: quote ? formatPrice(quote.total) : undefined,
+      notes: notes || undefined,
+    });
+
+    if (waTab) waTab.location.href = whatsappUrl;
+    else window.open(whatsappUrl, '_blank', 'noopener,noreferrer');
+
+    setConfirmOpen(false);
+    router.push('/mis-reservas');
   };
 
   return (

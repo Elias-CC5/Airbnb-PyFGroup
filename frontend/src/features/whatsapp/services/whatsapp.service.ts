@@ -34,3 +34,34 @@ export function buildWhatsappUrl(params: {
 
   return `https://wa.me/${phone}?text=${encodeURIComponent(lines.join('\n'))}`;
 }
+
+/**
+ * Mensaje para el anfitrión cuando la reserva YA fue creada en el sistema.
+ * Incluye el código para que ambos puedan referirse a la misma reserva.
+ */
+export function buildReservationWhatsappUrl(params: {
+  phone?: string | null;
+  code: string;
+  propertyTitle: string;
+  location: string;
+  checkIn: string;
+  checkOut: string;
+  guests: number;
+  total?: string;
+  notes?: string;
+}): string {
+  const digits = (params.phone ?? SITE.whatsapp).replace(/\D/g, '');
+  const phone = digits.length === 9 ? `51${digits}` : digits;
+
+  const lines = [
+    `¡Hola! Acabo de reservar "${params.propertyTitle}" (${params.location}).`,
+    `Código de reserva: ${params.code}`,
+    `Fechas: del ${params.checkIn} al ${params.checkOut}.`,
+    `Huéspedes: ${params.guests}.`,
+  ];
+  if (params.total) lines.push(`Total: ${params.total}`);
+  if (params.notes) lines.push(`Nota: ${params.notes}`);
+  lines.push('Quedo atento a la confirmación. ¡Gracias!');
+
+  return `https://wa.me/${phone}?text=${encodeURIComponent(lines.join('\n'))}`;
+}
