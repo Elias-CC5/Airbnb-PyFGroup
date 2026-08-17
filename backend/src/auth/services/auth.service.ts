@@ -4,8 +4,10 @@ import {
   Logger,
   UnauthorizedException,
 } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { Role, User } from '@prisma/client';
 import { PrismaService } from '../../database/prisma.service';
+import { MailService } from '../../mail/mail.service';
 import {
   ChangePasswordDto,
   ForgotPasswordDto,
@@ -30,6 +32,8 @@ export class AuthService {
     private readonly prisma: PrismaService,
     private readonly passwords: PasswordService,
     private readonly tokens: TokenService,
+    private readonly mail: MailService,
+    private readonly config: ConfigService,
   ) {}
 
   // ----------------------------- registro -----------------------------
@@ -130,12 +134,19 @@ export class AuthService {
   // ------------------------- recuperar contraseña ----------------------
   /**
    * Siempre responde igual, exista o no el correo, para no filtrar usuarios.
-   * En desarrollo devolvemos el token para poder probar el flujo sin email.
+   * Envía el enlace por correo. Solo si SMTP no está configurado (y estamos
+   * fuera de producción) devolvemos el token para poder probar sin email.
    */
   async forgotPassword(dto: ForgotPasswordDto): Promise<{ message: string; devToken?: string }> {
     const generic = { message: 'Si el correo existe, enviaremos instrucciones de recuperación' };
     const user = await this.prisma.user.findUnique({ where: { email: dto.email } });
     if (!user || user.deletedAt) return generic;
+
+    // Invalidamos solicitudes anteriores que sigan vivas: solo el último enlace sirve.
+    await this.prisma.passwordReset.updateMany({
+      where: { userId: user.id, usedAt: null, expiresAt: { gt: new Date() } },
+      data: { usedAt: new Date() },
+    });
 
     const token = this.passwords.randomToken();
     await this.prisma.passwordReset.create({
@@ -146,8 +157,24 @@ export class AuthService {
       },
     });
 
-    this.logger.log(`Token de recuperación generado para ${user.email}`);
-    return process.env.NODE_ENV === 'production' ? generic : { ...generic, devToken: token };
+    const frontendUrl = (
+      this.config.get<string>('app.frontendUrl') ?? 'http://localhost:3000'
+    ).replace(/\/+$/, '');
+    const resetUrl = `${frontendUrl}/recuperar-password/${token}`;
+
+    const sent = await this.mail.sendPasswordReset(user.email, user.firstName, resetUrl);
+
+    if (sent) {
+      this.logger.log(`Correo de recuperación enviado a ${user.email}`);
+      return generic;
+    }
+
+    // No se pudo enviar (SMTP apagado o caído).
+    this.logger.warn(`No se envió el correo de recuperación a ${user.email}`);
+    if (process.env.NODE_ENV === 'production') return generic;
+
+    this.logger.debug(`Enlace de recuperación (dev): ${resetUrl}`);
+    return { ...generic, devToken: token };
   }
 
   async resetPassword(dto: ResetPasswordDto): Promise<{ message: string }> {

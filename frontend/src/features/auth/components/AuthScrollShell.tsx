@@ -40,10 +40,10 @@ export function AuthScrollShell({
       <aside
         aria-hidden
         className={`pointer-events-none fixed right-8 top-1/2 z-30 hidden -translate-y-1/2 flex-col items-center gap-4 transition-opacity duration-500 lg:flex ${
-          scrolled ? 'opacity-0' : 'opacity-100'
+          scrolled ? 'opacity-0' : 'opacity-200'
         }`}
       >
-        <span className="text-[11px] font-semibold uppercase tracking-[0.28em] text-ink-400 [writing-mode:vertical-rl]">
+        <span className="text-[18px] font-semibold uppercase tracking-[0.28em] text-ink-400 [writing-mode:vertical-rl]">
           {hint}
         </span>
         <ChevronDown className="size-4 animate-bounce text-ink-400" />

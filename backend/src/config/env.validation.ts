@@ -85,6 +85,39 @@ export class EnvironmentVariables {
   @IsString()
   @IsOptional()
   WHATSAPP_DEFAULT_PHONE?: string;
+
+  // ------------------------- SMTP / correo -------------------------
+  // Todas opcionales: si SMTP_HOST está vacío, el envío queda deshabilitado
+  // y en desarrollo el token de recuperación vuelve en la respuesta.
+  @IsString()
+  @IsOptional()
+  SMTP_HOST?: string;
+
+  @IsInt()
+  @toInt()
+  @IsOptional()
+  SMTP_PORT = 587;
+
+  @IsBoolean()
+  @toBool()
+  @IsOptional()
+  SMTP_SECURE = false;
+
+  @IsString()
+  @IsOptional()
+  SMTP_USER?: string;
+
+  @IsString()
+  @IsOptional()
+  SMTP_PASSWORD?: string;
+
+  @IsString()
+  @IsOptional()
+  MAIL_FROM?: string;
+
+  @IsString()
+  @IsOptional()
+  MAIL_REPLY_TO?: string;
 }
 
 export function validateEnv(config: Record<string, unknown>) {

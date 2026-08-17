@@ -14,11 +14,12 @@ import { CategoriesModule } from './categories/categories.module';
 import { CommonModule } from './common/common.module';
 import { AllExceptionsFilter } from './common/filters/http-exception.filter';
 import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
-import { appConfig, jwtConfig, storageConfig, validateEnv, whatsappConfig } from './config';
+import { appConfig, jwtConfig, mailConfig, storageConfig, validateEnv, whatsappConfig } from './config';
 import { ComplaintsModule } from './complaints/complaints.module';
 import { DatabaseModule } from './database/database.module';
 import { FavoritesModule } from './favorites/favorites.module';
 import { LocationsModule } from './locations/locations.module';
+import { MailModule } from './mail/mail.module';
 import { PropertiesModule } from './properties/properties.module';
 import { ReservationsModule } from './reservations/reservations.module';
 import { ReviewsModule } from './reviews/reviews.module';
@@ -31,7 +32,7 @@ import { WhatsappModule } from './whatsapp/whatsapp.module';
     ConfigModule.forRoot({
       isGlobal: true,
       cache: true,
-      load: [appConfig, jwtConfig, storageConfig, whatsappConfig],
+      load: [appConfig, jwtConfig, mailConfig, storageConfig, whatsappConfig],
       validate: validateEnv,
     }),
 
@@ -52,6 +53,7 @@ import { WhatsappModule } from './whatsapp/whatsapp.module';
 
     DatabaseModule,
     CommonModule,
+    MailModule,
 
     AuthModule,
     UsersModule,
