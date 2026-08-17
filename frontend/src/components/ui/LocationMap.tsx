@@ -25,7 +25,7 @@ export function LocationMap({ location, lat, lng, precise = false, className }: 
   const cardRef = useRef<HTMLDivElement>(null);
   const frame = useRef<number | null>(null);
 
-  const span = precise ? 0.008 : 0.03;
+  const span = precise ? 0.003 : 0.03;
   const bbox = [lng - span, lat - span, lng + span, lat + span].join(',');
   const embedUrl =
     `https://www.openstreetmap.org/export/embed.html?bbox=${encodeURIComponent(bbox)}` +
