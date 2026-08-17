@@ -1,6 +1,6 @@
 'use client';
 
-import { Button, ConfirmDialog, Input, Label, Modal, Select, Textarea } from '@/components/ui';
+import { Button, ConfirmDialog, Input, Label, Modal, Select } from '@/components/ui';
 import { RESERVATION_STATUS_LABEL } from '@/constants';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Trash2 } from 'lucide-react';
