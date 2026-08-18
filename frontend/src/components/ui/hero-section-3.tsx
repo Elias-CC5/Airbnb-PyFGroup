@@ -45,10 +45,13 @@ interface ScrollFlyInProps extends React.HTMLAttributes<HTMLDivElement> {
  * El avión cruza la pantalla de izquierda a derecha a medida que se hace scroll.
  * El texto permanece fijo en el centro.
  */
-const ScrollFlyIn = React.forwardRef<HTMLDivElement, ScrollFlyInProps>(function ScrollFlyIn(
-  { children, imageUrl, imageAlt = 'Avión sobrevolando', className, ...props },
-  _ref,
-) {
+function ScrollFlyIn({
+  children,
+  imageUrl,
+  imageAlt = 'Avión sobrevolando',
+  className,
+  ...props
+}: ScrollFlyInProps) {
   const targetRef = React.useRef<HTMLDivElement>(null);
 
   // window no existe durante el render en servidor: se mide tras montar.
@@ -89,6 +92,6 @@ const ScrollFlyIn = React.forwardRef<HTMLDivElement, ScrollFlyInProps>(function 
       </div>
     </div>
   );
-});
+}
 
 export { ScrollFlyIn };
