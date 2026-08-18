@@ -183,6 +183,7 @@ export class OccupancyImportService {
       checkOut: string;
       nights: number;
       pricePerNight: number;
+      totalPrice: number;
       channel: BookingChannel;
       paymentCode: number | null;
     }> = [];
@@ -194,7 +195,12 @@ export class OccupancyImportService {
       const flush = () => {
         const first = block[0];
         const last = block[block.length - 1];
-        const prices = block.map((b) => b.price).filter((p): p is number => Boolean(p));
+        // El total es la suma real de las noches, no el promedio por la
+        // cantidad de noches. Cuando la hoja deja alguna noche sin precio,
+        // promediar sólo las que sí lo tienen y multiplicar por el total de
+        // noches inflaba la facturación (en febrero 2026 sobraban S/ 769.98).
+        const totalPrice =
+          Math.round(block.reduce((sum, b) => sum + (b.price ?? 0), 0) * 100) / 100;
 
         reservations.push({
           dpto: first.dpto,
@@ -202,9 +208,8 @@ export class OccupancyImportService {
           checkIn: first.date,
           checkOut: this.addDays(last.date, 1),
           nights: block.length,
-          pricePerNight: prices.length
-            ? Math.round((prices.reduce((sum, p) => sum + p, 0) / prices.length) * 100) / 100
-            : 0,
+          pricePerNight: Math.round((totalPrice / block.length) * 100) / 100,
+          totalPrice,
           channel: first.channel,
           paymentCode: first.paymentCode,
         });
@@ -313,7 +318,7 @@ export class OccupancyImportService {
         nights: item.nights,
         pricePerNight: item.pricePerNight,
         cleaningFee: 0,
-        totalPrice: item.pricePerNight * item.nights,
+        totalPrice: item.totalPrice,
         status: this.statusFrom(item.paymentCode),
         channel: item.channel,
         guestName: item.guest.slice(0, 120),

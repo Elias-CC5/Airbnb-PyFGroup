@@ -2,6 +2,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle, Skeleton } from '@/components/ui';
 import { MonthlyBreakdown } from '@/features/admin/components/MonthlyBreakdown';
+import { PropertyPerformance } from '@/features/admin/components/PropertyPerformance';
 import { ReservationsChart } from '@/features/admin/components/ReservationsChart';
 import { StatsCards } from '@/features/admin/components/StatsCards';
 import { useDashboardStats, useReservationsSeries, useUsersSeries } from '@/features/admin/hooks/useDashboard';
@@ -29,6 +30,8 @@ export default function AdminStatsPage() {
 
       {/* Cifra exacta de cada mes: es lo que se compara contra el Excel. */}
       <MonthlyBreakdown data={series} loading={seriesLoading} />
+
+      <PropertyPerformance />
 
       <Card>
         <CardHeader>

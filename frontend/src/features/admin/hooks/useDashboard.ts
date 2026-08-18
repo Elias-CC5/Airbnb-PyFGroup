@@ -22,6 +22,20 @@ export function useUsersSeries(months = 12) {
   });
 }
 
+export function usePropertyPerformance(from: string, to: string) {
+  return useQuery({
+    queryKey: [...queryKeys.admin.propertyPerformance, from, to],
+    queryFn: () => adminService.propertyPerformance(from, to),
+  });
+}
+
+export function useChannelSeries(months = 12) {
+  return useQuery({
+    queryKey: [...queryKeys.admin.channelSeries, months],
+    queryFn: () => adminService.channelSeries(months),
+  });
+}
+
 export function useTopProperties(limit = 5) {
   return useQuery({
     queryKey: [...queryKeys.admin.topProperties, limit],

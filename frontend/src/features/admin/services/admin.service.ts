@@ -20,7 +20,24 @@ export interface TopProperty {
   _count: { reservations: number };
 }
 
+export interface PropertyPerformance {
+  id: string;
+  title: string;
+  slug: string;
+  reservations: number;
+  nights: number;
+  revenue: number;
+  avgPerNight: number;
+}
+
 export type BookingChannel = 'DIRECT' | 'AIRBNB' | 'BOOKING' | 'EXPEDIA' | 'TIKTOK' | 'OTHER';
+
+export interface ChannelPoint {
+  month: string;
+  channel: BookingChannel;
+  reservations: number;
+  revenue: number;
+}
 
 export interface OccupancyNight {
   date: string;
@@ -90,6 +107,10 @@ export const adminService = {
   usersSeries: (months = 12) =>
     api.get<Array<{ month: string; total: number }>>(ENDPOINTS.admin.usersSeries, { query: { months } }),
   topProperties: (limit = 5) => api.get<TopProperty[]>(ENDPOINTS.admin.topProperties, { query: { limit } }),
+  propertyPerformance: (from: string, to: string) =>
+    api.get<PropertyPerformance[]>(ENDPOINTS.admin.propertyPerformance, { query: { from, to } }),
+  channelSeries: (months = 12) =>
+    api.get<ChannelPoint[]>(ENDPOINTS.admin.channelSeries, { query: { months } }),
   recentReservations: (limit = 8) => api.get<unknown[]>(ENDPOINTS.admin.recent, { query: { limit } }),
 
   users: (query: Record<string, unknown>) => api.get<Paginated<User>>(ENDPOINTS.users.root, { query }),

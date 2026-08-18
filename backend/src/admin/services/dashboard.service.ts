@@ -102,6 +102,52 @@ export class DashboardService {
     }));
   }
 
+  /**
+   * Rendimiento por alojamiento en un rango de fechas: ingresos, noches y
+   * estadías. Es el equivalente en la web del cuadro "por departamento" que el
+   * equipo llevaba a mano en el Excel de ocupación.
+   */
+  async propertyPerformance(from: string, to: string) {
+    const start = new Date(`${from}T00:00:00Z`);
+    const end = new Date(`${to}T00:00:00Z`);
+
+    const rows = await this.prisma.$queryRaw<
+      Array<{
+        id: string;
+        title: string;
+        slug: string;
+        reservations: bigint;
+        nights: bigint;
+        revenue: string;
+      }>
+    >`
+      SELECT p.id,
+             p.title,
+             p.slug,
+             COUNT(r.id)                        AS reservations,
+             COALESCE(SUM(r.nights), 0)         AS nights,
+             COALESCE(SUM(CASE WHEN r.status IN ('CONFIRMED','COMPLETED') THEN r."total_price" ELSE 0 END), 0) AS revenue
+      FROM properties p
+      JOIN reservations r ON r."property_id" = p.id
+      WHERE p."deleted_at" IS NULL
+        AND r.status <> 'CANCELLED'
+        AND r."check_in" >= ${start}
+        AND r."check_in" <  ${end}
+      GROUP BY p.id, p.title, p.slug
+      ORDER BY revenue DESC
+    `;
+
+    return rows.map((r) => ({
+      id: r.id,
+      title: r.title,
+      slug: r.slug,
+      reservations: Number(r.reservations),
+      nights: Number(r.nights),
+      revenue: Number(r.revenue),
+      avgPerNight: Number(r.nights) > 0 ? Number(r.revenue) / Number(r.nights) : 0,
+    }));
+  }
+
   /** Reservas e ingresos por canal de venta, para los gráficos del panel. */
   async channelSeries(months = 12) {
     const from = new Date();

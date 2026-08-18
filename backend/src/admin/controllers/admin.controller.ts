@@ -58,6 +58,26 @@ export class AdminController {
     return this.dashboardService.usersSeries(months ? Number(months) : 12);
   }
 
+  @Get('dashboard/property-performance')
+  @ApiOperation({ summary: 'Ingresos, noches y estadías por alojamiento en un rango' })
+  propertyPerformance(@Query('from') from?: string, @Query('to') to?: string) {
+    const isDate = (v?: string) => Boolean(v && /^\d{4}-\d{2}-\d{2}$/.test(v));
+    if ((from && !isDate(from)) || (to && !isDate(to))) {
+      throw new BadRequestException('Usa fechas con formato yyyy-MM-dd');
+    }
+
+    const now = new Date();
+    const defaultFrom = `${now.getUTCFullYear()}-01-01`;
+    const defaultTo = `${now.getUTCFullYear() + 1}-01-01`;
+    return this.dashboardService.propertyPerformance(from ?? defaultFrom, to ?? defaultTo);
+  }
+
+  @Get('dashboard/channel-series')
+  @ApiOperation({ summary: 'Reservas e ingresos por canal de venta' })
+  channelSeries(@Query('months') months?: string) {
+    return this.dashboardService.channelSeries(months ? Number(months) : 12);
+  }
+
   @Get('dashboard/top-properties')
   topProperties(@Query('limit') limit?: string) {
     return this.dashboardService.topProperties(limit ? Number(limit) : 5);

@@ -34,6 +34,8 @@ export const queryKeys = {
     reservationsSeries: ['admin', 'reservations-series'] as const,
     usersSeries: ['admin', 'users-series'] as const,
     topProperties: ['admin', 'top-properties'] as const,
+    propertyPerformance: ['admin', 'property-performance'] as const,
+    channelSeries: ['admin', 'channel-series'] as const,
     recent: ['admin', 'recent'] as const,
   },
 } as const;

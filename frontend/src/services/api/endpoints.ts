@@ -67,6 +67,8 @@ export const ENDPOINTS = {
     reservationsSeries: '/admin/dashboard/reservations-series',
     usersSeries: '/admin/dashboard/users-series',
     topProperties: '/admin/dashboard/top-properties',
+    propertyPerformance: '/admin/dashboard/property-performance',
+    channelSeries: '/admin/dashboard/channel-series',
     recent: '/admin/dashboard/recent-reservations',
     calendar: '/admin/calendar',
     calendarExport: '/admin/calendar/export',
