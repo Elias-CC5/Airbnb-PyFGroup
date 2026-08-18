@@ -20,8 +20,9 @@ export function Hero({ backgroundUrl, stays, regions }: HeroProps) {
   const showStats = Boolean(stays || regions);
 
   return (
-    // -mt-[88px]: el hero pasa por debajo de la barra flotante.
-    <section className="relative z-20 -mt-[88px] h-screen w-full p-2 md:p-3">
+    // El padding superior deja sitio a la barra flotante: así la tarjeta se ve
+    // completa, con sus esquinas redondeadas, en vez de cortada por arriba.
+    <section className="relative z-20 h-screen w-full p-2 pt-[92px] md:p-3 md:pt-[104px]">
       <div className="relative h-full w-full overflow-hidden rounded-2xl md:rounded-[2rem]">
         <Image
           src={backgroundUrl ?? FALLBACK_BG}
