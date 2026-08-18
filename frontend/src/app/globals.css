@@ -74,8 +74,8 @@
   --color-danger-700:  #991b1b;
 
   /* --- Tipografía --- */
-  --font-sans: var(--font-inter), ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
-  --font-display: var(--font-display), ui-serif, Georgia, serif;
+  --font-sans: Arial, Helvetica, "Helvetica Neue", sans-serif;
+  --font-display: Arial, Helvetica, "Helvetica Neue", sans-serif;
 
   /* --- Radios --- */
   --radius-xs: 6px;
@@ -199,8 +199,8 @@
 
 @utility text-display {
   font-family: var(--font-display);
-  font-weight: 400;
-  letter-spacing: -0.025em;
+  font-weight: 700;
+  letter-spacing: -0.03em;
 }
 
 @utility surface {
