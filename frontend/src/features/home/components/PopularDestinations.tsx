@@ -16,7 +16,7 @@ export function PopularDestinations({ destinations }: { destinations: Department
     main.imageUrl ?? `https://picsum.photos/seed/dep-${main.slug}/1600/1000`;
 
   return (
-    <section className="mt-20 overflow-hidden">
+    <section className="pb-20">
       <ContainerScroll
         titleComponent={
           <div className="pb-4">
@@ -56,7 +56,7 @@ export function PopularDestinations({ destinations }: { destinations: Department
       </ContainerScroll>
 
       {rest.length > 0 && (
-        <div className="container-page -mt-24 md:-mt-40">
+        <div className="container-page -mt-16 md:-mt-28">
           <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
             {rest.map((destination) => (
               <Link

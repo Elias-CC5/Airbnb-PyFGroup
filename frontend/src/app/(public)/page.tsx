@@ -20,7 +20,8 @@ export default async function HomePage() {
     <>
       {/* El hero ya tiene su propio sticky interno: queda al fondo de la pila. */}
       <Hero />
-<StackSection index={1} className="bg-white">
+
+      <StackSection index={1} className="bg-white">
         <FeaturedProperties properties={featured ?? []} />
       </StackSection>
 
@@ -28,18 +29,18 @@ export default async function HomePage() {
         <CategoryGrid categories={categories ?? []} />
       </StackSection>
 
-      
-
-      <StackSection index={3} className="bg-ink-50">
+      {/*
+        Destinos NO va en la pila: su animación de scroll necesita recorrido
+        propio. Dentro de un `sticky` con `overflow-hidden` la tarjeta queda
+        pinneada y la sección siguiente la corta por encima.
+      */}
+      <section className="relative z-[3] rounded-t-[40px] bg-ink-50 shadow-[0_-24px_70px_-24px_rgba(28,25,23,0.45)]">
         <PopularDestinations destinations={destinations ?? []} />
-      </StackSection>
-
-     
+      </section>
 
       <StackSection index={4} className="bg-ink-50">
         <Testimonials />
       </StackSection>
-
     </>
   );
 }
