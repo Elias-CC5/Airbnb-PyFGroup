@@ -2,43 +2,25 @@
 
 import { cn } from '@/lib/utils';
 import { motion, useScroll, useTransform } from 'framer-motion';
+import { ChevronDown } from 'lucide-react';
 import * as React from 'react';
 
-/** Avión en vista cenital, en SVG: sin CDN externo ni imagen que se pueda caer. */
-function PlaneTopView({ className }: { className?: string }) {
-  return (
-    <svg
-      viewBox="0 0 640 200"
-      role="img"
-      aria-label="Avión sobrevolando"
-      className={cn('h-auto w-[420px] md:w-[620px]', className)}
-    >
-      <g fill="currentColor">
-        {/* Fuselaje */}
-        <path d="M40 100 C 40 88, 70 80, 120 78 L 520 82 C 570 84, 600 92, 610 100 C 600 108, 570 116, 520 118 L 120 122 C 70 120, 40 112, 40 100 Z" />
-        {/* Ala principal */}
-        <path d="M300 92 L 250 18 L 288 18 L 360 90 Z" />
-        <path d="M300 108 L 250 182 L 288 182 L 360 110 Z" />
-        {/* Estabilizadores de cola */}
-        <path d="M110 94 L 74 48 L 100 48 L 152 92 Z" />
-        <path d="M110 106 L 74 152 L 100 152 L 152 108 Z" />
-      </g>
-      {/* Ventanillas */}
-      <g fill="rgba(255,255,255,0.55)">
-        {Array.from({ length: 14 }).map((_, i) => (
-          <circle key={i} cx={190 + i * 24} cy={100} r={3} />
-        ))}
-      </g>
-    </svg>
-  );
-}
+/**
+ * Foto cenital de un avión con fondo transparente.
+ * Es un recurso alojado por un tercero: si algún día deja de responder,
+ * descarga la imagen a `public/avion.webp` y pasa `imageUrl="/avion.webp"`.
+ */
+const DEFAULT_PLANE =
+  'https://cdn.prod.website-files.com/661fdce3e735db03332bf817/66223004372c7c1124c1b0d1_Top-view2x-p-2000.webp';
 
 interface ScrollFlyInProps extends React.HTMLAttributes<HTMLDivElement> {
   /** Contenido estático que queda centrado mientras el avión cruza. */
   children: React.ReactNode;
-  /** Imagen opcional; si se omite se usa el avión en SVG. */
   imageUrl?: string;
   imageAlt?: string;
+  /** id del bloque al que baja el botón. Sin esto, no se muestra el botón. */
+  scrollToId?: string;
+  scrollLabel?: string;
 }
 
 /**
@@ -47,8 +29,10 @@ interface ScrollFlyInProps extends React.HTMLAttributes<HTMLDivElement> {
  */
 function ScrollFlyIn({
   children,
-  imageUrl,
+  imageUrl = DEFAULT_PLANE,
   imageAlt = 'Avión sobrevolando',
+  scrollToId,
+  scrollLabel = 'Ver destinos',
   className,
   ...props
 }: ScrollFlyInProps) {
@@ -68,26 +52,44 @@ function ScrollFlyIn({
     offset: ['start end', 'end start'],
   });
 
-  const travel = viewport + 800;
+  const travel = viewport + 900;
   const x = useTransform(scrollYProgress, [0.1, 0.9], [-travel, travel]);
   const opacity = useTransform(scrollYProgress, [0.1, 0.28, 0.72, 0.9], [0, 1, 1, 0]);
+
+  const scrollDown = () => {
+    if (!scrollToId) return;
+    document.getElementById(scrollToId)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
 
   return (
     <div ref={targetRef} className={cn('relative h-[180vh]', className)} {...props}>
       <div className="sticky top-0 flex h-screen items-center justify-center overflow-x-clip">
-        <div className="z-10 text-center">{children}</div>
+        <div className="z-10 text-center">
+          {children}
+
+          {scrollToId && (
+            <button
+              type="button"
+              onClick={scrollDown}
+              className="group mt-8 inline-flex items-center gap-2 rounded-full bg-ink-900 px-6 py-3 text-sm font-medium text-white transition hover:bg-ink-800"
+            >
+              {scrollLabel}
+              <ChevronDown className="size-4 transition-transform group-hover:translate-y-0.5" />
+            </button>
+          )}
+        </div>
 
         <motion.div
           style={{ x, opacity }}
           className="pointer-events-none absolute inset-0 z-20 flex items-center"
           aria-hidden
         >
-          {imageUrl ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={imageUrl} alt={imageAlt} className="h-auto w-auto max-w-none" />
-          ) : (
-            <PlaneTopView className="text-ink-900/85" />
-          )}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={imageUrl}
+            alt={imageAlt}
+            className="h-auto w-[460px] max-w-none drop-shadow-2xl md:w-[760px]"
+          />
         </motion.div>
       </div>
     </div>

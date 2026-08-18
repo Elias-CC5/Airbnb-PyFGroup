@@ -20,7 +20,7 @@ export default async function DestinationsPage() {
   return (
     <div className="pb-12">
       {/* El avión cruza la pantalla mientras se hace scroll. */}
-      <ScrollFlyIn>
+      <ScrollFlyIn scrollToId="destinos-grid" scrollLabel="Ver destinos">
         <div className="mx-auto max-w-3xl px-4">
           <p className="font-mono text-xs uppercase tracking-[0.25em] text-ink-400">Destinos</p>
           <h1 className="mt-4 text-4xl font-semibold leading-tight tracking-tight text-ink-900 sm:text-5xl md:text-6xl">
@@ -32,7 +32,7 @@ export default async function DestinationsPage() {
         </div>
       </ScrollFlyIn>
 
-      <div className="container-page">
+      <div id="destinos-grid" className="container-page scroll-mt-28">
         <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {departments.map((department) => (
             <Link
