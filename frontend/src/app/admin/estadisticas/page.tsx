@@ -1,6 +1,7 @@
 'use client';
 
 import { Card, CardContent, CardHeader, CardTitle, Skeleton } from '@/components/ui';
+import { MonthlyBreakdown } from '@/features/admin/components/MonthlyBreakdown';
 import { ReservationsChart } from '@/features/admin/components/ReservationsChart';
 import { StatsCards } from '@/features/admin/components/StatsCards';
 import { useDashboardStats, useReservationsSeries, useUsersSeries } from '@/features/admin/hooks/useDashboard';
@@ -25,6 +26,9 @@ export default function AdminStatsPage() {
         <ReservationsChart data={series} loading={seriesLoading} metric="reservations" />
         <ReservationsChart data={series} loading={seriesLoading} metric="revenue" />
       </div>
+
+      {/* Cifra exacta de cada mes: es lo que se compara contra el Excel. */}
+      <MonthlyBreakdown data={series} loading={seriesLoading} />
 
       <Card>
         <CardHeader>
