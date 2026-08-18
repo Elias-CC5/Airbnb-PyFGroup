@@ -1,284 +1,145 @@
 'use client';
 
 import { cn } from '@/lib/utils';
-import { motion } from 'motion/react';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 
-const FLAP_CHARS = " ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$()-+&=;:'\"%,./?°";
+const FLAP_CHARS = " ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!-:.";
 
-const BOARD_ROWS = 6;
-const BOARD_COLS = 22;
+const BOARD_ROWS = 4;
+const BOARD_COLS = 18;
 
-const BASE_COL_DELAY = 30;
-const BASE_ROW_DELAY = 20;
-const BASE_STEP_MS = 55;
-const BASE_FLIP_S = 0.35;
-const BASE_TOTAL_S =
-  ((BOARD_COLS - 1) * BASE_COL_DELAY + (BOARD_ROWS - 1) * BASE_ROW_DELAY + 8 * BASE_STEP_MS) / 1000;
+/** Pasos de mezcla antes de asentar el carácter. Pocos = fluido. */
+const SCRAMBLE_MIN = 3;
+const SCRAMBLE_MAX = 6;
+const STEP_MS = 70;
+const FLIP_MS = 160;
+const COL_DELAY = 26;
+const ROW_DELAY = 40;
 
-type AccentColor = { top: string; bottom: string; text: string };
-
-const ACCENT_COLORS: AccentColor[] = [
-  { top: 'bg-red-600', bottom: 'bg-red-700', text: 'text-white' },
-  { top: 'bg-orange-500', bottom: 'bg-orange-600', text: 'text-white' },
-  { top: 'bg-yellow-400', bottom: 'bg-yellow-500', text: 'text-neutral-900' },
-  { top: 'bg-green-600', bottom: 'bg-green-700', text: 'text-white' },
-  { top: 'bg-blue-600', bottom: 'bg-blue-700', text: 'text-white' },
-  { top: 'bg-violet-600', bottom: 'bg-violet-700', text: 'text-white' },
-  { top: 'bg-white', bottom: 'bg-neutral-100', text: 'text-neutral-900' },
-];
+/**
+ * Animación en CSS, no en JS: framer-motion montando cuatro capas por paso
+ * y por celda hacía inviable un tablero de este tamaño.
+ */
+const FLIP_KEYFRAMES = `
+@keyframes flap-fall {
+  from { transform: rotateX(0deg); }
+  to   { transform: rotateX(-90deg); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .flap-anim { animation: none !important; }
+}
+`;
 
 const CELL_TEXT_STYLE: React.CSSProperties = {
-  fontSize: 'clamp(6px, 2vw, 22px)',
+  fontSize: 'clamp(8px, 2.2vw, 24px)',
   lineHeight: 1,
 };
 
+const randomChar = () => FLAP_CHARS[1 + Math.floor(Math.random() * (FLAP_CHARS.length - 1))];
+
 // ── Carácter individual ───────────────────────────────────────────────
 const FlapCell = React.memo(
-  function FlapCell({
-    target,
-    delay,
-    stepMs,
-    flipDuration,
-  }: {
-    target: string;
-    delay: number;
-    stepMs: number;
-    flipDuration: number;
-  }) {
-    const [current, setCurrent] = useState(' ');
-    const [prev, setPrev] = useState(' ');
-    const [flipId, setFlipId] = useState(0);
-    const [accent, setAccent] = useState<AccentColor | null>(null);
-    const [prevAccent, setPrevAccent] = useState<AccentColor | null>(null);
+  function FlapCell({ target, delay }: { target: string; delay: number }) {
+    // Un solo estado por celda: menos renders que cinco useState separados.
+    const [state, setState] = useState({ ch: ' ', prev: ' ', flip: 0 });
 
-    const curRef = useRef(' ');
+    const chRef = useRef(' ');
     const tgtRef = useRef<string | null>(null);
-    const accentRef = useRef<AccentColor | null>(null);
-    const startTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-    const stepTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const timers = useRef<ReturnType<typeof setTimeout>[]>([]);
 
     useEffect(() => {
-      if (startTimer.current) clearTimeout(startTimer.current);
-      if (stepTimer.current) clearTimeout(stepTimer.current);
-      startTimer.current = null;
-      stepTimer.current = null;
+      timers.current.forEach(clearTimeout);
+      timers.current = [];
 
       const normalized = FLAP_CHARS.includes(target.toUpperCase()) ? target.toUpperCase() : ' ';
       if (normalized === tgtRef.current) return;
       tgtRef.current = normalized;
-      if (normalized === ' ' && curRef.current === ' ') return;
+      if (normalized === ' ' && chRef.current === ' ') return;
 
-      const scrambleCount =
+      const steps =
         normalized === ' '
-          ? 8 + Math.floor(Math.random() * 8)
-          : 25 + Math.floor(Math.random() * 15);
+          ? 2
+          : SCRAMBLE_MIN + Math.floor(Math.random() * (SCRAMBLE_MAX - SCRAMBLE_MIN + 1));
 
-      const runStep = (i: number) => {
-        const isLast = i === scrambleCount;
-        const ch = isLast
-          ? normalized
-          : FLAP_CHARS[1 + Math.floor(Math.random() * (FLAP_CHARS.length - 1))];
-        const newAccent = isLast
-          ? null
-          : Math.random() < 0.2
-            ? ACCENT_COLORS[Math.floor(Math.random() * ACCENT_COLORS.length)]
-            : null;
-
-        setPrev(curRef.current);
-        setPrevAccent(accentRef.current);
-        curRef.current = ch;
-        accentRef.current = newAccent;
-        setCurrent(ch);
-        setAccent(newAccent);
-        setFlipId((n) => n + 1);
-
-        if (!isLast) stepTimer.current = setTimeout(() => runStep(i + 1), stepMs);
-      };
-
-      startTimer.current = setTimeout(() => runStep(1), delay);
+      for (let i = 1; i <= steps; i++) {
+        const isLast = i === steps;
+        const t = setTimeout(
+          () => {
+            const ch = isLast ? normalized : randomChar();
+            setState((s) => {
+              chRef.current = ch;
+              return { ch, prev: s.ch, flip: s.flip + 1 };
+            });
+          },
+          delay + i * STEP_MS,
+        );
+        timers.current.push(t);
+      }
 
       return () => {
-        if (startTimer.current) clearTimeout(startTimer.current);
-        if (stepTimer.current) clearTimeout(stepTimer.current);
-        startTimer.current = null;
-        stepTimer.current = null;
+        timers.current.forEach(clearTimeout);
+        timers.current = [];
         tgtRef.current = null;
       };
-    }, [target, delay, stepMs]);
+    }, [target, delay]);
 
-    const show = current === ' ' ? ' ' : current;
-    const showPrev = prev === ' ' ? ' ' : prev;
+    const show = state.ch === ' ' ? ' ' : state.ch;
+    const showPrev = state.prev === ' ' ? ' ' : state.prev;
 
-    const textCx =
-      'absolute inset-x-0 flex select-none items-center justify-center font-mono font-bold tracking-wide';
-    const topBg = accent?.top ?? 'bg-neutral-200/80';
-    const bottomBg = accent?.bottom ?? 'bg-neutral-200/80';
-    const textColor = accent?.text ?? 'text-neutral-800';
-    const flapTopBg = prevAccent?.top ?? 'bg-neutral-100';
-    const flapTextColor = prevAccent?.text ?? 'text-neutral-800';
-    const bottomDelay = flipDuration * 0.5;
+    const half =
+      'absolute inset-x-0 flex select-none items-center justify-center font-mono font-bold text-neutral-800';
 
     return (
-      <div className="flex aspect-3/6 flex-col overflow-hidden rounded-[2px] border border-neutral-300 md:rounded-[3px] md:border-2">
-        <div className="relative flex-1 perspective-dramatic transform-3d">
-          <div className="absolute inset-0 z-40 hidden flex-row items-center justify-center md:flex">
-            <div className="h-1/2 w-px rounded-tr-sm rounded-br-sm bg-neutral-300" />
-            <div className="flex h-px flex-1 bg-neutral-300" />
-            <div className="h-1/2 w-px rounded-tl-sm rounded-bl-sm bg-neutral-300" />
-          </div>
-
-          {/* Mitad superior del carácter nuevo */}
-          <div
-            className={cn(
-              'absolute inset-x-0 top-0 h-[calc(50%-0.5px)] overflow-hidden rounded-t-[3px]',
-              topBg,
-            )}
-          >
-            <div className={cn(textCx, textColor, 'top-0 h-[200%]')} style={CELL_TEXT_STYLE}>
+      <div className="flex aspect-[3/5] flex-col overflow-hidden rounded-[3px] border border-neutral-300">
+        <div className="relative flex-1" style={{ perspective: '140px' }}>
+          {/* Mitad superior */}
+          <div className="absolute inset-x-0 top-0 h-[calc(50%-0.5px)] overflow-hidden rounded-t-[2px] bg-neutral-200/80">
+            <div className={cn(half, 'top-0 h-[200%]')} style={CELL_TEXT_STYLE}>
               {show}
             </div>
           </div>
 
-          {/* Mitad inferior del carácter nuevo */}
-          <div
-            className={cn(
-              'absolute inset-x-0 bottom-0 h-[calc(50%-0.5px)] overflow-hidden rounded-b-[3px]',
-              bottomBg,
-            )}
-          >
-            <div className={cn(textCx, textColor, 'bottom-0 h-[200%]')} style={CELL_TEXT_STYLE}>
+          {/* Mitad inferior */}
+          <div className="absolute inset-x-0 bottom-0 h-[calc(50%-0.5px)] overflow-hidden rounded-b-[2px] bg-neutral-200/80">
+            <div className={cn(half, 'bottom-0 h-[200%]')} style={CELL_TEXT_STYLE}>
               {show}
             </div>
-            {flipId > 0 && (
-              <motion.div
-                key={`s${flipId}`}
-                className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_bottom,rgba(255,255,255,0.8),transparent_60%)]"
-                initial={{ opacity: 0.5 }}
-                animate={{ opacity: 0 }}
-                transition={{ duration: flipDuration * 1.3, ease: 'easeOut' }}
-              />
-            )}
           </div>
 
-          {/* Solapa que cae: mitad superior del carácter anterior */}
-          {flipId > 0 && (
-            <motion.div
-              key={flipId}
-              className={cn(
-                'absolute inset-x-0 top-0 z-10 h-[calc(50%-0.5px)] origin-bottom overflow-hidden rounded-t-[3px] backface-hidden transform-3d',
-                flapTopBg,
-              )}
-              initial={{ rotateX: 0 }}
-              animate={{ rotateX: -100 }}
-              transition={{ duration: flipDuration, ease: [0.55, 0.055, 0.675, 0.19] }}
-            >
-              <div className={cn(textCx, flapTextColor, 'top-0 h-[200%]')} style={CELL_TEXT_STYLE}>
-                {showPrev}
-              </div>
-              <motion.div
-                className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_bottom,rgba(255,255,255,0),rgba(255,255,255,1))]"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 0.6 }}
-                transition={{ duration: flipDuration }}
-              />
-            </motion.div>
-          )}
-
-          {/* Solapa que sube: mitad inferior del carácter nuevo */}
-          {flipId > 0 && (
-            <motion.div
-              key={`b${flipId}`}
-              className={cn(
-                'absolute inset-x-0 bottom-0 z-10 h-[calc(50%-0.5px)] origin-top overflow-hidden rounded-b-[3px] backface-hidden transform-3d',
-                bottomBg,
-              )}
-              initial={{ rotateX: 90 }}
-              animate={{ rotateX: 0 }}
-              transition={{
-                duration: flipDuration * 0.85,
-                delay: bottomDelay,
-                ease: [0.33, 1.55, 0.64, 1],
+          {/* Solapa que cae con el carácter anterior. Un único elemento por paso. */}
+          {state.flip > 0 && (
+            <div
+              key={state.flip}
+              className="flap-anim absolute inset-x-0 top-0 z-10 h-[calc(50%-0.5px)] origin-bottom overflow-hidden rounded-t-[2px] bg-neutral-100"
+              style={{
+                animation: `flap-fall ${FLIP_MS}ms cubic-bezier(0.55,0.06,0.68,0.19) forwards`,
+                backfaceVisibility: 'hidden',
               }}
             >
-              <div className={cn(textCx, textColor, 'bottom-0 h-[200%]')} style={CELL_TEXT_STYLE}>
-                {show}
+              <div className={cn(half, 'top-0 h-[200%]')} style={CELL_TEXT_STYLE}>
+                {showPrev}
               </div>
-              <motion.div
-                className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_top,rgba(255,255,255,0),rgba(255,255,255,0.6))]"
-                initial={{ opacity: 0.4 }}
-                animate={{ opacity: 0 }}
-                transition={{ duration: flipDuration * 0.85, delay: bottomDelay }}
-              />
-            </motion.div>
+            </div>
           )}
 
+          {/* Línea divisoria */}
           <div className="pointer-events-none absolute inset-x-0 top-1/2 z-20 h-px -translate-y-[0.5px] bg-neutral-400/50" />
         </div>
-
-        <div className="h-2 w-full bg-[repeating-linear-gradient(to_bottom,currentColor_0,currentColor_1px,transparent_1px,transparent_0.15rem)] text-neutral-400 opacity-20 md:h-4 md:bg-[repeating-linear-gradient(to_bottom,currentColor_0,currentColor_1px,transparent_1px,transparent_0.2rem)]" />
       </div>
     );
   },
-  (prevProps, nextProps) =>
-    prevProps.target === nextProps.target &&
-    prevProps.delay === nextProps.delay &&
-    prevProps.stepMs === nextProps.stepMs &&
-    prevProps.flipDuration === nextProps.flipDuration,
+  (a, b) => a.target === b.target && a.delay === b.delay,
 );
 
-// ── Celda de color ────────────────────────────────────────────────────
-const COLOR_MAP: Record<string, string> = {
-  '{R}': '#D32F2F',
-  '{O}': '#F57C00',
-  '{Y}': '#FBC02D',
-  '{G}': '#43A047',
-  '{B}': '#1E88E5',
-  '{V}': '#8E24AA',
-  '{W}': '#FAFAFA',
-};
-
-const ColorCell = React.memo(function ColorCell({ color }: { color: string }) {
-  return (
-    <div
-      className="aspect-3/5 rounded-[3px] border-2 border-neutral-300"
-      style={{ backgroundColor: color }}
-    />
-  );
-});
-
-// ── Parseo de filas ───────────────────────────────────────────────────
-type ParsedCell = { type: 'char'; value: string } | { type: 'color'; hex: string };
-
-function parseRow(row: string): ParsedCell[] {
-  const cells: ParsedCell[] = [];
-  let i = 0;
-  while (i < row.length) {
-    if (row[i] === '{' && i + 2 < row.length && row[i + 2] === '}') {
-      const code = row.substring(i, i + 3);
-      if (COLOR_MAP[code]) {
-        cells.push({ type: 'color', hex: COLOR_MAP[code] });
-        i += 3;
-        continue;
-      }
-    }
-    cells.push({ type: 'char', value: row[i] });
-    i++;
-  }
-  return cells;
-}
-
+// ── Ajuste de texto a la grilla ───────────────────────────────────────
 function wrapParagraph(paragraph: string, maxCols: number): string[] {
   const lines: string[] = [];
-  const words = paragraph.split(/[ \t]+/).filter(Boolean);
   let currentLine = '';
 
-  for (const word of words) {
+  for (const word of paragraph.split(/[ \t]+/).filter(Boolean)) {
     if (word.length > maxCols) {
-      if (currentLine) {
-        lines.push(currentLine);
-        currentLine = '';
-      }
+      if (currentLine) lines.push(currentLine);
+      currentLine = '';
       lines.push(word.slice(0, maxCols));
       continue;
     }
@@ -296,84 +157,53 @@ function wrapParagraph(paragraph: string, maxCols: number): string[] {
 function wrapText(input: string, maxCols: number): string[] {
   return input
     .split('\n')
-    .flatMap((paragraph) => (paragraph.trim() === '' ? [''] : wrapParagraph(paragraph, maxCols)));
+    .flatMap((p) => (p.trim() === '' ? [''] : wrapParagraph(p.trim(), maxCols)));
 }
 
-// ── Componente principal ──────────────────────────────────────────────
+// ── Tablero ───────────────────────────────────────────────────────────
 export interface TextFlippingBoardProps {
-  rows?: string[];
   text?: string;
   className?: string;
-  /** Duración total de la animación en segundos. */
-  duration?: number;
 }
 
-export function TextFlippingBoard({
-  rows,
-  text,
-  className,
-  duration = BASE_TOTAL_S,
-}: TextFlippingBoardProps) {
-  const scale = duration / BASE_TOTAL_S;
-  const colDelay = BASE_COL_DELAY * scale;
-  const rowDelay = BASE_ROW_DELAY * scale;
-  const stepMs = BASE_STEP_MS * scale;
-  const flipDur = Math.min(0.6, Math.max(0.15, BASE_FLIP_S * scale));
-
+export function TextFlippingBoard({ text = '', className }: TextFlippingBoardProps) {
   const board = useMemo(() => {
-    const grid: ParsedCell[][] = Array.from({ length: BOARD_ROWS }, () =>
-      Array.from({ length: BOARD_COLS }, () => ({ type: 'char' as const, value: ' ' })),
+    const grid: string[][] = Array.from({ length: BOARD_ROWS }, () =>
+      Array.from({ length: BOARD_COLS }, () => ' '),
     );
 
-    if (text) {
-      const lines = wrapText(text, BOARD_COLS).slice(0, BOARD_ROWS);
-      const startRow = Math.max(0, Math.floor((BOARD_ROWS - lines.length) / 2));
-      lines.forEach((line, i) => {
-        const row = startRow + i;
-        if (row >= BOARD_ROWS) return;
-        const parsed = parseRow(line);
-        const startCol = Math.max(0, Math.floor((BOARD_COLS - parsed.length) / 2));
-        parsed.forEach((cell, c) => {
-          if (startCol + c < BOARD_COLS) grid[row][startCol + c] = cell;
-        });
+    const lines = wrapText(text, BOARD_COLS).slice(0, BOARD_ROWS);
+    const startRow = Math.max(0, Math.floor((BOARD_ROWS - lines.length) / 2));
+
+    lines.forEach((line, i) => {
+      const row = startRow + i;
+      if (row >= BOARD_ROWS) return;
+      const startCol = Math.max(0, Math.floor((BOARD_COLS - line.length) / 2));
+      [...line].forEach((ch, c) => {
+        if (startCol + c < BOARD_COLS) grid[row][startCol + c] = ch;
       });
-    } else if (rows) {
-      rows.forEach((row, r) => {
-        if (r >= BOARD_ROWS) return;
-        parseRow(row).forEach((cell, c) => {
-          if (c < BOARD_COLS) grid[r][c] = cell;
-        });
-      });
-    }
+    });
 
     return grid;
-  }, [rows, text]);
+  }, [text]);
 
   return (
     <div
       className={cn(
-        'relative mx-auto w-full max-w-3xl rounded-xl bg-neutral-100 p-2 shadow-xl md:rounded-2xl md:p-4',
+        'relative mx-auto w-full max-w-2xl rounded-xl bg-neutral-100 p-2 shadow-lg md:rounded-2xl md:p-4',
         className,
       )}
     >
+      <style>{FLIP_KEYFRAMES}</style>
+
       <div
         className="grid gap-px md:gap-[3px]"
         style={{ gridTemplateColumns: `repeat(${BOARD_COLS}, 1fr)` }}
       >
         {board.map((row, r) =>
-          row.map((cell, c) =>
-            cell.type === 'color' ? (
-              <ColorCell key={`${r}-${c}`} color={cell.hex} />
-            ) : (
-              <FlapCell
-                key={`${r}-${c}`}
-                target={cell.value}
-                delay={c * colDelay + r * rowDelay}
-                stepMs={stepMs}
-                flipDuration={flipDur}
-              />
-            ),
-          ),
+          row.map((ch, c) => (
+            <FlapCell key={`${r}-${c}`} target={ch} delay={c * COL_DELAY + r * ROW_DELAY} />
+          )),
         )}
       </div>
     </div>

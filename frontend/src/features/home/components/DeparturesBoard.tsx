@@ -4,19 +4,19 @@ import { TextFlippingBoard } from '@/components/ui/text-flipping-board';
 import { useCallback, useEffect, useState } from 'react';
 
 /**
- * Panel split-flap de aeropuerto. El alfabeto del componente no incluye
- * tildes ni Ñ: los mensajes van sin acentos a propósito, si no salen en blanco.
- * Máximo 22 caracteres por línea y 6 líneas.
+ * Panel split-flap de aeropuerto. El alfabeto no incluye tildes ni Ñ:
+ * los mensajes van sin acentos a propósito, si no salen en blanco.
+ * Máximo 18 caracteres por línea y 4 líneas.
  */
 const MESSAGES: string[] = [
-  'BIENVENIDO A PERU\nTU PROXIMA ESTADIA\nEMPIEZA AQUI',
-  'LIMA - CUSCO\nAREQUIPA - PUNO\nIQUITOS - PIURA',
-  'RESERVA DIRECTO\nCON EL ANFITRION\nSIN INTERMEDIARIOS',
-  'CHECK-IN 15:00\nCHECK-OUT 11:00\nBUEN VIAJE!',
-  'PYFGROUP\nALOJAMIENTOS\nEN TODO EL PERU',
+  'BIENVENIDO A LIMA\nTU ESTADIA\nEMPIEZA AQUI',
+  'DEPARTAMENTOS EN\nCERCADO DE LIMA',
+  'RESERVA DIRECTO\nCON EL ANFITRION',
+  'CHECK-IN 15:00\nCHECK-OUT 11:00',
+  'PYFGROUP\nLIMA - PERU',
 ];
 
-const ROTATION_MS = 6000;
+const ROTATION_MS = 7000;
 
 export function DeparturesBoard() {
   const [index, setIndex] = useState(0);
