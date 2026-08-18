@@ -30,4 +30,5 @@ COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/prisma ./prisma
 COPY --from=builder /app/package.json ./package.json
 EXPOSE 4000
-CMD ["node", "dist/src/main"]
+# Aplica las migraciones pendientes antes de levantar la API.
+CMD ["sh", "-c", "npx prisma migrate deploy && node dist/src/main"]
