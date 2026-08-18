@@ -1,11 +1,20 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsInt, IsString, IsUUID, Max, MaxLength, Min, MinLength } from 'class-validator';
+import { IsInt, IsOptional, IsString, IsUUID, Max, MaxLength, Min, MinLength } from 'class-validator';
 
 export class CreateReviewDto {
-  @ApiProperty({ format: 'uuid', description: 'Reserva completada que respalda la reseña' })
+  @ApiProperty({ format: 'uuid', description: 'Alojamiento que se reseña' })
   @IsUUID()
-  reservationId: string;
+  propertyId: string;
+
+  @ApiPropertyOptional({
+    format: 'uuid',
+    description:
+      'Reserva completada que respalda la reseña. Si se envía, se valida que sea del usuario y esté completada.',
+  })
+  @IsOptional()
+  @IsUUID()
+  reservationId?: string;
 
   @ApiProperty({ example: 5, minimum: 1, maximum: 5 })
   @Type(() => Number) @IsInt() @Min(1) @Max(5)

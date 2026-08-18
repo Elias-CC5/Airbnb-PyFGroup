@@ -9,11 +9,13 @@ import { reviewSchema, type ReviewInput } from '../schemas/review.schema';
 interface ReviewFormProps {
   open: boolean;
   onClose: () => void;
-  reservationId: string;
+  propertyId: string;
+  /** Opcional: vincula la reseña a una estadía completada (reseña verificada). */
+  reservationId?: string;
   propertyTitle: string;
 }
 
-export function ReviewForm({ open, onClose, reservationId, propertyTitle }: ReviewFormProps) {
+export function ReviewForm({ open, onClose, propertyId, reservationId, propertyTitle }: ReviewFormProps) {
   const createReview = useCreateReview();
 
   const {
@@ -25,7 +27,9 @@ export function ReviewForm({ open, onClose, reservationId, propertyTitle }: Revi
   } = useForm<ReviewInput>({ resolver: zodResolver(reviewSchema), defaultValues: { rating: 0, comment: '' } });
 
   const onSubmit = handleSubmit(async (values) => {
-    const created = await createReview.mutateAsync({ reservationId, ...values }).catch(() => null);
+    const created = await createReview
+      .mutateAsync({ propertyId, reservationId, ...values })
+      .catch(() => null);
     if (created) {
       reset();
       onClose();
@@ -36,7 +40,7 @@ export function ReviewForm({ open, onClose, reservationId, propertyTitle }: Revi
     <Modal
       open={open}
       onClose={onClose}
-      title="¿Cómo fue tu estadía?"
+      title={reservationId ? '¿Cómo fue tu estadía?' : 'Deja tu reseña'}
       description={propertyTitle}
       footer={
         <>

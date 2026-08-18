@@ -2,15 +2,14 @@
 
 import { Avatar, Button, Pagination, Spinner } from '@/components/ui';
 import { useAuth } from '@/features/auth/hooks/useAuth';
-import { useMyReservations } from '@/features/reservations/hooks/useReservations';
 import { formatDate } from '@/lib/format';
 import { cn } from '@/lib/utils';
-import { PenLine, Star } from 'lucide-react';
+import { Star } from 'lucide-react';
+import Link from 'next/link';
 import { useState } from 'react';
 import { usePropertyReviews, useReviewSummary } from '../hooks/useReviews';
 import { ReviewForm } from './ReviewForm';
 
-/** Fila de 5 estrellas, monocroma para no romper la paleta del sitio. */
 function Stars({ value, className }: { value: number; className?: string }) {
   return (
     <span className={cn('inline-flex gap-0.5', className)} aria-label={`${value} de 5 estrellas`}>
@@ -20,7 +19,7 @@ function Stars({ value, className }: { value: number; className?: string }) {
           aria-hidden
           className={cn(
             'size-3.5',
-            i < Math.round(value) ? 'fill-ink-900 text-ink-900' : 'fill-ink-100 text-ink-300',
+            i < Math.round(value) ? 'fill-ink-900 text-ink-900' : 'fill-ink-100 text-ink-200',
           )}
         />
       ))}
@@ -28,155 +27,136 @@ function Stars({ value, className }: { value: number; className?: string }) {
   );
 }
 
-/**
- * Invitación a reseñar. Sólo se monta con sesión iniciada, porque consulta
- * /reservations/me. El backend exige una reserva COMPLETED sin reseña previa,
- * así que replicamos esa regla aquí en vez de mostrar un formulario que fallaría.
- */
-function WriteReviewCard({ propertyId, propertyTitle }: { propertyId: string; propertyTitle: string }) {
-  const [open, setOpen] = useState(false);
-  const { data } = useMyReservations({ status: 'COMPLETED' });
-
-  const eligible = data?.data.find((r) => r.property.id === propertyId && !r.review);
-  if (!eligible) return null;
-
-  return (
-    <>
-      <div className="mt-10 flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-dashed border-ink-300 bg-ink-50 px-6 py-5">
-        <div className="flex items-start gap-3">
-          <PenLine className="mt-0.5 size-5 shrink-0 text-ink-500" />
-          <div>
-            <p className="text-sm font-medium text-ink-900">Te hospedaste aquí</p>
-            <p className="text-sm text-ink-600">
-              Califica de 1 a 5 estrellas y cuenta cómo te fue.
-            </p>
-          </div>
-        </div>
-        <Button onClick={() => setOpen(true)}>Escribir reseña</Button>
-      </div>
-
-      <ReviewForm
-        open={open}
-        onClose={() => setOpen(false)}
-        reservationId={eligible.id}
-        propertyTitle={propertyTitle}
-      />
-    </>
-  );
-}
-
 interface ReviewsSectionProps {
   propertyId: string;
   propertyTitle: string;
-  /** Índice editorial que se muestra sobre el título, p. ej. "06". */
-  index?: string;
 }
 
-export function ReviewsSection({ propertyId, propertyTitle, index }: ReviewsSectionProps) {
+export function ReviewsSection({ propertyId, propertyTitle }: ReviewsSectionProps) {
   const [page, setPage] = useState(1);
-  const { isAuthenticated } = useAuth();
+  const [formOpen, setFormOpen] = useState(false);
+
+  const { isAuthenticated, user } = useAuth();
   const { data: summary } = useReviewSummary(propertyId);
   const { data, isLoading } = usePropertyReviews(propertyId, page);
 
   const total = summary?.total ?? 0;
   const average = summary?.average ?? 0;
+  const reviews = data?.data ?? [];
+
+  // El servidor permite una reseña por usuario y alojamiento; ocultamos el botón
+  // si ya vemos la suya en la lista para no ofrecer una acción que fallaría.
+  const alreadyReviewed = Boolean(user && reviews.some((r) => r.user.id === user.id));
 
   return (
     <section aria-labelledby="resenas" className="scroll-mt-28" id="resenas-section">
-      {index && (
-        <span className="block font-mono text-xs tracking-[0.2em] text-ink-400">{index}</span>
-      )}
+      <div className="flex flex-wrap items-center justify-between gap-4">
+        <h2 id="resenas" className="text-lg font-semibold text-ink-900">
+          Reseñas
+          {total > 0 && <span className="ml-2 font-normal text-ink-400">{total}</span>}
+        </h2>
 
-      <h2 id="resenas" className="mt-2 text-display text-3xl text-ink-900 sm:text-4xl">
-        {total > 0 ? 'Lo que dicen los huéspedes' : 'Todavía sin reseñas'}
-      </h2>
+        {isAuthenticated ? (
+          !alreadyReviewed && (
+            <Button variant="outline" size="sm" onClick={() => setFormOpen(true)}>
+              Escribir reseña
+            </Button>
+          )
+        ) : (
+          <Link
+            href="/login"
+            className="text-sm text-ink-600 underline underline-offset-4 transition hover:text-ink-900"
+          >
+            Inicia sesión para reseñar
+          </Link>
+        )}
+      </div>
 
       {total > 0 && summary ? (
-        <div className="mt-8 grid gap-10 border-y border-ink-200 py-8 sm:grid-cols-[auto_minmax(0,1fr)] sm:gap-16">
-          {/* Promedio */}
-          <div>
-            <p className="text-display text-6xl leading-none text-ink-900">
+        <div className="mt-6 grid gap-8 rounded-2xl border border-ink-200 p-6 sm:grid-cols-[auto_minmax(0,1fr)] sm:gap-12">
+          <div className="flex items-center gap-4 sm:block">
+            <p className="text-4xl font-semibold tracking-tight text-ink-900">
               {average.toFixed(1)}
-              <span className="text-2xl text-ink-400">/5</span>
             </p>
-            <Stars value={average} className="mt-3" />
-            <p className="mt-2 text-sm text-ink-500">
-              {total} {total === 1 ? 'reseña' : 'reseñas'}
-            </p>
+            <div className="sm:mt-2">
+              <Stars value={average} />
+              <p className="mt-1 text-xs text-ink-500">
+                {total} {total === 1 ? 'reseña' : 'reseñas'}
+              </p>
+            </div>
           </div>
 
-          {/* Distribución */}
           <div className="space-y-2 self-center">
-            {summary.distribution.map((row) => {
-              const pct = total ? (row.count / total) * 100 : 0;
-              return (
-                <div key={row.stars} className="flex items-center gap-4 text-sm">
-                  <span className="w-3 font-mono text-ink-500">{row.stars}</span>
-                  <div className="h-px flex-1 bg-ink-200">
-                    <div
-                      className="h-px bg-ink-900 transition-[width] duration-700 ease-out"
-                      style={{ width: `${pct}%` }}
-                    />
-                  </div>
-                  <span className="w-8 text-right font-mono text-xs text-ink-400">{row.count}</span>
+            {summary.distribution.map((row) => (
+              <div key={row.stars} className="flex items-center gap-3 text-xs">
+                <span className="w-2 text-ink-500">{row.stars}</span>
+                <div className="h-1 flex-1 overflow-hidden rounded-full bg-ink-100">
+                  <div
+                    className="h-full rounded-full bg-ink-900 transition-[width] duration-500 ease-out"
+                    style={{ width: `${total ? (row.count / total) * 100 : 0}%` }}
+                  />
                 </div>
-              );
-            })}
+                <span className="w-6 text-right text-ink-400">{row.count}</span>
+              </div>
+            ))}
           </div>
         </div>
       ) : (
-        <p className="mt-4 max-w-md text-[0.95rem] leading-relaxed text-ink-500">
-          Este alojamiento aún no tiene reseñas. Después de tu estadía podrás calificarlo y
-          contar cómo te fue.
+        <p className="mt-4 max-w-md text-sm leading-relaxed text-ink-500">
+          Este alojamiento todavía no tiene reseñas.
+          {isAuthenticated && !alreadyReviewed && ' Sé el primero en dejar la tuya.'}
         </p>
       )}
 
-      {isAuthenticated && <WriteReviewCard propertyId={propertyId} propertyTitle={propertyTitle} />}
-
       {isLoading ? (
-        <div className="mt-10">
+        <div className="mt-8">
           <Spinner label="Cargando reseñas…" />
         </div>
-      ) : data?.data.length ? (
+      ) : reviews.length > 0 ? (
         <>
-          <ul className="mt-10 grid gap-x-14 gap-y-10 md:grid-cols-2">
-            {data.data.map((review) => (
-              <li key={review.id} className="border-t border-ink-200 pt-6">
-                <Stars value={review.rating} />
-
-                <blockquote className="mt-3 break-words text-[0.95rem] leading-relaxed text-ink-800">
-                  {review.comment}
-                </blockquote>
-
-                <div className="mt-4 flex items-center gap-3">
+          <ul className="mt-8 divide-y divide-ink-200 border-t border-ink-200">
+            {reviews.map((review) => (
+              <li key={review.id} className="py-6">
+                <div className="flex items-center gap-3">
                   <Avatar
                     src={review.user.avatarUrl}
                     firstName={review.user.firstName}
                     lastName={review.user.lastName}
                     size="sm"
                   />
-                  <p className="text-sm text-ink-600">
-                    <span className="font-medium text-ink-900">
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-medium text-ink-900">
                       {review.user.firstName} {review.user.lastName.charAt(0)}.
-                    </span>
-                    <span className="mx-1.5 text-ink-300">·</span>
-                    {formatDate(review.createdAt, 'long')}
-                  </p>
+                    </p>
+                    <p className="text-xs text-ink-400">{formatDate(review.createdAt, 'long')}</p>
+                  </div>
+                  <Stars value={review.rating} className="ml-auto shrink-0" />
                 </div>
+
+                <p className="mt-3 break-words text-sm leading-relaxed text-ink-700">
+                  {review.comment}
+                </p>
               </li>
             ))}
           </ul>
 
-          {data.meta.totalPages > 1 && (
+          {data && data.meta.totalPages > 1 && (
             <Pagination
               page={page}
               totalPages={data.meta.totalPages}
               onChange={setPage}
-              className="mt-10"
+              className="mt-8"
             />
           )}
         </>
       ) : null}
+
+      <ReviewForm
+        open={formOpen}
+        onClose={() => setFormOpen(false)}
+        propertyId={propertyId}
+        propertyTitle={propertyTitle}
+      />
     </section>
   );
 }

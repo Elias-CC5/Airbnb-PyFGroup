@@ -104,6 +104,7 @@ export function ReservationCard({ reservation }: { reservation: Reservation }) {
       <ReviewForm
         open={reviewOpen}
         onClose={() => setReviewOpen(false)}
+        propertyId={reservation.property.id}
         reservationId={reservation.id}
         propertyTitle={reservation.property.title}
       />

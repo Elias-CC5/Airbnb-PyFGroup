@@ -390,18 +390,21 @@ model Review {
   id            String  @id @default(uuid()) @db.Uuid
   propertyId    String  @map("property_id") @db.Uuid
   userId        String  @map("user_id") @db.Uuid
-  reservationId String  @unique @map("reservation_id") @db.Uuid
+  reservationId String? @unique @map("reservation_id") @db.Uuid
   rating        Int
   comment       String  @db.VarChar(1000)
   isVisible     Boolean @default(true) @map("is_visible")
 
   property    Property    @relation(fields: [propertyId], references: [id], onDelete: Cascade)
   user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
-  reservation Reservation @relation(fields: [reservationId], references: [id], onDelete: Cascade)
+  reservation Reservation? @relation(fields: [reservationId], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
+  // Una reseña por usuario y alojamiento: la reserva ya no es obligatoria,
+  // así que este es el candado que evita reseñas repetidas.
+  @@unique([propertyId, userId])
   @@index([propertyId])
   @@map("reviews")
 }

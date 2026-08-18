@@ -18,32 +18,58 @@ export class ReviewsService {
     private readonly properties: PropertiesService,
   ) {}
 
-  /** Sólo puede reseñar quien completó una estadía y aún no ha reseñado esa reserva. */
+  /**
+   * Cualquier usuario autenticado puede reseñar un alojamiento, una sola vez.
+   * Si además envía una reserva, se valida que sea suya y esté completada, y la
+   * reseña queda vinculada a esa estadía (reseña verificada).
+   */
   async create(dto: CreateReviewDto, user: AuthenticatedUser) {
-    const reservation = await this.prisma.reservation.findUnique({
-      where: { id: dto.reservationId },
-      include: { review: true },
+    const property = await this.prisma.property.findFirst({
+      where: { id: dto.propertyId, deletedAt: null },
+      select: { id: true },
     });
+    if (!property) throw new NotFoundException('Alojamiento no encontrado');
 
-    if (!reservation) throw new NotFoundException('Reserva no encontrada');
-    if (reservation.userId !== user.id) throw new ForbiddenException('Esta reserva no es tuya');
-    if (reservation.status !== ReservationStatus.COMPLETED) {
-      throw new BadRequestException('Sólo puedes reseñar estadías completadas');
+    const already = await this.prisma.review.findUnique({
+      where: { propertyId_userId: { propertyId: dto.propertyId, userId: user.id } },
+      select: { id: true },
+    });
+    if (already) throw new BadRequestException('Ya dejaste una reseña para este alojamiento');
+
+    // La reserva es opcional; cuando viene, tiene que ser una estadía real del usuario.
+    let reservationId: string | null = null;
+
+    if (dto.reservationId) {
+      const reservation = await this.prisma.reservation.findUnique({
+        where: { id: dto.reservationId },
+        include: { review: true },
+      });
+
+      if (!reservation) throw new NotFoundException('Reserva no encontrada');
+      if (reservation.userId !== user.id) throw new ForbiddenException('Esta reserva no es tuya');
+      if (reservation.propertyId !== dto.propertyId) {
+        throw new BadRequestException('La reserva no corresponde a este alojamiento');
+      }
+      if (reservation.status !== ReservationStatus.COMPLETED) {
+        throw new BadRequestException('Sólo puedes vincular estadías completadas');
+      }
+      if (reservation.review) throw new BadRequestException('Ya dejaste una reseña para esta reserva');
+
+      reservationId = reservation.id;
     }
-    if (reservation.review) throw new BadRequestException('Ya dejaste una reseña para esta reserva');
 
     const review = await this.prisma.review.create({
       data: {
-        propertyId: reservation.propertyId,
+        propertyId: dto.propertyId,
         userId: user.id,
-        reservationId: reservation.id,
+        reservationId,
         rating: dto.rating,
         comment: dto.comment.trim(),
       },
       include: reviewInclude,
     });
 
-    await this.properties.refreshRating(reservation.propertyId);
+    await this.properties.refreshRating(dto.propertyId);
     return review;
   }
 

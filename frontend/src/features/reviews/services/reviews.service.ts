@@ -12,7 +12,7 @@ export const reviewsService = {
   summary: (propertyId: string) =>
     api.get<ReviewSummary>(ENDPOINTS.reviews.summary(propertyId), { auth: false }),
 
-  create: (payload: { reservationId: string; rating: number; comment: string }) =>
+  create: (payload: { propertyId: string; reservationId?: string; rating: number; comment: string }) =>
     api.post<Review>(ENDPOINTS.reviews.root, payload),
 
   mine: () => api.get<Review[]>(ENDPOINTS.reviews.mine),
