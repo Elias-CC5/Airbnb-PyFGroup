@@ -8,24 +8,9 @@ import { BED_TYPE_LABEL, CANCELLATION_POLICY_DETAIL, CANCELLATION_POLICY_LABEL }
 import { formatPrice } from '@/lib/format';
 import { cn } from '@/lib/utils';
 import type { PropertyCard as PropertyCardType, PropertyDetail } from '@/types';
-import {
-  ArrowUpDown,
-  Bath,
-  BedDouble,
-  Building2,
-  Check,
-  Clock,
-  Eye,
-  Heart,
-  MapPin,
-  Moon,
-  Ruler,
-  Share2,
-  ShieldCheck,
-  Users,
-  X,
-} from 'lucide-react';
+import { Check, Heart, MapPin, Moon, Share2, ShieldCheck, Star, X } from 'lucide-react';
 import Link from 'next/link';
+import type { ReactNode } from 'react';
 import { toast } from 'sonner';
 import { PropertyAmenities } from './PropertyAmenities';
 import { PropertyGallery } from './PropertyGallery';
@@ -36,6 +21,16 @@ interface Props {
   property: PropertyDetail;
   similar: PropertyCardType[];
   place: string;
+}
+
+/** Encabezado editorial: número de sección + título en serif. */
+function SectionTitle({ index, children }: { index: string; children: ReactNode }) {
+  return (
+    <div className="mb-6">
+      <span className="block font-mono text-xs tracking-[0.2em] text-ink-400">{index}</span>
+      <h2 className="mt-2 text-display text-2xl text-ink-900 sm:text-3xl">{children}</h2>
+    </div>
+  );
 }
 
 export function PropertyDetailView({ property, similar, place }: Props) {
@@ -53,21 +48,21 @@ export function PropertyDetailView({ property, similar, place }: Props) {
     toast.success('Enlace copiado');
   };
 
-  const facts = [
-    { icon: Users, label: `${property.maxGuests} huéspedes` },
-    { icon: BedDouble, label: `${property.bedrooms} habitaciones · ${property.beds} camas` },
-    { icon: Bath, label: `${property.bathrooms} baños` },
-    { icon: Clock, label: `Check-in ${property.checkInTime} · Check-out ${property.checkOutTime}` },
-    ...(property.areaM2 ? [{ icon: Ruler, label: `${property.areaM2} m²` }] : []),
-    ...(property.floor != null ? [{ icon: Building2, label: `Piso ${property.floor}` }] : []),
-    ...(property.bedType
-      ? [{ icon: BedDouble, label: `Cama ${BED_TYPE_LABEL[property.bedType].toLowerCase()}` }]
-      : []),
-    ...(property.viewType ? [{ icon: Eye, label: property.viewType }] : []),
-    ...(property.hasElevator ? [{ icon: ArrowUpDown, label: 'Con ascensor' }] : []),
+  /** Ficha técnica en pares etiqueta/valor: se lee como un plano, no como una lista. */
+  const specs: Array<{ label: string; value: string }> = [
+    { label: 'Huéspedes', value: String(property.maxGuests) },
+    { label: 'Habitaciones', value: String(property.bedrooms) },
+    { label: 'Camas', value: String(property.beds) },
+    { label: 'Baños', value: String(property.bathrooms) },
+    ...(property.areaM2 ? [{ label: 'Área', value: `${property.areaM2} m²` }] : []),
+    ...(property.floor != null ? [{ label: 'Piso', value: String(property.floor) }] : []),
+    ...(property.bedType ? [{ label: 'Cama', value: BED_TYPE_LABEL[property.bedType] }] : []),
+    ...(property.viewType ? [{ label: 'Vista', value: property.viewType }] : []),
+    ...(property.hasElevator ? [{ label: 'Ascensor', value: 'Sí' }] : []),
+    { label: 'Check-in', value: property.checkInTime },
+    { label: 'Check-out', value: property.checkOutTime },
   ];
 
-  /** Reglas en formato "permitido / no permitido", con iconos de permitido y no permitido. */
   const rules = [
     { allowed: property.petsAllowed, label: 'mascotas' },
     { allowed: property.smokingAllowed, label: 'fumar' },
@@ -82,48 +77,35 @@ export function PropertyDetailView({ property, similar, place }: Props) {
 
   return (
     // pt-28: deja hueco a la barra de navegación flotante.
-    <div className="container-page pb-8 pt-28">
-      {/* Encabezado */}
-      <nav aria-label="Ruta de navegación" className="mb-4 text-sm text-ink-500">
-        <Link href="/alojamientos" className="hover:text-ink-900 hover:underline">
-          Alojamientos
-        </Link>
-        <span className="mx-1.5">/</span>
-        <Link
-          href={`/alojamientos?department=${property.location.department.slug}`}
-          className="hover:text-ink-900 hover:underline"
-        >
-          {property.location.department.name}
-        </Link>
-      </nav>
+    <div className="container-page pb-28 pt-28 lg:pb-8">
+      {/* Barra superior: ruta + acciones */}
+      <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
+        <nav aria-label="Ruta de navegación" className="font-mono text-xs tracking-wide text-ink-400">
+          <Link href="/alojamientos" className="transition hover:text-ink-900">
+            ALOJAMIENTOS
+          </Link>
+          <span className="mx-2">—</span>
+          <Link
+            href={`/alojamientos?department=${property.location.department.slug}`}
+            className="transition hover:text-ink-900"
+          >
+            {property.location.department.name.toUpperCase()}
+          </Link>
+        </nav>
 
-      <div className="mb-5 flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight text-ink-900 sm:text-[2rem]">
-            {property.title}
-          </h1>
-          <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-ink-600">
-            <Rating value={property.ratingAvg} count={property.reviewsCount} />
-            <span className="inline-flex items-center gap-1.5">
-              <MapPin className="size-3.5" /> {place}
-            </span>
-            <Badge tone="clay">{property.category.name}</Badge>
-          </div>
-        </div>
-
-        <div className="flex gap-2">
+        <div className="flex gap-1">
           <button
             onClick={share}
-            className="inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm text-ink-800 transition hover:bg-ink-100"
+            className="inline-flex items-center gap-2 rounded-full border border-ink-200 px-3.5 py-1.5 text-xs text-ink-700 transition hover:border-ink-900 hover:text-ink-900"
           >
-            <Share2 className="size-4" /> Compartir
+            <Share2 className="size-3.5" /> Compartir
           </button>
           <button
             onClick={() => toggleFavorite.mutate(property.id)}
             aria-pressed={isFavorite}
-            className="inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm text-ink-800 transition hover:bg-ink-100"
+            className="inline-flex items-center gap-2 rounded-full border border-ink-200 px-3.5 py-1.5 text-xs text-ink-700 transition hover:border-ink-900 hover:text-ink-900"
           >
-            <Heart className={cn('size-4', isFavorite && 'fill-clay-600 text-clay-600')} />
+            <Heart className={cn('size-3.5', isFavorite && 'fill-ink-900 text-ink-900')} />
             {isFavorite ? 'Guardado' : 'Guardar'}
           </button>
         </div>
@@ -131,79 +113,119 @@ export function PropertyDetailView({ property, similar, place }: Props) {
 
       <PropertyGallery images={property.images} title={property.title} />
 
+      {/* Título editorial bajo la galería */}
+      <header className="mt-10 border-b border-ink-900 pb-8">
+        <div className="flex flex-wrap items-center gap-3">
+          <Badge tone="dark">{property.category.name}</Badge>
+          <span className="inline-flex items-center gap-1.5 text-xs text-ink-500">
+            <MapPin className="size-3.5" /> {place}
+          </span>
+          {property.reviewsCount > 0 && (
+            <Link
+              href="#resenas-section"
+              className="inline-flex items-center gap-1.5 text-xs text-ink-500 transition hover:text-ink-900"
+            >
+              <Star className="size-3.5 fill-ink-900 text-ink-900" />
+              {property.ratingAvg.toFixed(1)} · {property.reviewsCount} reseñas
+            </Link>
+          )}
+        </div>
+
+        <h1 className="mt-4 max-w-3xl text-display text-4xl leading-[1.05] text-ink-900 sm:text-5xl lg:text-6xl">
+          {property.title}
+        </h1>
+      </header>
+
       {/* Contenido + card de reserva */}
       {/* minmax(0,1fr) evita que un texto largo sin espacios ensanche la columna
           izquierda y empuje la card de reserva fuera de la pantalla. */}
-      <div className="mt-10 grid gap-12 lg:grid-cols-[minmax(0,1fr)_384px] lg:gap-16">
-        <div className="min-w-0 space-y-10">
+      <div className="mt-12 grid gap-14 lg:grid-cols-[minmax(0,1fr)_380px] lg:gap-20">
+        <div className="min-w-0 space-y-16">
+          {/* 01 — Ficha técnica + anfitrión */}
           <section>
-            <div className="flex items-start justify-between gap-6 border-b border-ink-200 pb-7">
-              <div>
-                <h2 className="text-xl font-semibold text-ink-900">
-                  {property.category.name} en {place}
-                </h2>
-                <ul className="mt-3 grid gap-2 text-sm text-ink-600 sm:grid-cols-2">
-                  {facts.map((fact) => (
-                    <li key={fact.label} className="inline-flex items-center gap-2">
-                      <fact.icon className="size-4 text-ink-400" /> {fact.label}
-                    </li>
-                  ))}
-                </ul>
-              </div>
+            <SectionTitle index="01">La ficha</SectionTitle>
 
-              <div className="hidden shrink-0 text-right sm:block">
+            <div className="grid gap-10 sm:grid-cols-[minmax(0,1fr)_auto] sm:gap-14">
+              <dl className="grid grid-cols-2 gap-x-8">
+                {specs.map((spec) => (
+                  <div
+                    key={spec.label}
+                    className="flex items-baseline justify-between gap-3 border-b border-ink-200 py-2.5"
+                  >
+                    <dt className="font-mono text-[0.7rem] uppercase tracking-wider text-ink-400">
+                      {spec.label}
+                    </dt>
+                    <dd className="text-sm font-medium text-ink-900">{spec.value}</dd>
+                  </div>
+                ))}
+              </dl>
+
+              <div className="flex items-center gap-4 self-start rounded-2xl border border-ink-200 p-5 sm:w-44 sm:flex-col sm:text-center">
                 <Avatar
                   src={property.owner.avatarUrl}
                   firstName={property.owner.firstName}
                   lastName={property.owner.lastName}
                   size="lg"
-                  className="mx-auto"
                 />
-                <p className="mt-2 text-sm font-medium text-ink-900">
-                  {property.owner.firstName} {property.owner.lastName.charAt(0)}.
-                </p>
-                <p className="text-xs text-ink-500">Anfitrión</p>
+                <div>
+                  <p className="font-mono text-[0.65rem] uppercase tracking-wider text-ink-400">
+                    Anfitrión
+                  </p>
+                  <p className="mt-1 text-sm font-medium text-ink-900">
+                    {property.owner.firstName} {property.owner.lastName.charAt(0)}.
+                  </p>
+                </div>
               </div>
             </div>
           </section>
 
-          <section className="border-b border-ink-200 pb-9">
-            <h2 className="sr-only">Descripción</h2>
-            {property.description.split('\n\n').map((paragraph, i) => (
-              <p
-                key={i}
-                className="mb-4 break-words text-[0.95rem] leading-relaxed text-ink-700 last:mb-0"
-              >
-                {paragraph}
-              </p>
-            ))}
+          {/* 02 — Descripción */}
+          <section>
+            <SectionTitle index="02">El espacio</SectionTitle>
+            <div className="max-w-2xl">
+              {property.description.split('\n\n').map((paragraph, i) => (
+                <p
+                  key={i}
+                  className={cn(
+                    'mb-5 break-words leading-[1.75] text-ink-700 last:mb-0',
+                    i === 0 ? 'text-lg text-ink-900' : 'text-[0.95rem]',
+                  )}
+                >
+                  {paragraph}
+                </p>
+              ))}
+            </div>
           </section>
 
-          <div className="border-b border-ink-200 pb-9">
-            <PropertyAmenities amenities={property.amenities.map((a) => a.amenity)} />
-          </div>
+          {/* 03 — Servicios */}
+          <section>
+            <PropertyAmenities amenities={property.amenities.map((a) => a.amenity)} index="03" />
+          </section>
 
-          <section className="border-b border-ink-200 pb-9">
+          {/* 04 — Ubicación */}
+          <section>
             <PropertyMap
               location={property.location}
               place={place}
               reference={property.location.reference}
+              index="04"
             />
           </section>
 
-          {/* Reglas de la casa */}
-          <section className="border-b border-ink-200 pb-9">
-            <h2 className="text-xl font-semibold text-ink-900">Reglas de la casa</h2>
-            <ul className="mt-4 grid gap-3 text-sm text-ink-700 sm:grid-cols-2">
+          {/* 05 — Reglas y condiciones */}
+          <section>
+            <SectionTitle index="05">Reglas y condiciones</SectionTitle>
+
+            <ul className="grid gap-3 text-sm text-ink-700 sm:grid-cols-2">
               {rules.map((rule) => (
                 <li key={rule.label} className="flex items-center gap-2.5">
                   {rule.allowed ? (
                     <Check className="size-4 shrink-0 text-ink-900" aria-hidden />
                   ) : (
-                    <X className="size-4 shrink-0 text-ink-400" aria-hidden />
+                    <X className="size-4 shrink-0 text-ink-300" aria-hidden />
                   )}
-                  <span className={cn(!rule.allowed && 'text-ink-500')}>
-                    {rule.allowed ? 'Se permiten' : 'No se permiten'} {rule.label}
+                  <span className={cn(!rule.allowed && 'text-ink-400 line-through')}>
+                    {rule.label}
                   </span>
                 </li>
               ))}
@@ -219,42 +241,38 @@ export function PropertyDetailView({ property, similar, place }: Props) {
             </ul>
 
             {property.houseRules && (
-              <p className="mt-4 whitespace-pre-line break-words text-sm leading-relaxed text-ink-600">
+              <p className="mt-5 max-w-2xl whitespace-pre-line break-words text-sm leading-relaxed text-ink-600">
                 {property.houseRules}
               </p>
             )}
-          </section>
 
-          {/* Cancelación y cobros adicionales */}
-          <section className="border-b border-ink-200 pb-9">
-            <h2 className="text-xl font-semibold text-ink-900">Política de cancelación</h2>
-            <div className="mt-4 flex items-start gap-2.5 text-sm text-ink-700">
-              <ShieldCheck className="mt-0.5 size-4 shrink-0 text-ink-900" aria-hidden />
-              <p>
-                <span className="font-medium text-ink-900">
-                  {CANCELLATION_POLICY_LABEL[property.cancellationPolicy]}.
-                </span>{' '}
-                {CANCELLATION_POLICY_DETAIL[property.cancellationPolicy]}
-              </p>
+            <div className="mt-8 rounded-2xl bg-ink-50 p-6">
+              <div className="flex items-start gap-3">
+                <ShieldCheck className="mt-0.5 size-4 shrink-0 text-ink-900" aria-hidden />
+                <p className="text-sm leading-relaxed text-ink-700">
+                  <span className="font-medium text-ink-900">
+                    {CANCELLATION_POLICY_LABEL[property.cancellationPolicy]}.
+                  </span>{' '}
+                  {CANCELLATION_POLICY_DETAIL[property.cancellationPolicy]}
+                </p>
+              </div>
+
+              {(hasExtraFees || hasDiscounts) && (
+                <ul className="mt-4 space-y-1.5 border-t border-ink-200 pt-4 text-sm text-ink-600">
+                  {deposit > 0 && <li>Depósito de garantía: {formatPrice(deposit)}</li>}
+                  {extraGuest > 0 && (
+                    <li>Huésped adicional: {formatPrice(extraGuest)} por noche</li>
+                  )}
+                  {property.weeklyDiscount > 0 && (
+                    <li>{property.weeklyDiscount}% de descuento desde 7 noches</li>
+                  )}
+                  {property.monthlyDiscount > 0 && (
+                    <li>{property.monthlyDiscount}% de descuento desde 28 noches</li>
+                  )}
+                </ul>
+              )}
             </div>
-
-            {(hasExtraFees || hasDiscounts) && (
-              <ul className="mt-4 space-y-2 text-sm text-ink-600">
-                {deposit > 0 && <li>Depósito de garantía: {formatPrice(deposit)}</li>}
-                {extraGuest > 0 && (
-                  <li>Huésped adicional: {formatPrice(extraGuest)} por noche</li>
-                )}
-                {property.weeklyDiscount > 0 && (
-                  <li>{property.weeklyDiscount}% de descuento en estadías de 7 noches o más</li>
-                )}
-                {property.monthlyDiscount > 0 && (
-                  <li>{property.monthlyDiscount}% de descuento en estadías de 28 noches o más</li>
-                )}
-              </ul>
-            )}
           </section>
-
-          <ReviewsSection propertyId={property.id} />
         </div>
 
         {/* Card de reserva (sticky en desktop) */}
@@ -263,10 +281,16 @@ export function PropertyDetailView({ property, similar, place }: Props) {
         </aside>
       </div>
 
+      {/* 06 — Reseñas, a todo el ancho */}
+      <div className="mt-20 border-t border-ink-900 pt-12">
+        <ReviewsSection propertyId={property.id} propertyTitle={property.title} index="06" />
+      </div>
+
       {similar.length > 0 && (
         <section className="mt-20 border-t border-ink-200 pt-12">
-          <h2 className="mb-7 text-2xl font-semibold tracking-tight text-ink-900">
-            Alojamientos similares
+          <span className="block font-mono text-xs tracking-[0.2em] text-ink-400">07</span>
+          <h2 className="mb-8 mt-2 text-display text-2xl text-ink-900 sm:text-3xl">
+            También te puede gustar
           </h2>
           <PropertyGrid properties={similar} />
         </section>
@@ -282,16 +306,13 @@ export function PropertyDetailView({ property, similar, place }: Props) {
           <Rating value={property.ratingAvg} count={property.reviewsCount} />
         </div>
 
-        <Link
-          href="#contenido"
-          onClick={(e) => {
-            e.preventDefault();
-            document.querySelector('aside')?.scrollIntoView({ behavior: 'smooth' });
-          }}
-          className="rounded-xl bg-clay-600 px-6 py-3 text-sm font-medium text-white"
+        <button
+          type="button"
+          onClick={() => document.querySelector('aside')?.scrollIntoView({ behavior: 'smooth' })}
+          className="rounded-full bg-ink-900 px-6 py-3 text-sm font-medium text-white"
         >
           Reservar
-        </Link>
+        </button>
       </div>
     </div>
   );

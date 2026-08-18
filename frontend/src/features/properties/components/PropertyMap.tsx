@@ -16,9 +16,11 @@ interface PropertyMapProps {
    * caemos al fallback del departamento (marcar eso como "exacto" sería mentir).
    */
   precise?: boolean;
+  /** Índice editorial que se muestra sobre el título, p. ej. "04". */
+  index?: string;
 }
 
-export function PropertyMap({ location, place, reference, precise }: PropertyMapProps) {
+export function PropertyMap({ location, place, reference, precise, index }: PropertyMapProps) {
   const hasOwnCoords = location.latitude != null && location.longitude != null;
 
   // Sin coordenadas propias, se cae a la capital del departamento.
@@ -34,7 +36,13 @@ export function PropertyMap({ location, place, reference, precise }: PropertyMap
 
   return (
     <section aria-labelledby="ubicacion">
-      <h2 id="ubicacion" className="text-xl font-semibold text-ink-900">
+      {index && (
+        <span className="block font-mono text-xs tracking-[0.2em] text-ink-400">{index}</span>
+      )}
+      <h2
+        id="ubicacion"
+        className={index ? 'mt-2 text-display text-2xl text-ink-900 sm:text-3xl' : 'text-xl font-semibold text-ink-900'}
+      >
         Dónde te hospedarás
       </h2>
 

@@ -17,7 +17,7 @@ function AmenityIcon({ name }: { name?: string | null }) {
   return Icon ? <Icon className="size-5 text-ink-700" /> : <Check className="size-5 text-ink-700" />;
 }
 
-export function PropertyAmenities({ amenities }: { amenities: Amenity[] }) {
+export function PropertyAmenities({ amenities, index }: { amenities: Amenity[]; index?: string }) {
   const [open, setOpen] = useState(false);
   const visible = amenities.slice(0, 8);
 
@@ -29,7 +29,13 @@ export function PropertyAmenities({ amenities }: { amenities: Amenity[] }) {
 
   return (
     <section aria-labelledby="amenidades">
-      <h2 id="amenidades" className="text-xl font-semibold text-ink-900">
+      {index && (
+        <span className="block font-mono text-xs tracking-[0.2em] text-ink-400">{index}</span>
+      )}
+      <h2
+        id="amenidades"
+        className={index ? 'mt-2 text-display text-2xl text-ink-900 sm:text-3xl' : 'text-xl font-semibold text-ink-900'}
+      >
         ¿Qué ofrece este lugar?
       </h2>
 
