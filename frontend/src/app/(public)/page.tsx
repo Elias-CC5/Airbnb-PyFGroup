@@ -1,5 +1,5 @@
 import { StackSection } from '@/components/ui/StackSection';
-import { CategoryGrid } from '@/features/home/components/CategoryGrid';
+import { DeparturesBoard } from '@/features/home/components/DeparturesBoard';
 import { FeaturedProperties } from '@/features/home/components/FeaturedProperties';
 import { Hero } from '@/features/home/components/Hero';
 import { PopularDestinations } from '@/features/home/components/PopularDestinations';
@@ -10,9 +10,8 @@ import { propertiesServerService } from '@/features/properties/services/properti
 export const revalidate = 120;
 
 export default async function HomePage() {
-  const [featured, categories, destinations] = await Promise.all([
+  const [featured, destinations] = await Promise.all([
     propertiesServerService.featured(8),
-    catalogServerService.categories(),
     catalogServerService.topDestinations(5),
   ]);
 
@@ -26,7 +25,7 @@ export default async function HomePage() {
       </StackSection>
 
       <StackSection index={2} className="bg-white">
-        <CategoryGrid categories={categories ?? []} />
+        <DeparturesBoard />
       </StackSection>
 
       {/*
