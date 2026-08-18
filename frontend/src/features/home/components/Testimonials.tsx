@@ -31,14 +31,7 @@ const REVIEWS: Review[] = [
       'El departamento da al Parque de las Aguas. La primera noche nos quedamos en la ventana mirando las fuentes encendidas sin hacer nada más. La cocina tenía hasta arrocera.',
     ...person('1472099645785-5658abf4ff4e'),
   },
-  {
-    id: 3,
-    name: 'Aiko Tanaka',
-    affiliation: 'Osaka, Japón',
-    quote:
-      'Viajaba sola y lo que más me importaba era sentirme segura. Portería las veinticuatro horas y una puerta que pesa de verdad. Salí a caminar de noche sin pensarlo dos veces.',
-    ...person('1534528741775-53994a69daeb'),
-  },
+
   {
     id: 4,
     name: "Daniel O'Sullivan",

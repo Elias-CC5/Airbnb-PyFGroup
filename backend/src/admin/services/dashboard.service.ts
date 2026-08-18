@@ -18,6 +18,9 @@ export class DashboardService {
     startOfMonth.setUTCDate(1);
     startOfMonth.setUTCHours(0, 0, 0, 0);
 
+    const startOfNextMonth = new Date(startOfMonth);
+    startOfNextMonth.setUTCMonth(startOfNextMonth.getUTCMonth() + 1);
+
     const [
       propertiesTotal,
       propertiesActive,
@@ -44,10 +47,13 @@ export class DashboardService {
         where: { status: { in: [ReservationStatus.CONFIRMED, ReservationStatus.COMPLETED] } },
         _sum: { totalPrice: true },
       }),
+      // Ingresos del mes = estadías que ocurren este mes, NO reservas cargadas
+      // este mes. Con datos importados, createdAt es la fecha de la importación
+      // y metía el histórico completo dentro del mes en curso.
       this.prisma.reservation.aggregate({
         where: {
           status: { in: [ReservationStatus.CONFIRMED, ReservationStatus.COMPLETED] },
-          createdAt: { gte: startOfMonth },
+          checkIn: { gte: startOfMonth, lt: startOfNextMonth },
         },
         _sum: { totalPrice: true },
       }),
@@ -76,18 +82,49 @@ export class DashboardService {
     from.setUTCDate(1);
     from.setUTCHours(0, 0, 0, 0);
 
+    // Se agrupa por check_in (cuándo se ocupa el alojamiento), no por created_at
+    // (cuándo se cargó el registro): si no, una importación masiva apila todo
+    // el histórico en el mes en que se subió el archivo.
     const rows = await this.prisma.$queryRaw<Array<{ month: Date; reservations: bigint; revenue: string }>>`
-      SELECT date_trunc('month', "created_at") AS month,
-             COUNT(*)                          AS reservations,
+      SELECT date_trunc('month', "check_in") AS month,
+             COUNT(*)                        AS reservations,
              COALESCE(SUM(CASE WHEN status IN ('CONFIRMED','COMPLETED') THEN "total_price" ELSE 0 END), 0) AS revenue
       FROM reservations
-      WHERE "created_at" >= ${from}
+      WHERE "check_in" >= ${from} AND status <> 'CANCELLED'
       GROUP BY 1
       ORDER BY 1 ASC
     `;
 
     return rows.map((r) => ({
       month: r.month.toISOString().slice(0, 7),
+      reservations: Number(r.reservations),
+      revenue: Number(r.revenue),
+    }));
+  }
+
+  /** Reservas e ingresos por canal de venta, para los gráficos del panel. */
+  async channelSeries(months = 12) {
+    const from = new Date();
+    from.setUTCMonth(from.getUTCMonth() - (months - 1));
+    from.setUTCDate(1);
+    from.setUTCHours(0, 0, 0, 0);
+
+    const rows = await this.prisma.$queryRaw<
+      Array<{ month: Date; channel: string; reservations: bigint; revenue: string }>
+    >`
+      SELECT date_trunc('month', "check_in") AS month,
+             channel::text                   AS channel,
+             COUNT(*)                        AS reservations,
+             COALESCE(SUM(CASE WHEN status IN ('CONFIRMED','COMPLETED') THEN "total_price" ELSE 0 END), 0) AS revenue
+      FROM reservations
+      WHERE "check_in" >= ${from} AND status <> 'CANCELLED'
+      GROUP BY 1, 2
+      ORDER BY 1 ASC
+    `;
+
+    return rows.map((r) => ({
+      month: r.month.toISOString().slice(0, 7),
+      channel: r.channel,
       reservations: Number(r.reservations),
       revenue: Number(r.revenue),
     }));
