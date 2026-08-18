@@ -31,7 +31,7 @@ const FLIP_KEYFRAMES = `
 `;
 
 const CELL_TEXT_STYLE: React.CSSProperties = {
-  fontSize: 'clamp(8px, 2.2vw, 24px)',
+  fontSize: 'clamp(12px, 2.8vw, 42px)',
   lineHeight: 1,
 };
 
@@ -90,8 +90,8 @@ const FlapCell = React.memo(
       'absolute inset-x-0 flex select-none items-center justify-center font-mono font-bold text-neutral-800';
 
     return (
-      <div className="flex aspect-[3/5] flex-col overflow-hidden rounded-[3px] border border-neutral-300">
-        <div className="relative flex-1" style={{ perspective: '140px' }}>
+      <div className="flex aspect-[3/5] flex-col overflow-hidden rounded-[4px] border border-neutral-300 md:rounded-md">
+        <div className="relative flex-1" style={{ perspective: '220px' }}>
           {/* Mitad superior */}
           <div className="absolute inset-x-0 top-0 h-[calc(50%-0.5px)] overflow-hidden rounded-t-[2px] bg-neutral-200/80">
             <div className={cn(half, 'top-0 h-[200%]')} style={CELL_TEXT_STYLE}>
@@ -190,14 +190,14 @@ export function TextFlippingBoard({ text = '', className }: TextFlippingBoardPro
   return (
     <div
       className={cn(
-        'relative mx-auto w-full max-w-2xl rounded-xl bg-neutral-100 p-2 shadow-lg md:rounded-2xl md:p-4',
+        'relative mx-auto w-full max-w-5xl rounded-2xl bg-neutral-100 p-3 shadow-lg md:rounded-3xl md:p-6',
         className,
       )}
     >
       <style>{FLIP_KEYFRAMES}</style>
 
       <div
-        className="grid gap-px md:gap-[3px]"
+        className="grid gap-[2px] md:gap-1"
         style={{ gridTemplateColumns: `repeat(${BOARD_COLS}, 1fr)` }}
       >
         {board.map((row, r) =>
