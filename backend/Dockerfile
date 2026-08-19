@@ -30,5 +30,10 @@ COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/prisma ./prisma
 COPY --from=builder /app/package.json ./package.json
 EXPOSE 4000
-# Aplica las migraciones pendientes antes de levantar la API.
-CMD ["sh", "-c", "npx prisma migrate deploy && node dist/src/main"]
+# Intenta aplicar las migraciones pendientes, pero no bloquea el arranque si
+# fallan. Neon suspende el compute por inactividad y, mientras despierta,
+# `migrate deploy` abandona el advisory lock a los 10 s y devuelve error —
+# aunque no hubiera ninguna migración que aplicar. Con `||` la API levanta
+# igual y las migraciones se aplican a mano cuando toque:
+#     DATABASE_URL="<url directa, sin -pooler>" npx prisma migrate deploy
+CMD ["sh", "-c", "npx prisma migrate deploy || echo 'AVISO: migraciones no aplicadas, la API arranca igual'; node dist/src/main"]
