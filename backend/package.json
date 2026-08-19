@@ -19,7 +19,8 @@
     "seed:amenidades": "ts-node prisma/seed-amenities.ts",
     "seed:lima": "ts-node prisma/add-lima-districts.ts",
     "import:ocupacion": "ts-node prisma/import-occupancy.ts",
-    "limpiar:importaciones": "ts-node prisma/limpiar-importaciones.ts"
+    "limpiar:importaciones": "ts-node prisma/limpiar-importaciones.ts",
+    "cargar:ocupacion": "ts-node prisma/cargar-ocupacion.ts"
   },
   "prisma": {
     "seed": "ts-node prisma/seed.ts"
