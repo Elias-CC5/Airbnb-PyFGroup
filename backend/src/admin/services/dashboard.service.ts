@@ -44,7 +44,9 @@ export class DashboardService {
       this.prisma.user.count({ where: { deletedAt: null } }),
       this.prisma.user.count({ where: { deletedAt: null, createdAt: { gte: startOfMonth } } }),
       this.prisma.reservation.aggregate({
-        where: { status: { in: [ReservationStatus.CONFIRMED, ReservationStatus.COMPLETED] } },
+        // Todo lo no cancelado: una estadía sin pagar igual está facturada, y
+        // así la cifra coincide con el "Total facturado" de la hoja de Excel.
+        where: { status: { not: ReservationStatus.CANCELLED } },
         _sum: { totalPrice: true },
       }),
       // Ingresos del mes = estadías que ocurren este mes, NO reservas cargadas
@@ -52,7 +54,7 @@ export class DashboardService {
       // y metía el histórico completo dentro del mes en curso.
       this.prisma.reservation.aggregate({
         where: {
-          status: { in: [ReservationStatus.CONFIRMED, ReservationStatus.COMPLETED] },
+          status: { not: ReservationStatus.CANCELLED },
           checkIn: { gte: startOfMonth, lt: startOfNextMonth },
         },
         _sum: { totalPrice: true },
@@ -88,7 +90,7 @@ export class DashboardService {
     const rows = await this.prisma.$queryRaw<Array<{ month: Date; reservations: bigint; revenue: string }>>`
       SELECT date_trunc('month', "check_in") AS month,
              COUNT(*)                        AS reservations,
-             COALESCE(SUM(CASE WHEN status IN ('CONFIRMED','COMPLETED') THEN "total_price" ELSE 0 END), 0) AS revenue
+             COALESCE(SUM("total_price"), 0)  AS revenue
       FROM reservations
       WHERE "check_in" >= ${from} AND status <> 'CANCELLED'
       GROUP BY 1
@@ -126,7 +128,7 @@ export class DashboardService {
              p.slug,
              COUNT(r.id)                        AS reservations,
              COALESCE(SUM(r.nights), 0)         AS nights,
-             COALESCE(SUM(CASE WHEN r.status IN ('CONFIRMED','COMPLETED') THEN r."total_price" ELSE 0 END), 0) AS revenue
+             COALESCE(SUM(r."total_price"), 0)  AS revenue
       FROM properties p
       JOIN reservations r ON r."property_id" = p.id
       WHERE p."deleted_at" IS NULL
@@ -161,7 +163,7 @@ export class DashboardService {
       SELECT date_trunc('month', "check_in") AS month,
              channel::text                   AS channel,
              COUNT(*)                        AS reservations,
-             COALESCE(SUM(CASE WHEN status IN ('CONFIRMED','COMPLETED') THEN "total_price" ELSE 0 END), 0) AS revenue
+             COALESCE(SUM("total_price"), 0)  AS revenue
       FROM reservations
       WHERE "check_in" >= ${from} AND status <> 'CANCELLED'
       GROUP BY 1, 2
