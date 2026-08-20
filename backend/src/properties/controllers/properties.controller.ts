@@ -16,6 +16,7 @@ import { OptionalJwtGuard } from '../../auth/guards/optional-jwt.guard';
 import { AuthenticatedUser } from '../../auth/interfaces/authenticated-user.interface';
 import { CurrentUser, Public, Roles } from '../../common/decorators';
 import { RolesGuard } from '../../common/guards/roles.guard';
+import { HostActiveGuard } from '../../hosts/guards/host-active.guard';
 import { CreatePropertyDto, SearchPropertyDto, UpdatePropertyDto } from '../dto';
 import { PropertiesService } from '../services/properties.service';
 
@@ -54,24 +55,43 @@ export class PropertiesController {
     return this.propertiesService.findSimilar(slug, limit ? Number(limit) : 4);
   }
 
-  @Get(':id')
-  @Roles(Role.ADMIN)
+  // Va antes de :id para que la ruta literal no la capture el parámetro.
+  @Get('mine')
+  @Roles(Role.HOST)
+  @UseGuards(HostActiveGuard)
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Detalle por ID (administración)' })
-  findOne(@Param('id', ParseUUIDPipe) id: string) {
+  @ApiOperation({ summary: 'Mis alojamientos (anfitrión)' })
+  findMine(@CurrentUser() user: AuthenticatedUser) {
+    return this.propertiesService.findMine(user);
+  }
+
+  @Get(':id')
+  @Roles(Role.HOST)
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Detalle por ID',
+    description: 'El anfitrión sólo puede consultar los suyos; se comprueba contra ownerId.',
+  })
+  async findOne(@Param('id', ParseUUIDPipe) id: string, @CurrentUser() user: AuthenticatedUser) {
+    await this.propertiesService.ensureCanManage(id, user);
     return this.propertiesService.findOne(id);
   }
 
   @Post()
-  @Roles(Role.ADMIN)
+  @Roles(Role.HOST)
+  @UseGuards(HostActiveGuard)
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Crear alojamiento' })
+  @ApiOperation({
+    summary: 'Crear alojamiento',
+    description: 'Un anfitrión lo crea siempre en DRAFT; publicar requiere aprobación.',
+  })
   create(@Body() dto: CreatePropertyDto, @CurrentUser() user: AuthenticatedUser) {
     return this.propertiesService.create(dto, user);
   }
 
   @Patch(':id')
-  @Roles(Role.ADMIN)
+  @Roles(Role.HOST)
+  @UseGuards(HostActiveGuard)
   @ApiBearerAuth()
   update(
     @Param('id', ParseUUIDPipe) id: string,
@@ -82,9 +102,15 @@ export class PropertiesController {
   }
 
   @Patch(':id/status/:status')
-  @Roles(Role.ADMIN)
+  @Roles(Role.HOST)
+  @UseGuards(HostActiveGuard)
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Activar / desactivar / publicar' })
+  @ApiOperation({
+    summary: 'Cambia el estado del alojamiento',
+    description:
+      'El anfitrión puede enviar a revisión, pausar, reactivar o archivar los suyos. ' +
+      'Sólo un administrador puede pasar una ficha a ACTIVE.',
+  })
   changeStatus(
     @Param('id', ParseUUIDPipe) id: string,
     @Param('status') status: PropertyStatus,
@@ -93,6 +119,7 @@ export class PropertiesController {
     return this.propertiesService.changeStatus(id, status, user);
   }
 
+  /** Destacar en el home es decisión editorial: sólo administración. */
   @Patch(':id/featured/:value')
   @Roles(Role.ADMIN)
   @ApiBearerAuth()
@@ -105,7 +132,8 @@ export class PropertiesController {
   }
 
   @Delete(':id')
-  @Roles(Role.ADMIN)
+  @Roles(Role.HOST)
+  @UseGuards(HostActiveGuard)
   @ApiBearerAuth()
   remove(@Param('id', ParseUUIDPipe) id: string, @CurrentUser() user: AuthenticatedUser) {
     return this.propertiesService.remove(id, user);

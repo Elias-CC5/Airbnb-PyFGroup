@@ -18,6 +18,7 @@ import { appConfig, jwtConfig, mailConfig, storageConfig, validateEnv, whatsappC
 import { ComplaintsModule } from './complaints/complaints.module';
 import { DatabaseModule } from './database/database.module';
 import { FavoritesModule } from './favorites/favorites.module';
+import { HostsModule } from './hosts/hosts.module';
 import { LocationsModule } from './locations/locations.module';
 import { MailModule } from './mail/mail.module';
 import { PropertiesModule } from './properties/properties.module';
@@ -57,6 +58,7 @@ import { WhatsappModule } from './whatsapp/whatsapp.module';
 
     AuthModule,
     UsersModule,
+    HostsModule,
     LocationsModule,
     CategoriesModule,
     AmenitiesModule,

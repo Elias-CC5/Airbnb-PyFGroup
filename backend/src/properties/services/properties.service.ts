@@ -162,6 +162,9 @@ export class PropertiesService {
         data: {
           ...data,
           slug,
+          // Un anfitrión no publica por su cuenta: su ficha nace en borrador y
+          // sale al público sólo cuando un administrador la aprueba.
+          status: this.isStaff(user) ? data.status : PropertyStatus.DRAFT,
           ownerId: user.id,
           locationId: createdLocation.id,
           ...(amenityIds?.length
@@ -211,9 +214,49 @@ export class PropertiesService {
       });
     });
   }
+  /**
+   * Cambios de estado permitidos.
+   *
+   * El administrador puede llevar una ficha a cualquier estado. El anfitrión
+   * no: puede enviarla a revisión, pausar la suya ya aprobada, reactivarla o
+   * archivarla, pero NUNCA publicarla él mismo. Si esto se dejara abierto,
+   * cualquier anfitrión saltaría la revisión con una sola llamada a la API.
+   */
+  private static readonly TRANSICIONES_ANFITRION: Partial<Record<PropertyStatus, PropertyStatus[]>> = {
+    DRAFT: [PropertyStatus.PENDING_REVIEW, PropertyStatus.ARCHIVED],
+    REJECTED: [PropertyStatus.PENDING_REVIEW, PropertyStatus.ARCHIVED],
+    PENDING_REVIEW: [PropertyStatus.DRAFT, PropertyStatus.ARCHIVED],
+    ACTIVE: [PropertyStatus.PAUSED, PropertyStatus.ARCHIVED],
+    PAUSED: [PropertyStatus.ACTIVE, PropertyStatus.ARCHIVED],
+  };
+
   async changeStatus(id: string, status: PropertyStatus, user: AuthenticatedUser) {
-    await this.ensureCanManage(id, user);
+    const property = await this.ensureCanManage(id, user);
+
+    if (!this.isStaff(user)) {
+      const permitidos = PropertiesService.TRANSICIONES_ANFITRION[property.status] ?? [];
+      if (!permitidos.includes(status)) {
+        throw new ForbiddenException(
+          status === PropertyStatus.ACTIVE
+            ? 'Envía el alojamiento a revisión: la publicación la aprueba un administrador'
+            : `No puedes pasar de ${property.status} a ${status}`,
+        );
+      }
+    }
+
     return this.prisma.property.update({ where: { id }, data: { status } });
+  }
+
+  /** Alojamientos del anfitrión que hace la petición. */
+  findMine(user: AuthenticatedUser) {
+    return this.prisma.property.findMany({
+      where: { ownerId: user.id, deletedAt: null },
+      orderBy: { createdAt: 'desc' },
+      select: {
+        ...propertyCardSelect,
+        _count: { select: { reservations: true, reviews: true } },
+      },
+    });
   }
 
   async toggleFeatured(id: string, isFeatured: boolean, user: AuthenticatedUser) {
@@ -226,7 +269,7 @@ export class PropertiesService {
     await this.ensureCanManage(id, user);
     await this.prisma.property.update({
       where: { id },
-      data: { deletedAt: new Date(), status: PropertyStatus.INACTIVE },
+      data: { deletedAt: new Date(), status: PropertyStatus.ARCHIVED },
     });
     return { message: 'Alojamiento eliminado' };
   }
@@ -248,12 +291,15 @@ export class PropertiesService {
   }
 
   // ------------------------------ helpers ------------------------------
+  private isStaff(user: AuthenticatedUser): boolean {
+    return user.role === Role.ADMIN || user.role === Role.SUPER_ADMIN;
+  }
+
   async ensureCanManage(id: string, user: AuthenticatedUser) {
     const property = await this.prisma.property.findFirst({ where: { id, deletedAt: null } });
     if (!property) throw new NotFoundException('Alojamiento no encontrado');
 
-    const isStaff = user.role === Role.ADMIN || user.role === Role.SUPER_ADMIN;
-    if (!isStaff && property.ownerId !== user.id) {
+    if (!this.isStaff(user) && property.ownerId !== user.id) {
       throw new ForbiddenException('No puedes administrar este alojamiento');
     }
     return property;

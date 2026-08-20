@@ -18,9 +18,6 @@ const RGB_CHANNEL: Record<string, BookingChannel> = {
 /** El tema 9 de Office (Accent6) es el verde que la hoja usa para Airbnb. */
 const THEME_CHANNEL: Record<number, BookingChannel> = { 9: BookingChannel.AIRBNB };
 
-/** Columnas donde empieza cada día: nombre, precio y estado van en tríos. */
-const DAY_COLUMNS = [3, 6, 9, 12, 15, 18, 21];
-
 /** Prefijos de tres letras admitidos en el nombre de la hoja. */
 const MONTHS: Record<string, number> = {
   ene: 1,
@@ -110,48 +107,119 @@ export class OccupancyImportService {
   }
 
   // ------------------------------- lectura -------------------------------
+  /**
+   * Lee una hoja de mes. La hoja la mantiene el equipo a mano, así que el
+   * formato varía entre meses y hay que deducirlo bloque por bloque en vez de
+   * asumir posiciones fijas:
+   *
+   *  · Las columnas de día se detectan buscando el número de día seguido de
+   *    "Precio". En 2026 unos meses arrancan en la columna C y otros en la D.
+   *  · Las hojas de 2025 no llevan precio: los días van en la propia fila de
+   *    cabecera, una columna por día.
+   *  · Una noche cuenta si hay huésped O hay precio. A veces se escribe el
+   *    importe y se olvida el nombre; esas noches son reales y se cuelgan del
+   *    huésped anterior de la misma fila.
+   *  · Alguna fila de totales semanales quedó con un número de departamento en
+   *    la columna B (en marzo 2026, un 2105). Se reconoce porque ese dpto ya
+   *    salió en el bloque y la fila no tiene ni un nombre.
+   */
   private parseSheet(sheet: ExcelJS.Worksheet, month: string): ParsedNight[] {
     const nights: ParsedNight[] = [];
     const lastRow = sheet.rowCount;
 
+    // Para las hojas sin "Precio", los bloques son semanas consecutivas: sirve
+    // para descartar el arrastre del último día del mes anterior.
+    let diaEsperado = 1;
+
     let row = 1;
     while (row <= lastRow) {
-      if (this.text(sheet.getRow(row).getCell(2).value) !== 'N° Dpto.') {
+      const dptoCol = this.headerColumn(sheet, row);
+      if (!dptoCol) {
         row += 1;
         continue;
       }
 
-      // La fila siguiente lleva los números de día.
-      const dayRow = sheet.getRow(row + 1);
-      const days = new Map<number, number>();
-      for (const column of DAY_COLUMNS) {
-        const value = this.number(dayRow.getCell(column).value);
-        if (value && value >= 1 && value <= 31) days.set(column, value);
+      const layout = this.detectLayout(sheet, row, dptoCol, diaEsperado);
+      if (!layout) {
+        row += 1;
+        continue;
+      }
+      if (!layout.hasPrices) {
+        diaEsperado = Math.max(...layout.days.values()) + 1;
       }
 
-      let current = row + 2;
-      while (
-        current <= lastRow &&
-        this.text(sheet.getRow(current).getCell(2).value) !== 'N° Dpto.'
-      ) {
+      // Primera pasada: ubicar las filas de totales disfrazadas de dpto.
+      const vistos = new Set<number>();
+      const omitir = new Set<number>();
+      let scan = layout.firstDataRow;
+      while (scan <= lastRow && !this.headerColumn(sheet, scan)) {
+        const dpto = this.number(sheet.getRow(scan).getCell(dptoCol).value);
+        if (dpto && dpto >= 100 && dpto <= 9999) {
+          const tieneNombre = [...layout.days.keys()].some((c) =>
+            this.text(sheet.getRow(scan).getCell(c).value),
+          );
+          if (vistos.has(dpto) && !tieneNombre) omitir.add(scan);
+          vistos.add(dpto);
+        }
+        scan += 1;
+      }
+
+      const columnas = [...layout.days.keys()].sort((a, b) => a - b);
+      let current = layout.firstDataRow;
+
+      while (current <= lastRow && !this.headerColumn(sheet, current)) {
         const dataRow = sheet.getRow(current);
-        const dpto = this.number(dataRow.getCell(2).value);
+        const dpto = this.number(dataRow.getCell(dptoCol).value);
 
         // Los departamentos son de tres o cuatro dígitos (201, 1104…). Un número
         // suelto de una o dos cifras es un día o un contador, no una habitación.
-        if (dpto && dpto >= 100 && dpto <= 9999) {
-          for (const [column, day] of days) {
-            const guestCell = dataRow.getCell(column);
-            const guest = this.text(guestCell.value);
-            if (!guest) continue;
+        if (dpto && dpto >= 100 && dpto <= 9999 && !omitir.has(current)) {
+          // Nombres de la fila, ya limpios: un valor puramente numérico no es
+          // un huésped, es un resto de fórmula.
+          const nombres = new Map<number, string>();
+          for (const c of columnas) {
+            const valor = this.text(dataRow.getCell(c).value).replace(/\s+/g, ' ').trim();
+            nombres.set(c, valor && !/^[\d.,\s]+$/.test(valor) ? valor : '');
+          }
+
+          let ultimoNombre = '';
+          let ultimaCelda: ExcelJS.Cell | null = null;
+
+          for (const column of columnas) {
+            const day = layout.days.get(column)!;
+            const celda = dataRow.getCell(column);
+            const price = layout.hasPrices ? this.number(dataRow.getCell(column + 1).value) : null;
+            let guest = nombres.get(column) ?? '';
+
+            if (!guest && price === null) {
+              ultimoNombre = '';
+              ultimaCelda = null;
+              continue;
+            }
+
+            let origen = celda;
+            if (!guest) {
+              // Precio suelto: continúa la estadía anterior de la fila. Si no
+              // hay ninguna a la izquierda, se toma el siguiente nombre.
+              guest =
+                ultimoNombre ||
+                columnas.filter((c) => c > column).map((c) => nombres.get(c) ?? '').find(Boolean) ||
+                `Sin nombre ${dpto}`;
+              if (ultimaCelda) origen = ultimaCelda;
+            }
+
+            ultimoNombre = guest;
+            ultimaCelda = origen;
 
             nights.push({
               dpto: String(dpto),
               date: `${month}-${String(day).padStart(2, '0')}`,
-              guest: guest.replace(/\s+/g, ' ').trim(),
-              price: this.number(dataRow.getCell(column + 1).value),
-              channel: this.channelOf(guestCell),
-              paymentCode: this.number(dataRow.getCell(column + 2).value),
+              guest,
+              price,
+              channel: this.channelOf(origen),
+              paymentCode: layout.hasPrices
+                ? this.number(dataRow.getCell(column + 2).value)
+                : null,
             });
           }
         }
@@ -162,6 +230,90 @@ export class OccupancyImportService {
     }
 
     return nights;
+  }
+
+  /**
+   * Deduce dónde están los días de un bloque. Devuelve null si la fila
+   * "N° Dpto." no viene seguida de una fila de días reconocible.
+   */
+  private detectLayout(
+    sheet: ExcelJS.Worksheet,
+    headerRow: number,
+    dptoCol: number,
+    diaEsperado: number,
+  ): { days: Map<number, number>; firstDataRow: number; hasPrices: boolean } | null {
+    const ancho = Math.max(sheet.columnCount, dptoCol + 28);
+
+    // Formato con precios: día, "Precio", "Es" en tríos. La fila de días es la
+    // siguiente a la cabecera.
+    const conPrecio = new Map<number, number>();
+    const filaDias = sheet.getRow(headerRow + 1);
+    for (let c = dptoCol + 1; c <= ancho; c += 1) {
+      const dia = this.number(filaDias.getCell(c).value);
+      const etiqueta = this.text(filaDias.getCell(c + 1).value).toLowerCase();
+      if (dia && dia >= 1 && dia <= 31 && etiqueta.startsWith('precio')) conPrecio.set(c, dia);
+    }
+    if (conPrecio.size) {
+      return { days: conPrecio, firstDataRow: headerRow + 2, hasPrices: true };
+    }
+
+    // Formato sin precios (hojas de 2025): una columna por día, en la propia
+    // cabecera o en la fila de abajo.
+    for (const fila of [headerRow, headerRow + 1]) {
+      const sueltos = new Map<number, number>();
+      for (let c = dptoCol + 1; c <= dptoCol + 9; c += 1) {
+        const dia = this.dayFrom(sheet.getRow(fila).getCell(c).value);
+        if (dia) sueltos.set(c, dia);
+      }
+      const limpios = this.soloDiasDelBloque(sueltos, diaEsperado);
+      if (limpios.size) {
+        return { days: limpios, firstDataRow: fila + 1, hasPrices: false };
+      }
+    }
+
+    return null;
+  }
+
+  /**
+   * Columna donde vive el número de departamento en esta fila, si es una fila
+   * de cabecera. No siempre es la B: abril 2026 tiene la hoja corrida a la D.
+   */
+  private headerColumn(sheet: ExcelJS.Worksheet, row: number): number | null {
+    for (let c = 1; c <= 6; c += 1) {
+      const valor = this.text(sheet.getRow(row).getCell(c).value)
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .toLowerCase();
+      if (valor.startsWith('n° dpto') || valor.startsWith('n dpto')) return c;
+    }
+    return null;
+  }
+
+  /** 15 → 15 · "15 shak" → 15 · cualquier otra cosa → null. */
+  private dayFrom(value: ExcelJS.CellValue): number | null {
+    const numero = this.number(value);
+    if (numero && numero >= 1 && numero <= 31) return Math.trunc(numero);
+
+    const match = this.text(value).match(/^(\d{1,2})\b/);
+    if (!match) return null;
+    const dia = Number(match[1]);
+    return dia >= 1 && dia <= 31 ? dia : null;
+  }
+
+  /** Un bloque es una semana: sólo caben días entre el esperado y +6. */
+  private soloDiasDelBloque(dias: Map<number, number>, esperado: number): Map<number, number> {
+    const salida = new Map<number, number>();
+    let previo: number | null = null;
+
+    for (const columna of [...dias.keys()].sort((a, b) => a - b)) {
+      const dia = dias.get(columna)!;
+      if (dia < esperado || dia > esperado + 6) continue;
+      if (previo !== null && dia <= previo) continue;
+      salida.set(columna, dia);
+      previo = dia;
+    }
+
+    return salida;
   }
 
   /** Agrupa noches consecutivas del mismo huésped en una sola reserva. */
@@ -301,13 +453,21 @@ export class OccupancyImportService {
       summary.propertiesCreated += 1;
     }
 
+    // Dos huéspedes con las mismas tres iniciales, el mismo depa y el mismo día
+    // generarían el mismo código y uno pisaría al otro sin avisar. Se lleva la
+    // cuenta y se desempata con un sufijo.
+    const usados = new Map<string, number>();
+
     for (const item of reservations) {
       const propertyId = propertyByDpto.get(item.dpto);
       if (!propertyId) continue;
 
       // VarChar(20): I + dpto(4) + YYMMDD(6) + huésped(3) = 14 caracteres.
       const suffix = (item.guest.toLowerCase().replace(/[^a-z]/g, '').slice(0, 3) || 'x').toUpperCase();
-      const code = `I${item.dpto}${item.checkIn.replace(/-/g, '').slice(2)}${suffix}`;
+      const base = `I${item.dpto}${item.checkIn.replace(/-/g, '').slice(2)}${suffix}`;
+      const repeticion = (usados.get(base) ?? 0) + 1;
+      usados.set(base, repeticion);
+      const code = repeticion === 1 ? base : `${base}${repeticion}`;
 
       const data = {
         propertyId,

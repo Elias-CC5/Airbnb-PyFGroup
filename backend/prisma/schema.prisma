@@ -18,8 +18,19 @@ enum Role {
 
 enum PropertyStatus {
   DRAFT
-  PENDING
+  /// En cola de revisión del administrador antes de salir al público.
+  PENDING_REVIEW
   ACTIVE
+  /// El anfitrión la ocultó temporalmente; sus reservas siguen vigentes.
+  PAUSED
+  /// El administrador la rechazó; el anfitrión puede corregir y reenviar.
+  REJECTED
+  /// Retirada del catálogo, se conserva por historial.
+  ARCHIVED
+
+  /// @deprecated Usa PENDING_REVIEW. Se mantiene por las fichas ya creadas.
+  PENDING
+  /// @deprecated Usa PAUSED.
   INACTIVE
 }
 
@@ -85,6 +96,11 @@ model User {
   reviews            Review[]
   favorites          Favorite[]
   contactMessages    ContactMessage[]
+
+  hostProfile        HostProfile?
+  hostApplications   HostApplication[]  @relation("HostApplicant")
+  reviewedApplications HostApplication[] @relation("HostReviewer")
+  documentAccesses   HostDocumentAccess[] @relation("HostDocumentViewer")
 
   createdAt DateTime  @default(now()) @map("created_at")
   updatedAt DateTime  @updatedAt @map("updated_at")
@@ -502,4 +518,163 @@ model ComplaintBook {
   @@index([status])
   @@index([createdAt])
   @@map("complaint_book")
+}
+
+// ============================================================================
+//                                ANFITRIONES
+// ============================================================================
+//
+// Un usuario normal solicita ser anfitrión, el administrador revisa su
+// identidad y aprueba o rechaza. Sólo con el perfil en ACTIVE puede publicar.
+//
+// AVISO SOBRE DATOS PERSONALES (Ley 29733). La solicitud guarda documento de
+// identidad y fotos: es dato personal y, en el caso del documento, sensible.
+// Reglas que el código debe respetar y que están implementadas en el servicio:
+//   · esos campos NUNCA salen en una respuesta pública ni en el perfil;
+//   · sólo ADMIN y SUPER_ADMIN pueden consultarlos, y cada consulta queda
+//     registrada en HostDocumentAccess;
+//   · al aprobar o rechazar se borran las imágenes del documento: ya no hacen
+//     falta, y guardarlas indefinidamente es un riesgo sin contrapartida.
+
+enum HostStatus {
+  /// Solicitud enviada, esperando revisión.
+  PENDING
+  /// Aprobado: puede publicar y administrar sus alojamientos.
+  ACTIVE
+  /// Suspendido por el administrador; conserva sus datos, no puede publicar.
+  SUSPENDED
+  /// Rechazado tras la revisión.
+  REJECTED
+}
+
+enum HostApplicationStatus {
+  SUBMITTED
+  UNDER_REVIEW
+  APPROVED
+  REJECTED
+}
+
+enum IdDocumentType {
+  DNI
+  CARNET_EXTRANJERIA
+  PASAPORTE
+}
+
+/// Perfil público del anfitrión. Lo que ve un huésped en la ficha.
+model HostProfile {
+  id     String @id @default(uuid()) @db.Uuid
+  userId String @unique @map("user_id") @db.Uuid
+
+  displayName String  @map("display_name") @db.VarChar(80)
+  bio         String? @db.VarChar(1000)
+  avatarUrl   String? @map("avatar_url")
+  coverUrl    String? @map("cover_url")
+  city        String? @db.VarChar(80)
+  country     String  @default("Perú") @db.VarChar(60)
+  /// Idiomas que habla, en códigos ISO ("es", "en", "qu").
+  languages   String[] @default([])
+
+  status    HostStatus @default(PENDING)
+  hostSince DateTime?  @map("host_since")
+
+  /// Contacto operativo. No se muestra hasta que hay una reserva.
+  whatsapp     String? @db.VarChar(30)
+  contactEmail String? @map("contact_email") @db.VarChar(160)
+
+  /// Denormalizados para no recalcularlos en cada listado.
+  ratingAvg       Float @default(0) @map("rating_avg")
+  reviewsCount    Int   @default(0) @map("reviews_count")
+  propertiesCount Int   @default(0) @map("properties_count")
+
+  suspendedAt     DateTime? @map("suspended_at")
+  suspendedReason String?   @map("suspended_reason") @db.VarChar(500)
+
+  user     User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  settings HostSettings?
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([status])
+  @@map("host_profiles")
+}
+
+/// Solicitud para ser anfitrión. Contiene los datos de identidad que revisa
+/// el administrador. Nunca se expone fuera del panel de administración.
+model HostApplication {
+  id     String @id @default(uuid()) @db.Uuid
+  userId String @map("user_id") @db.Uuid
+
+  status HostApplicationStatus @default(SUBMITTED)
+
+  // ---- datos que declara el solicitante ----
+  fullName    String         @map("full_name") @db.VarChar(160)
+  phone       String         @db.VarChar(30)
+  occupation  String?        @db.VarChar(120)
+  /// Por qué quiere ser anfitrión y qué piensa publicar.
+  motivation  String         @db.VarChar(1000)
+  city        String?        @db.VarChar(80)
+
+  // ---- identidad (RESTRINGIDO) ----
+  documentType   IdDocumentType @map("document_type")
+  /// Sólo lo ve el administrador; se borra si la solicitud se rechaza.
+  documentNumber String         @map("document_number") @db.VarChar(20)
+  /// URLs privadas. Se ponen a null al resolver la solicitud.
+  documentFrontUrl String? @map("document_front_url")
+  documentBackUrl  String? @map("document_back_url")
+  selfieUrl        String? @map("selfie_url")
+  /// Marca que las imágenes ya se eliminaron tras la revisión.
+  documentsPurgedAt DateTime? @map("documents_purged_at")
+
+  // ---- revisión ----
+  submittedAt     DateTime  @default(now()) @map("submitted_at")
+  reviewedAt      DateTime? @map("reviewed_at")
+  reviewedById    String?   @map("reviewed_by_id") @db.Uuid
+  rejectionReason String?   @map("rejection_reason") @db.VarChar(500)
+
+  user       User  @relation("HostApplicant", fields: [userId], references: [id], onDelete: Cascade)
+  reviewedBy User? @relation("HostReviewer", fields: [reviewedById], references: [id])
+
+  accesses HostDocumentAccess[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([status, submittedAt])
+  @@index([userId])
+  @@map("host_applications")
+}
+
+/// Bitácora de quién miró los documentos de una solicitud. Existe para poder
+/// responder "¿quién vio mi DNI?" si el titular lo pregunta.
+model HostDocumentAccess {
+  id            String   @id @default(uuid()) @db.Uuid
+  applicationId String   @map("application_id") @db.Uuid
+  viewedById    String   @map("viewed_by_id") @db.Uuid
+  viewedAt      DateTime @default(now()) @map("viewed_at")
+  ip            String?  @db.VarChar(45)
+
+  application HostApplication @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  viewedBy    User            @relation("HostDocumentViewer", fields: [viewedById], references: [id])
+
+  @@index([applicationId, viewedAt])
+  @@map("host_document_accesses")
+}
+
+/// Preferencias operativas del anfitrión.
+model HostSettings {
+  id            String @id @default(uuid()) @db.Uuid
+  hostProfileId String @unique @map("host_profile_id") @db.Uuid
+
+  notifyOnReservation Boolean @default(true) @map("notify_on_reservation")
+  notifyOnCancel      Boolean @default(true) @map("notify_on_cancel")
+  notifyOnReview      Boolean @default(true) @map("notify_on_review")
+  notifyByEmail       Boolean @default(true) @map("notify_by_email")
+
+  hostProfile HostProfile @relation(fields: [hostProfileId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("host_settings")
 }
