@@ -36,6 +36,12 @@ export const PUBLIC_HOST_FIELDS = {
   propertiesCount: true,
 } satisfies Prisma.HostProfileSelect;
 
+/** Estados en los que una solicitud sigue abierta. */
+const EN_REVISION: HostApplicationStatus[] = [
+  HostApplicationStatus.SUBMITTED,
+  HostApplicationStatus.UNDER_REVIEW,
+];
+
 @Injectable()
 export class HostsService {
   private readonly logger = new Logger(HostsService.name);
@@ -96,10 +102,7 @@ export class HostsService {
         'Tu cuenta de anfitrión está suspendida. Escríbenos para revisarla.',
       );
     }
-    if (
-      ultima &&
-      [HostApplicationStatus.SUBMITTED, HostApplicationStatus.UNDER_REVIEW].includes(ultima.status)
-    ) {
+    if (ultima && EN_REVISION.includes(ultima.status)) {
       throw new ConflictException('Ya tienes una solicitud en revisión');
     }
 
@@ -193,8 +196,7 @@ export class HostsService {
   private canApply(profile: HostProfile | null, estado?: HostApplicationStatus): boolean {
     if (profile?.status === HostStatus.ACTIVE) return false;
     if (profile?.status === HostStatus.SUSPENDED) return false;
-    if (estado === HostApplicationStatus.SUBMITTED) return false;
-    if (estado === HostApplicationStatus.UNDER_REVIEW) return false;
+    if (estado && EN_REVISION.includes(estado)) return false;
     return true;
   }
 
