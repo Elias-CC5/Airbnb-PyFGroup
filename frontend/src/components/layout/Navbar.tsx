@@ -5,7 +5,7 @@ import { NAV_LINKS, SITE } from '@/constants';
 import { useAuth } from '@/features/auth/hooks/useAuth';
 import { cn } from '@/lib/utils';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
-import { CalendarCheck, Heart, LayoutDashboard, LogOut, Menu, User, X } from 'lucide-react';
+import { BadgeCheck, CalendarCheck, Heart, LayoutDashboard, LogOut, Menu, User, X } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
@@ -101,6 +101,13 @@ export function Navbar() {
 
           {/* Cuenta */}
           <div className="flex items-center gap-1.5">
+            <Link
+              href="/conviertete-en-anfitrion"
+              className="mr-1 hidden rounded-full px-3.5 py-2 text-sm text-ink-600 transition-colors duration-300 hover:bg-ink-900/[0.04] hover:text-ink-900 md:inline-block"
+            >
+              Conviértete en anfitrión
+            </Link>
+
             {isAuthenticated ? (
               <Dropdown
                 trigger={
@@ -154,6 +161,13 @@ export function Navbar() {
                     <Link href="/favoritos" onClick={close}>
                       <DropdownItem>
                         <Heart className="size-4" /> Favoritos
+                      </DropdownItem>
+                    </Link>
+
+                    <DropdownSeparator />
+                    <Link href="/conviertete-en-anfitrion" onClick={close}>
+                      <DropdownItem>
+                        <BadgeCheck className="size-4" /> Conviértete en anfitrión
                       </DropdownItem>
                     </Link>
 
@@ -264,9 +278,21 @@ export function Navbar() {
                     >
                       Favoritos
                     </Link>
+                    <Link
+                      href="/conviertete-en-anfitrion"
+                      className="rounded-2xl px-4 py-3 text-sm font-medium text-ink-900 transition hover:bg-ink-100"
+                    >
+                      Conviértete en anfitrión
+                    </Link>
                   </div>
                 ) : (
                   <div className="grid gap-2">
+                    <Link
+                      href="/conviertete-en-anfitrion"
+                      className="rounded-2xl px-4 py-3 text-center text-sm font-medium text-ink-900 transition hover:bg-ink-100"
+                    >
+                      Conviértete en anfitrión
+                    </Link>
                     <Button asChild variant="outline" fullWidth className="rounded-2xl">
                       <Link href="/login">Iniciar sesión</Link>
                     </Button>
