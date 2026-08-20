@@ -75,5 +75,22 @@ export const ENDPOINTS = {
     calendarImport: '/admin/calendar/import',
     calendarEntries: '/admin/calendar/entries',
     calendarEntry: (id: string) => `/admin/calendar/entries/${id}`,
+
+    // Anfitriones
+    hostApplications: '/admin/hosts/applications',
+    hostApplication: (id: string) => `/admin/hosts/applications/${id}`,
+    hostApplicationDocuments: (id: string) => `/admin/hosts/applications/${id}/documents`,
+    hostApplicationAccessLog: (id: string) => `/admin/hosts/applications/${id}/access-log`,
+    hostApplicationReview: (id: string) => `/admin/hosts/applications/${id}/review`,
+    hosts: '/admin/hosts',
+    hostSuspend: (id: string) => `/admin/hosts/${id}/suspend`,
+    hostReactivate: (id: string) => `/admin/hosts/${id}/reactivate`,
+  },
+
+  hosts: {
+    me: '/hosts/me',
+    applications: '/hosts/applications',
+    myProfile: '/hosts/me/profile',
+    byId: (id: string) => `/hosts/${id}`,
   },
 } as const;

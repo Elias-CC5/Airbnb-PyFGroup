@@ -37,5 +37,14 @@ export const queryKeys = {
     propertyPerformance: ['admin', 'property-performance'] as const,
     channelSeries: ['admin', 'channel-series'] as const,
     recent: ['admin', 'recent'] as const,
+    hostApplications: (filters: Record<string, unknown>) =>
+      ['admin', 'host-applications', filters] as const,
+    hostDocuments: (id: string) => ['admin', 'host-documents', id] as const,
+    hostAccessLog: (id: string) => ['admin', 'host-access-log', id] as const,
+    hosts: (filters: Record<string, unknown>) => ['admin', 'hosts', filters] as const,
+  },
+  hosts: {
+    me: ['hosts', 'me'] as const,
+    profile: (id: string) => ['hosts', 'profile', id] as const,
   },
 } as const;

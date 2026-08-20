@@ -11,6 +11,7 @@ import {
   LayoutDashboard,
   LogOut,
   Tags,
+  UserCheck,
   Users,
   X,
 } from 'lucide-react';
@@ -23,6 +24,7 @@ const LINKS = [
   { href: '/admin/reservas', label: 'Reservas', icon: CalendarDays },
   { href: '/admin/calendario', label: 'Calendario', icon: CalendarRange },
   { href: '/admin/usuarios', label: 'Usuarios', icon: Users },
+  { href: '/admin/anfitriones', label: 'Anfitriones', icon: UserCheck },
   { href: '/admin/categorias', label: 'Categorías', icon: Tags },
   { href: '/admin/estadisticas', label: 'Estadísticas', icon: ChartLine },
 ];
