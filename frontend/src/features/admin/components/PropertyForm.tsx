@@ -41,6 +41,11 @@ import { PropertyImagesManager } from './PropertyImagesManager';
 
 interface PropertyFormProps {
   property?: PropertyDetail;
+  /**
+   * Dónde vuelve al cancelar y a dónde va tras crear. El panel de admin y el
+   * de anfitrión usan el mismo formulario pero viven en rutas distintas.
+   */
+  basePath?: string;
 }
 
 /** Interruptores de reglas; se renderizan en bucle para no repetir markup. */
@@ -55,7 +60,7 @@ const HOUSE_RULE_TOGGLES = [
  * Formulario dividido en secciones. En creación guarda primero el alojamiento
  * y luego habilita la subida de imágenes (necesita el ID).
  */
-export function PropertyForm({ property }: PropertyFormProps) {
+export function PropertyForm({ property, basePath = '/admin/alojamientos' }: PropertyFormProps) {
   const router = useRouter();
   const queryClient = useQueryClient();
 
@@ -200,7 +205,7 @@ export function PropertyForm({ property }: PropertyFormProps) {
     onSuccess: (saved) => {
       toast.success(property ? 'Alojamiento actualizado' : 'Alojamiento creado');
       void queryClient.invalidateQueries({ queryKey: ['properties'] });
-      if (!property) router.replace(`/admin/alojamientos/${saved.id}`);
+      if (!property) router.replace(`${basePath}/${saved.id}`);
     },
     onError: (error: Error) => toast.error(error.message),
   });
@@ -217,7 +222,7 @@ export function PropertyForm({ property }: PropertyFormProps) {
           </p>
         </div>
         <div className="flex gap-3">
-          <Button type="button" variant="outline" onClick={() => router.push('/admin/alojamientos')}>
+          <Button type="button" variant="outline" onClick={() => router.push(basePath)}>
             Cancelar
           </Button>
           <Button type="submit" loading={save.isPending} disabled={!isDirty && !!property}>

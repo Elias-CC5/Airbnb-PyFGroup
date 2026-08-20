@@ -14,6 +14,10 @@ export const propertiesService = {
   similar: (slug: string, limit = 4) =>
     api.get<PropertyCard[]>(ENDPOINTS.properties.similar(slug), { query: { limit } }),
 
+  /** Alojamientos del anfitrión autenticado. */
+  mine: (query: Record<string, unknown> = {}) =>
+    api.get<Paginated<PropertyCard>>(ENDPOINTS.properties.mine, { query }),
+
   create: (payload: unknown) => api.post<PropertyDetail>(ENDPOINTS.properties.root, payload),
   update: (id: string, payload: unknown) => api.patch<PropertyDetail>(ENDPOINTS.properties.byId(id), payload),
   byId: (id: string) => api.get<PropertyDetail>(ENDPOINTS.properties.byId(id)),

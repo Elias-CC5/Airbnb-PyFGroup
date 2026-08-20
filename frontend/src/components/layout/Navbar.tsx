@@ -14,6 +14,7 @@ import { Logo } from './Logo';
 export function Navbar() {
   const pathname = usePathname();
   const { user, isAuthenticated, isAdmin, logout } = useAuth();
+  const isHost = isAdmin || user?.role === 'HOST';
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const reduceMotion = useReducedMotion();
@@ -102,10 +103,10 @@ export function Navbar() {
           {/* Cuenta */}
           <div className="flex items-center gap-1.5">
             <Link
-              href="/conviertete-en-anfitrion"
+              href={isHost ? '/host' : '/conviertete-en-anfitrion'}
               className="mr-1 hidden rounded-full px-3.5 py-2 text-sm text-ink-600 transition-colors duration-300 hover:bg-ink-900/[0.04] hover:text-ink-900 md:inline-block"
             >
-              Conviértete en anfitrión
+              {isHost ? 'Modo anfitrión' : 'Conviértete en anfitrión'}
             </Link>
 
             {isAuthenticated ? (
@@ -165,11 +166,19 @@ export function Navbar() {
                     </Link>
 
                     <DropdownSeparator />
-                    <Link href="/conviertete-en-anfitrion" onClick={close}>
-                      <DropdownItem>
-                        <BadgeCheck className="size-4" /> Conviértete en anfitrión
-                      </DropdownItem>
-                    </Link>
+                    {isHost ? (
+                      <Link href="/host" onClick={close}>
+                        <DropdownItem>
+                          <BadgeCheck className="size-4" /> Panel de anfitrión
+                        </DropdownItem>
+                      </Link>
+                    ) : (
+                      <Link href="/conviertete-en-anfitrion" onClick={close}>
+                        <DropdownItem>
+                          <BadgeCheck className="size-4" /> Conviértete en anfitrión
+                        </DropdownItem>
+                      </Link>
+                    )}
 
                     <DropdownSeparator />
                     <DropdownItem
@@ -279,10 +288,10 @@ export function Navbar() {
                       Favoritos
                     </Link>
                     <Link
-                      href="/conviertete-en-anfitrion"
+                      href={isHost ? '/host' : '/conviertete-en-anfitrion'}
                       className="rounded-2xl px-4 py-3 text-sm font-medium text-ink-900 transition hover:bg-ink-100"
                     >
-                      Conviértete en anfitrión
+                      {isHost ? 'Panel de anfitrión' : 'Conviértete en anfitrión'}
                     </Link>
                   </div>
                 ) : (

@@ -18,6 +18,7 @@ export const ENDPOINTS = {
   },
   properties: {
     root: '/properties',
+    mine: '/properties/mine',
     featured: '/properties/featured',
     bySlug: (slug: string) => `/properties/slug/${slug}`,
     similar: (slug: string) => `/properties/slug/${slug}/similar`,
