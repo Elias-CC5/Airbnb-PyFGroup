@@ -86,6 +86,11 @@ export const ENDPOINTS = {
     hosts: '/admin/hosts',
     hostSuspend: (id: string) => `/admin/hosts/${id}/suspend`,
     hostReactivate: (id: string) => `/admin/hosts/${id}/reactivate`,
+
+    // Planes y pagos
+    hostPayments: '/admin/hosts/payments',
+    hostPaymentReview: (id: string) => `/admin/hosts/payments/${id}/review`,
+    hostPaymentCash: '/admin/hosts/payments/cash',
   },
 
   hosts: {
@@ -93,6 +98,11 @@ export const ENDPOINTS = {
     applications: '/hosts/applications',
     myProfile: '/hosts/me/profile',
     reservations: '/reservations/host',
+    plans: '/hosts/plans',
+    subscription: '/hosts/subscription',
+    subscriptionPayment: (id: string) => `/hosts/subscription/${id}/payment`,
+    subscriptionCancel: (id: string) => `/hosts/subscription/${id}/cancel`,
+    freeSlot: '/hosts/subscription/free-slot',
     byId: (id: string) => `/hosts/${id}`,
   },
 } as const;

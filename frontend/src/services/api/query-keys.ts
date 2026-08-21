@@ -42,6 +42,8 @@ export const queryKeys = {
     hostDocuments: (id: string) => ['admin', 'host-documents', id] as const,
     hostAccessLog: (id: string) => ['admin', 'host-access-log', id] as const,
     hosts: (filters: Record<string, unknown>) => ['admin', 'hosts', filters] as const,
+    hostPayments: (filters: Record<string, unknown>) =>
+      ['admin', 'host-payments', filters] as const,
   },
   hosts: {
     me: ['hosts', 'me'] as const,
@@ -49,5 +51,7 @@ export const queryKeys = {
     reservations: (filters: Record<string, unknown>) =>
       ['hosts', 'reservations', filters] as const,
     profile: (id: string) => ['hosts', 'profile', id] as const,
+    plans: ['hosts', 'plans'] as const,
+    subscription: ['hosts', 'subscription'] as const,
   },
 } as const;

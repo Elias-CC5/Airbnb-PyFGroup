@@ -12,6 +12,7 @@ import {
   LogOut,
   Tags,
   UserCheck,
+  Wallet,
   Users,
   X,
 } from 'lucide-react';
@@ -25,6 +26,7 @@ const LINKS = [
   { href: '/admin/calendario', label: 'Calendario', icon: CalendarRange },
   { href: '/admin/usuarios', label: 'Usuarios', icon: Users },
   { href: '/admin/anfitriones', label: 'Anfitriones', icon: UserCheck },
+  { href: '/admin/pagos', label: 'Pagos', icon: Wallet },
   { href: '/admin/categorias', label: 'Categorías', icon: Tags },
   { href: '/admin/estadisticas', label: 'Estadísticas', icon: ChartLine },
 ];

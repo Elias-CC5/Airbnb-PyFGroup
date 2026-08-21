@@ -3,7 +3,7 @@
 import { Logo } from '@/components/layout/Logo';
 import { useAuth } from '@/features/auth/hooks/useAuth';
 import { cn } from '@/lib/utils';
-import { CalendarDays, House, LayoutDashboard, LogOut, Plus, UserRound, X } from 'lucide-react';
+import { CalendarDays, CreditCard, House, LayoutDashboard, LogOut, Plus, UserRound, X } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
@@ -12,6 +12,7 @@ const LINKS = [
   { href: '/host/alojamientos', label: 'Mis alojamientos', icon: House },
   { href: '/host/alojamientos/nuevo', label: 'Agregar alojamiento', icon: Plus, exact: true },
   { href: '/host/reservas', label: 'Reservas', icon: CalendarDays },
+  { href: '/host/plan', label: 'Mi plan', icon: CreditCard },
   { href: '/host/perfil', label: 'Mi perfil', icon: UserRound },
 ];
 
