@@ -10,6 +10,7 @@ import {
   IsUUID,
   IsUrl,
   Length,
+  Matches,
   MaxLength,
 } from 'class-validator';
 
@@ -33,10 +34,27 @@ export class ReportPaymentDto {
   @Length(4, 60)
   operationNumber!: string;
 
-  @ApiPropertyOptional({ description: 'Captura del pago' })
+  @ApiPropertyOptional({ description: 'Captura del pago alojada en otro sitio' })
   @IsOptional()
   @IsUrl()
   proofUrl?: string;
+
+  /**
+   * Captura del Yape/Plin como data URI (`data:image/png;base64,...`).
+   *
+   * Viaja dentro del JSON en vez de como multipart porque el proyecto no tiene
+   * almacenamiento de archivos: la imagen no se guarda, se adjunta al correo
+   * que reciben los administradores y se descarta. El tope de 6.000.000
+   * caracteres son unos 4,5 MB de foto, de sobra para una captura de celular.
+   */
+  @ApiPropertyOptional({ description: 'Captura del pago en base64 (data URI)' })
+  @IsOptional()
+  @IsString()
+  @Matches(/^data:image\/(png|jpe?g|webp|heic);base64,[A-Za-z0-9+/=]+$/, {
+    message: 'La captura debe ser una imagen (PNG, JPG, WEBP o HEIC)',
+  })
+  @MaxLength(6_000_000, { message: 'La captura pesa demasiado. Envía una imagen más liviana.' })
+  proofImage?: string;
 
   @ApiPropertyOptional({ example: '2026-08-21', description: 'Cuándo se hizo el pago' })
   @IsOptional()

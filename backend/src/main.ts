@@ -3,6 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import cookieParser from 'cookie-parser';
+import express from 'express';
 import helmet from 'helmet';
 import { AppModule } from './app.module';
 
@@ -21,6 +22,12 @@ async function bootstrap() {
   // ---------------------------- seguridad ----------------------------
   app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' } }));
   app.use(cookieParser());
+
+  // Express acepta 100 kB de JSON por defecto. La captura del pago viaja en
+  // base64 dentro del cuerpo, así que sin esto cualquier foto de celular
+  // devolvería 413 antes de llegar al controlador.
+  app.use(express.json({ limit: '8mb' }));
+  app.use(express.urlencoded({ limit: '8mb', extended: true }));
 
   // Se registra en el log para poder diagnosticar qué .env se cargó realmente.
   logger.log(`CORS permitido para: ${origins.join(', ') || '(ninguno)'}`);

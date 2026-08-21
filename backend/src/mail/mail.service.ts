@@ -3,11 +3,19 @@ import { ConfigService } from '@nestjs/config';
 import * as nodemailer from 'nodemailer';
 import type { Transporter } from 'nodemailer';
 
+interface MailAttachment {
+  filename: string;
+  /** Contenido ya decodificado. */
+  content: Buffer;
+  contentType?: string;
+}
+
 interface MailOptions {
   to: string;
   subject: string;
   html: string;
   text?: string;
+  attachments?: MailAttachment[];
 }
 
 @Injectable()
@@ -62,7 +70,7 @@ export class MailService implements OnModuleInit {
    * Envía un correo. Nunca lanza: si falla, lo registra y devuelve false,
    * para que un problema de SMTP no rompa el flujo de negocio.
    */
-  async send({ to, subject, html, text }: MailOptions): Promise<boolean> {
+  async send({ to, subject, html, text, attachments }: MailOptions): Promise<boolean> {
     if (!this.transporter) {
       this.logger.warn(`Correo NO enviado a ${to} ("${subject}"): SMTP deshabilitado`);
       return false;
@@ -76,6 +84,7 @@ export class MailService implements OnModuleInit {
         subject,
         html,
         text: text ?? this.htmlToText(html),
+        attachments,
       });
       this.logger.log(`Correo enviado a ${to} (id: ${info.messageId})`);
       return true;

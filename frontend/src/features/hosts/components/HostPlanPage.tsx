@@ -38,6 +38,7 @@ export function HostPlanPage() {
   const [pagando, setPagando] = useState(false);
   const [metodo, setMetodo] = useState<PaymentMethod>('YAPE');
   const [operacion, setOperacion] = useState('');
+  const [captura, setCaptura] = useState<{ nombre: string; dataUri: string } | null>(null);
 
   const { data: planes, isLoading: cargandoPlanes } = useQuery({
     queryKey: queryKeys.hosts.plans,
@@ -48,6 +49,27 @@ export function HostPlanPage() {
     queryKey: queryKeys.hosts.subscription,
     queryFn: hostPlansService.myPlan,
   });
+
+  /**
+   * Pasa la imagen a data URI para mandarla dentro del JSON.
+   *
+   * No hay servicio de archivos en el proyecto, así que la captura viaja en el
+   * cuerpo de la petición y termina como adjunto del correo que recibe el
+   * equipo. El tope de 4 MB es el mismo que valida el backend.
+   */
+  const elegirCaptura = (archivo?: File) => {
+    if (!archivo) return;
+
+    if (archivo.size > 4 * 1024 * 1024) {
+      toast.error('La imagen pesa más de 4 MB. Reduce la calidad o recórtala.');
+      return;
+    }
+
+    const lector = new FileReader();
+    lector.onload = () => setCaptura({ nombre: archivo.name, dataUri: String(lector.result) });
+    lector.onerror = () => toast.error('No pudimos leer esa imagen');
+    lector.readAsDataURL(archivo);
+  };
 
   const refrescar = () => {
     void queryClient.invalidateQueries({ queryKey: queryKeys.hosts.subscription });
@@ -69,11 +91,13 @@ export function HostPlanPage() {
       hostPlansService.reportPayment(miPlan!.pending!.id, {
         method: metodo,
         operationNumber: operacion.trim(),
+        proofImage: captura?.dataUri,
       }),
     onSuccess: () => {
       toast.success('Pago reportado. Te avisamos apenas lo confirmemos.');
       setPagando(false);
       setOperacion('');
+      setCaptura(null);
       refrescar();
     },
     onError: (error: Error) => toast.error(error.message),
@@ -193,7 +217,7 @@ export function HostPlanPage() {
         <div className="space-y-5">
           <div className="rounded-xl border border-ink-200 bg-ink-50 p-4 text-sm">
             <p className="font-medium text-ink-900">Yapea o plinea a:</p>
-            <p className="mt-1 font-mono text-lg text-ink-900">987 654 321</p>
+            <p className="mt-1 font-mono text-lg text-ink-900">+51 930 983 811</p>
             <p className="mt-1 text-xs text-ink-500">PyFGroup S.A.C.</p>
           </div>
 
@@ -224,6 +248,40 @@ export function HostPlanPage() {
             <p className="mt-1.5 text-xs text-ink-500">
               Con ese número verificamos el pago. No lo compartas con nadie más.
             </p>
+          </div>
+
+          <div>
+            <Label htmlFor="captura">Captura del Yape o Plin</Label>
+            <input
+              id="captura"
+              type="file"
+              accept="image/png,image/jpeg,image/webp"
+              onChange={(e) => elegirCaptura(e.target.files?.[0])}
+              className="block w-full cursor-pointer rounded-xl border border-ink-300 px-3 py-2 text-sm text-ink-700 file:mr-3 file:rounded-lg file:border-0 file:bg-ink-900 file:px-3 file:py-1.5 file:text-sm file:text-white hover:border-ink-400"
+            />
+
+            {captura ? (
+              <div className="mt-3 flex items-center gap-3 rounded-xl border border-ink-200 p-2">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={captura.dataUri}
+                  alt="Captura del pago"
+                  className="size-16 rounded-lg object-cover"
+                />
+                <p className="flex-1 truncate text-xs text-ink-600">{captura.nombre}</p>
+                <button
+                  type="button"
+                  onClick={() => setCaptura(null)}
+                  className="text-xs text-ink-500 underline underline-offset-2 hover:text-ink-900"
+                >
+                  Quitar
+                </button>
+              </div>
+            ) : (
+              <p className="mt-1.5 text-xs text-ink-500">
+                Opcional, pero acelera la verificación. Máximo 4 MB.
+              </p>
+            )}
           </div>
         </div>
       </Modal>

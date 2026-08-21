@@ -200,7 +200,12 @@ export class SubscriptionsService {
       include: { plan: true },
     });
 
-    await this.notificarAdministradores(userId, actualizada.plan.name);
+    await this.notificarAdministradores(userId, actualizada.plan.name, {
+      metodo: dto.method,
+      operacion: dto.operationNumber,
+      captura: dto.proofImage,
+    });
+
     return actualizada;
   }
 
@@ -436,7 +441,11 @@ export class SubscriptionsService {
   }
 
   // ------------------------------- avisos ---------------------------------
-  private async notificarAdministradores(userId: string, plan: string) {
+  private async notificarAdministradores(
+    userId: string,
+    plan: string,
+    pago?: { metodo?: string; operacion?: string; captura?: string },
+  ) {
     // Si MAIL_ADMIN_TO trae correos, mandamos sólo ahí. Sin esa variable se
     // avisa a todos los admins de la base, como se hacía antes.
     const fijos = this.mail.adminRecipients;
@@ -453,15 +462,55 @@ export class SubscriptionsService {
 
     const nombre = usuario ? `${usuario.firstName} ${usuario.lastName}` : 'Un anfitrión';
 
+    const adjuntos = this.capturaComoAdjunto(pago?.captura);
+
+    const detalle = pago?.operacion
+      ? `<p>Operación <strong>${pago.operacion}</strong>` +
+        (pago.metodo ? ` por ${pago.metodo}` : '') +
+        '.</p>'
+      : '';
+
+    const nota = adjuntos.length
+      ? '<p>La captura del pago va adjunta a este correo.</p>'
+      : '<p>El anfitrión no adjuntó captura.</p>';
+
     for (const admin of admins) {
       await this.mail.send({
         to: admin.email,
         subject: 'Pago de anfitrión por verificar',
         html:
           `<p><strong>${nombre}</strong> reportó el pago del plan <strong>${plan}</strong>.</p>` +
+          detalle +
+          nota +
           '<p>Revísalo en el panel, sección Anfitriones → Pagos.</p>',
+        attachments: adjuntos,
       });
     }
+  }
+
+  /**
+   * Convierte el data URI que manda el anfitrión en un adjunto de correo.
+   *
+   * La imagen no se guarda en ningún lado: este correo es la única copia. Si
+   * más adelante hay almacenamiento de archivos, el sitio para persistirla es
+   * `proofUrl`, que ya existe en el modelo.
+   */
+  private capturaComoAdjunto(dataUri?: string) {
+    if (!dataUri) return [];
+
+    const partes = /^data:(image\/[a-z]+);base64,(.+)$/i.exec(dataUri);
+    if (!partes) return [];
+
+    const [, tipo, base64] = partes;
+    const extension = tipo.split('/')[1].replace('jpeg', 'jpg');
+
+    return [
+      {
+        filename: `captura-pago.${extension}`,
+        content: Buffer.from(base64, 'base64'),
+        contentType: tipo,
+      },
+    ];
   }
 
   private async avisarAlAnfitrion(

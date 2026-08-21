@@ -75,7 +75,14 @@ export const hostPlansService = {
 
   reportPayment: (
     id: string,
-    payload: { method: PaymentMethod; operationNumber: string; proofUrl?: string; paidAt?: string },
+    payload: {
+      method: PaymentMethod;
+      operationNumber: string;
+      /** Captura del Yape/Plin como data URI. Se adjunta al correo del equipo. */
+      proofImage?: string;
+      proofUrl?: string;
+      paidAt?: string;
+    },
   ) => api.patch<HostSubscription>(ENDPOINTS.hosts.subscriptionPayment(id), payload),
 
   cancel: (id: string) => api.patch<HostSubscription>(ENDPOINTS.hosts.subscriptionCancel(id)),
