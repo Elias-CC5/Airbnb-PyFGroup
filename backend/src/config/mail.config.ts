@@ -13,4 +13,9 @@ export default registerAs('mail', () => ({
   password: process.env.SMTP_PASSWORD ?? '',
   from: process.env.MAIL_FROM ?? 'Wasi Perú <no-reply@wasi.pe>',
   replyTo: process.env.MAIL_REPLY_TO || undefined,
+  // Lista fija de destinatarios internos. Vacía = se usan los admins de la BD.
+  adminTo: (process.env.MAIL_ADMIN_TO ?? '')
+    .split(',')
+    .map((correo) => correo.trim())
+    .filter(Boolean),
 }));

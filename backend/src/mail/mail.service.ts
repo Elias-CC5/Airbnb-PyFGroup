@@ -50,6 +50,15 @@ export class MailService implements OnModuleInit {
   }
 
   /**
+   * Destinatarios fijos de los avisos internos, tomados de `MAIL_ADMIN_TO`.
+   * Vacío significa "no hay lista": quien llama debe caer a los admins de la
+   * base de datos. Se separa aquí para que ese criterio viva en un solo sitio.
+   */
+  get adminRecipients(): string[] {
+    return this.config.get<string[]>('mail.adminTo') ?? [];
+  }
+
+  /**
    * Envía un correo. Nunca lanza: si falla, lo registra y devuelve false,
    * para que un problema de SMTP no rompa el flujo de negocio.
    */

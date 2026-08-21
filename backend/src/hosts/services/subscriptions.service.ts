@@ -437,12 +437,18 @@ export class SubscriptionsService {
 
   // ------------------------------- avisos ---------------------------------
   private async notificarAdministradores(userId: string, plan: string) {
+    // Si MAIL_ADMIN_TO trae correos, mandamos sólo ahí. Sin esa variable se
+    // avisa a todos los admins de la base, como se hacía antes.
+    const fijos = this.mail.adminRecipients;
+
     const [usuario, admins] = await Promise.all([
       this.prisma.user.findUnique({ where: { id: userId } }),
-      this.prisma.user.findMany({
-        where: { role: { in: [Role.ADMIN, Role.SUPER_ADMIN] }, deletedAt: null },
-        select: { email: true },
-      }),
+      fijos.length
+        ? Promise.resolve(fijos.map((email) => ({ email })))
+        : this.prisma.user.findMany({
+            where: { role: { in: [Role.ADMIN, Role.SUPER_ADMIN] }, deletedAt: null },
+            select: { email: true },
+          }),
     ]);
 
     const nombre = usuario ? `${usuario.firstName} ${usuario.lastName}` : 'Un anfitrión';

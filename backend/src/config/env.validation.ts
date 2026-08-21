@@ -118,6 +118,15 @@ export class EnvironmentVariables {
   @IsString()
   @IsOptional()
   MAIL_REPLY_TO?: string;
+
+  /**
+   * Destinatarios de los avisos internos (pagos por verificar, solicitudes de
+   * anfitrión), separados por comas. Si queda vacía se avisa a todos los
+   * usuarios con rol ADMIN o SUPER_ADMIN, que es el comportamiento anterior.
+   */
+  @IsString()
+  @IsOptional()
+  MAIL_ADMIN_TO?: string;
 }
 
 export function validateEnv(config: Record<string, unknown>) {

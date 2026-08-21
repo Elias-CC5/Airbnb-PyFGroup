@@ -17,10 +17,9 @@ export function PropertiesResults() {
 
   const total = data?.meta.total ?? 0;
 
+  // Poco margen arriba: la página ya trae su propio encabezado. Antes llevaba
+  // `pt-24` porque venía justo debajo de un hero a pantalla completa.
   return (
-    {/* Poco margen arriba: la página ya trae su propio encabezado. Antes
-        llevaba `pt-24` porque venía justo debajo de un hero a pantalla
-        completa. */}
     <div className="container-page pb-6 pt-6 sm:pb-8">
       <div className="mx-auto max-w-4xl">
       </div>
