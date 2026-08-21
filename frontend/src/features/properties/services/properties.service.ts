@@ -3,6 +3,11 @@ import { ENDPOINTS } from '@/services/api';
 import type { Paginated, PropertyCard, PropertyDetail } from '@/types';
 import { cleanFilters, type PropertyFilters } from '../types/property-filters';
 
+/** Ficha del panel del anfitrión: la tarjeta normal más sus contadores. */
+export interface HostPropertyCard extends PropertyCard {
+  _count: { reservations: number; reviews: number };
+}
+
 export const propertiesService = {
   search: (filters: PropertyFilters) =>
     api.get<Paginated<PropertyCard>>(ENDPOINTS.properties.root, { query: cleanFilters(filters) }),
@@ -14,9 +19,11 @@ export const propertiesService = {
   similar: (slug: string, limit = 4) =>
     api.get<PropertyCard[]>(ENDPOINTS.properties.similar(slug), { query: { limit } }),
 
-  /** Alojamientos del anfitrión autenticado. */
-  mine: (query: Record<string, unknown> = {}) =>
-    api.get<Paginated<PropertyCard>>(ENDPOINTS.properties.mine, { query }),
+  /**
+   * Alojamientos del anfitrión autenticado. El backend devuelve un array
+   * plano (sin paginar) porque un anfitrión maneja pocas fichas.
+   */
+  mine: () => api.get<HostPropertyCard[]>(ENDPOINTS.properties.mine),
 
   create: (payload: unknown) => api.post<PropertyDetail>(ENDPOINTS.properties.root, payload),
   update: (id: string, payload: unknown) => api.patch<PropertyDetail>(ENDPOINTS.properties.byId(id), payload),

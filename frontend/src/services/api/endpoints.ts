@@ -92,6 +92,7 @@ export const ENDPOINTS = {
     me: '/hosts/me',
     applications: '/hosts/applications',
     myProfile: '/hosts/me/profile',
+    reservations: '/reservations/host',
     byId: (id: string) => `/hosts/${id}`,
   },
 } as const;

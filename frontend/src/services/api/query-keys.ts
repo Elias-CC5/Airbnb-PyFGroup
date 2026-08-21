@@ -45,6 +45,9 @@ export const queryKeys = {
   },
   hosts: {
     me: ['hosts', 'me'] as const,
+    myProfile: ['hosts', 'my-profile'] as const,
+    reservations: (filters: Record<string, unknown>) =>
+      ['hosts', 'reservations', filters] as const,
     profile: (id: string) => ['hosts', 'profile', id] as const,
   },
 } as const;

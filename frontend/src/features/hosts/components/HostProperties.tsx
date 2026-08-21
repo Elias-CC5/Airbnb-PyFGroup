@@ -1,12 +1,11 @@
 'use client';
 
-import { Badge, Button, EmptyState, Pagination, Spinner } from '@/components/ui';
+import { Badge, Button, EmptyState, Spinner } from '@/components/ui';
 import { propertiesService } from '@/features/properties/services/properties.service';
 import { formatPrice } from '@/lib/format';
 import { useQuery } from '@tanstack/react-query';
-import { House, Plus, Star } from 'lucide-react';
+import { CalendarCheck, House, Plus, Star } from 'lucide-react';
 import Link from 'next/link';
-import { useState } from 'react';
 
 const ESTADO: Record<string, { label: string; tone: 'neutral' | 'success' | 'warning' | 'danger' }> = {
   DRAFT: { label: 'Borrador', tone: 'neutral' },
@@ -20,12 +19,12 @@ const ESTADO: Record<string, { label: string; tone: 'neutral' | 'success' | 'war
 };
 
 export function HostProperties() {
-  const [page, setPage] = useState(1);
-
   const { data, isLoading } = useQuery({
-    queryKey: ['properties', 'mine', page],
-    queryFn: () => propertiesService.mine({ page, limit: 12 }),
+    queryKey: ['properties', 'mine'],
+    queryFn: propertiesService.mine,
   });
+
+  const lista = data ?? [];
 
   return (
     <div className="space-y-6">
@@ -33,7 +32,7 @@ export function HostProperties() {
         <div>
           <h1 className="text-2xl font-semibold tracking-tight text-ink-900">Mis alojamientos</h1>
           <p className="mt-1 text-sm text-ink-600">
-            {data?.meta.total ?? 0} {data?.meta.total === 1 ? 'alojamiento' : 'alojamientos'}
+            {lista.length} {lista.length === 1 ? 'alojamiento' : 'alojamientos'}
           </p>
         </div>
         <Button asChild>
@@ -45,7 +44,7 @@ export function HostProperties() {
 
       {isLoading ? (
         <Spinner label="Cargando tus alojamientos…" />
-      ) : !data?.data.length ? (
+      ) : lista.length === 0 ? (
         <EmptyState
           icon={<House className="size-6" />}
           title="Todavía no publicas nada"
@@ -60,7 +59,7 @@ export function HostProperties() {
         />
       ) : (
         <ul className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3">
-          {data.data.map((p) => {
+          {lista.map((p) => {
             const portada = p.images.find((i) => i.isMain) ?? p.images[0];
             const estado = ESTADO[p.status] ?? { label: p.status, tone: 'neutral' as const };
 
@@ -99,12 +98,18 @@ export function HostProperties() {
                         {formatPrice(p.pricePerNight)}
                         <span className="text-xs font-normal text-ink-500"> /noche</span>
                       </span>
-                      {p.reviewsCount > 0 && (
-                        <span className="flex items-center gap-1 text-xs text-ink-600">
-                          <Star className="size-3.5 fill-ink-900 text-ink-900" />
-                          {p.ratingAvg.toFixed(1)} ({p.reviewsCount})
+                      <span className="flex items-center gap-3 text-xs text-ink-600">
+                        {p.reviewsCount > 0 && (
+                          <span className="flex items-center gap-1">
+                            <Star className="size-3.5 fill-ink-900 text-ink-900" />
+                            {p.ratingAvg.toFixed(1)}
+                          </span>
+                        )}
+                        <span className="flex items-center gap-1">
+                          <CalendarCheck className="size-3.5" />
+                          {p._count.reservations}
                         </span>
-                      )}
+                      </span>
                     </div>
                   </div>
                 </Link>
@@ -114,9 +119,6 @@ export function HostProperties() {
         </ul>
       )}
 
-      {data && data.meta.totalPages > 1 && (
-        <Pagination page={page} totalPages={data.meta.totalPages} onChange={setPage} />
-      )}
     </div>
   );
 }

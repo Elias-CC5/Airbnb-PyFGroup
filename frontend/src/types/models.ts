@@ -157,6 +157,8 @@ export interface Reservation {
   totalPrice: string | number;
   currency: string;
   status: ReservationStatus;
+  /** Nombre del huésped cuando la reserva viene de otro canal y no de un usuario registrado. */
+  guestName?: string | null;
   notes?: string | null;
   createdAt: string;
   cancelReason?: string | null;

@@ -15,11 +15,11 @@ export function HostDashboard() {
   const { data: perfil } = useQuery({ queryKey: queryKeys.hosts.me, queryFn: hostService.me });
 
   const { data: alojamientos, isLoading } = useQuery({
-    queryKey: ['properties', 'mine', 'resumen'],
-    queryFn: () => propertiesService.mine({ limit: 100 }),
+    queryKey: ['properties', 'mine'],
+    queryFn: propertiesService.mine,
   });
 
-  const lista = alojamientos?.data ?? [];
+  const lista = alojamientos ?? [];
   const publicados = lista.filter((p) => p.status === 'ACTIVE').length;
   const borradores = lista.filter((p) => p.status === 'DRAFT').length;
   const sinFotos = lista.filter((p) => p.images.length === 0).length;
