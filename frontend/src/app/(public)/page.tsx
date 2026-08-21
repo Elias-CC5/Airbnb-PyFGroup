@@ -15,16 +15,13 @@ export default async function HomePage() {
     catalogServerService.topDestinations(5),
   ]);
 
-  const stays = (destinations ?? []).reduce((acc, d) => acc + (d.propertiesCount ?? 0), 0);
-  const regions = (destinations ?? []).filter((d) => (d.propertiesCount ?? 0) > 0).length;
-
   return (
     <>
       {/*
-        Hero con foto que se expande al hacer scroll. Usa las fotos de los
-        alojamientos destacados, así que cambia solo cuando cambia el catálogo.
+        Hero con foto que se expande al hacer scroll. Usa la foto del primer
+        alojamiento destacado, así que cambia solo cuando cambia el catálogo.
       */}
-      <HomeHero featured={featured ?? []} stays={stays} regions={regions} />
+      <HomeHero featured={featured ?? []} />
 
       <StackSection index={1} className="bg-white">
         <FeaturedProperties properties={featured ?? []} />
