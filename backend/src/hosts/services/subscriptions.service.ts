@@ -59,6 +59,23 @@ export class SubscriptionsService {
     });
   }
 
+  /**
+   * ¿El dueño de estas fichas tiene plan vigente? Se usa al publicar para
+   * decidir si el alojamiento nace destacado. El personal interno no cuenta:
+   * sus fichas las destaca un administrador a mano.
+   */
+  async tienePlanVigente(userId: string): Promise<boolean | null> {
+    const profile = await this.prisma.hostProfile.findUnique({
+      where: { userId },
+      select: { id: true },
+    });
+    // `null` = ni siquiera es anfitrión. Son las fichas del propio equipo, que
+    // un administrador destaca a mano: no las tocamos.
+    if (!profile) return null;
+
+    return Boolean(await this.currentSubscription(profile.id));
+  }
+
   /** Resumen para el panel: cupos, plan vigente y pago en curso. */
   async myPlan(userId: string) {
     const profile = await this.prisma.hostProfile.findUnique({
@@ -275,6 +292,13 @@ export class SubscriptionsService {
   }
 
   private async volverAlPlanGratuito(userId: string, freeSlotPropertyId: string | null) {
+    // Lo primero es quitar el destacado, aunque solo tenga un alojamiento: es
+    // un beneficio del plan, no algo que se conserve al vencer.
+    await this.prisma.property.updateMany({
+      where: { ownerId: userId, deletedAt: null, isFeatured: true },
+      data: { isFeatured: false },
+    });
+
     const publicados = await this.prisma.property.findMany({
       where: { ownerId: userId, deletedAt: null, status: { in: ESTADOS_QUE_OCUPAN } },
       orderBy: { createdAt: 'asc' },
@@ -405,6 +429,18 @@ export class SubscriptionsService {
           status: PropertyStatus.PAUSED,
         },
         data: { status: PropertyStatus.ACTIVE },
+      });
+
+      // Y pasan a destacados: es el beneficio concreto de pagar. `isFeatured`
+      // manda en el orden por defecto del listado y es lo que alimenta la
+      // sección de destacados de la portada.
+      await tx.property.updateMany({
+        where: {
+          ownerId: sub.hostProfile.userId,
+          deletedAt: null,
+          status: PropertyStatus.ACTIVE,
+        },
+        data: { isFeatured: true },
       });
 
       return actualizada;

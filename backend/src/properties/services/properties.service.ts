@@ -257,7 +257,18 @@ export class PropertiesService {
       await this.subscriptions.assertCanPublish(user, id);
     }
 
-    return this.prisma.property.update({ where: { id }, data: { status } });
+    // Al salir al público, la ficha hereda el destacado del plan de su dueño.
+    // Si no hay plan, se apaga: evita que una ficha destacada por un plan
+    // anterior se quede así para siempre.
+    const destacar =
+      status === PropertyStatus.ACTIVE
+        ? await this.subscriptions.tienePlanVigente(property.ownerId)
+        : undefined;
+
+    return this.prisma.property.update({
+      where: { id },
+      data: { status, ...(destacar === undefined || destacar === null ? {} : { isFeatured: destacar }) },
+    });
   }
 
   /** Alojamientos del anfitrión que hace la petición. */
