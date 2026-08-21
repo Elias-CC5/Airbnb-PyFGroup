@@ -26,26 +26,21 @@ export function HomeHero({ featured }: HomeHeroProps) {
       hint="Desliza para descubrirlo"
     >
       {/*
-        Texto que aparece cuando la foto termina de abrirse. Va sin botones ni
-        cifras a propósito: el hero ya pide una acción —seguir bajando— y meter
-        otra compite con ella.
+        Va centrado sobre la foto abierta, así que el texto es blanco y se
+        apoya en el velo oscuro que el hero enciende al expandirse.
       */}
-      <div className="container-page pb-24 pt-14">
-        <div className="mx-auto max-w-2xl text-center">
-          <p className="text-xl leading-relaxed text-ink-900 sm:text-2xl">
-            Somos PyFGroup, una operadora peruana de alojamientos temporales.
-          </p>
-          <p className="mt-5 text-base leading-relaxed text-ink-600">
-            Administramos cada departamento nosotros mismos: los amoblamos, los limpiamos entre
-            estadía y estadía y respondemos el teléfono cuando algo hace falta. No somos un
-            catálogo de anuncios ajenos, y por eso podemos decir que lo que ves en las fotos es lo
-            que encuentras al abrir la puerta.
-          </p>
-          <p className="mt-4 text-base leading-relaxed text-ink-600">
-            Reserva en línea, paga en soles y coordina la llegada directo con nosotros. Sin
-            comisiones escondidas ni intermediarios.
-          </p>
-        </div>
+      <div className="mx-auto max-w-2xl text-center text-white [text-shadow:0_2px_20px_rgba(0,0,0,0.55)]">
+        <p className="text-2xl font-medium leading-snug sm:text-3xl">
+          Somos PyFGroup, una operadora peruana de alojamientos temporales.
+        </p>
+        <p className="mt-6 text-base leading-relaxed text-white/85 sm:text-lg">
+          Administramos cada departamento nosotros mismos: los amoblamos, los limpiamos entre
+          estadía y estadía y respondemos el teléfono cuando algo hace falta.
+        </p>
+        <p className="mt-4 text-base leading-relaxed text-white/85 sm:text-lg">
+          Reserva en línea, paga en soles y coordina la llegada directo con nosotros. Sin comisiones
+          escondidas ni intermediarios.
+        </p>
       </div>
     </ScrollExpandHero>
   );

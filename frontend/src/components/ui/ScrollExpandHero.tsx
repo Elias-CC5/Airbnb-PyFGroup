@@ -166,6 +166,16 @@ export function ScrollExpandHero({
                 animate={{ opacity: 0.35 - progress * 0.35 }}
                 transition={{ duration: 0.2 }}
               />
+              {/* Y un velo oscuro que entra sólo al final, para que el texto
+                  que va encima de la foto se lea sobre cualquier imagen. */}
+              {children && (
+                <motion.div
+                  className="absolute inset-0 bg-ink-950"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: expanded ? 0.5 : 0 }}
+                  transition={{ duration: 0.6 }}
+                />
+              )}
             </div>
 
             {/* Titular partido en dos, que se separa al hacer scroll */}
@@ -198,6 +208,24 @@ export function ScrollExpandHero({
               </h1>
             </div>
 
+            {/*
+              El texto va encima de la foto, no debajo: aparece en el centro
+              cuando la imagen terminó de abrirse, justo donde el titular ya se
+              apartó hacia los lados.
+            */}
+            {children && (
+              <motion.div
+                className="absolute inset-0 z-20 flex items-center justify-center px-6"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: expanded ? 1 : 0 }}
+                transition={{ duration: 0.7 }}
+                style={{ pointerEvents: expanded ? 'auto' : 'none' }}
+                aria-hidden={!expanded}
+              >
+                {children}
+              </motion.div>
+            )}
+
             {/* Pista de "sigue bajando", sólo mientras no está abierta */}
             {hint && !expanded && (
               <motion.p
@@ -208,19 +236,6 @@ export function ScrollExpandHero({
               </motion.p>
             )}
           </div>
-
-          {/* Contenido que aparece cuando la foto terminó de abrirse */}
-          {children && (
-            <motion.div
-              className="w-full"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: expanded ? 1 : 0 }}
-              transition={{ duration: 0.7 }}
-              aria-hidden={!expanded}
-            >
-              {children}
-            </motion.div>
-          )}
         </div>
       </section>
     </div>
