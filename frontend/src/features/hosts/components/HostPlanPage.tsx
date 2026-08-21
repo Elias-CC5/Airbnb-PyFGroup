@@ -113,22 +113,21 @@ export function HostPlanPage() {
       {/* ------------------------------ planes ------------------------------ */}
       {!activo && (
         <section className="relative">
-          {/* Encabezado en el mismo tono manuscrito que las tarjetas. */}
-          <div className="mb-14 space-y-5 text-center">
-            <p className="-rotate-1 font-handwritten text-xl text-ink-500">
+          {/* Encabezado ligeramente torcido, igual que las tarjetas. */}
+          <div className="mb-14 space-y-4 text-center">
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-ink-500">
               Precios claros, en soles
             </p>
 
             <div className="relative inline-block">
-              <h2 className="-rotate-1 font-handwritten text-4xl font-bold text-ink-900 md:text-5xl">
+              <h2 className="-rotate-1 text-3xl font-bold tracking-tight text-ink-900 md:text-4xl">
                 {pendiente ? 'Otros planes' : 'Publica todo lo que quieras'}
-                <span className="absolute -right-10 top-0 rotate-12 text-amber-500">✨</span>
               </h2>
-              {/* Subrayado a mano alzada. */}
-              <span className="absolute -bottom-3 left-1/2 h-3 w-44 -translate-x-1/2 -rotate-1 rounded-full bg-amber-400/25 blur-sm" />
+              {/* Subrayado hecho a mano. */}
+              <span className="absolute -bottom-2 left-1/2 h-2.5 w-44 -translate-x-1/2 -rotate-1 rounded-full bg-amber-400/30" />
             </div>
 
-            <p className="-rotate-1 font-handwritten text-xl text-ink-600">
+            <p className="text-sm text-ink-600">
               Sin permanencia: cuando vence, tus anuncios se pausan, no se borran
             </p>
           </div>

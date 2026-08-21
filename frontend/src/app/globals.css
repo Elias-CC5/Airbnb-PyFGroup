@@ -76,9 +76,6 @@
   /* --- Tipografía --- */
   --font-sans: Arial, Helvetica, "Helvetica Neue", sans-serif;
   --font-display: Arial, Helvetica, "Helvetica Neue", sans-serif;
-  /* Manuscrita: sólo para la página de planes. La carga `layout.tsx` con
-     next/font y la expone como --font-manuscrita. */
-  --font-handwritten: var(--font-manuscrita), "Bradley Hand", "Segoe Print", cursive;
 
   /* --- Radios --- */
   --radius-xs: 6px;
