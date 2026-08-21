@@ -128,8 +128,8 @@ export function ScrollExpandHero({
     };
   }, [expanded, avanzar, reduceMotion]);
 
-  const ancho = 300 + progress * (isMobile ? 650 : 1250);
-  const alto = 400 + progress * (isMobile ? 200 : 400);
+  const ancho = (isMobile ? 300 : 460) + progress * (isMobile ? 650 : 1100);
+  const alto = (isMobile ? 380 : 520) + progress * (isMobile ? 220 : 300);
   const desplazamiento = progress * (isMobile ? 180 : 150);
 
   const [primera, ...resto] = title.split(' ');
@@ -145,8 +145,11 @@ export function ScrollExpandHero({
           transition={{ duration: 0.1 }}
         >
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={bgImageSrc} alt="" className="size-full object-cover" />
-          <div className="absolute inset-0 bg-ink-950/25" />
+          <img src={bgImageSrc} alt="" className="size-full scale-105 object-cover blur-[2px]" />
+          {/* Dos capas: una plana que baja el brillo general y un degradado que
+              carga la parte de abajo, donde va la pista de scroll. */}
+          <div className="absolute inset-0 bg-ink-950/55" />
+          <div className="absolute inset-0 bg-gradient-to-b from-ink-950/40 via-transparent to-ink-950/70" />
         </motion.div>
 
         <div className="relative z-10 flex w-full flex-col items-center">
@@ -165,32 +168,38 @@ export function ScrollExpandHero({
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={mediaSrc} alt={title} className="size-full object-cover" />
               <motion.div
-                className="absolute inset-0 bg-ink-950/50"
-                initial={{ opacity: 0.7 }}
-                animate={{ opacity: 0.65 - progress * 0.45 }}
+                className="absolute inset-0 bg-ink-950"
+                initial={{ opacity: 0.45 }}
+                animate={{ opacity: 0.45 - progress * 0.35 }}
                 transition={{ duration: 0.2 }}
               />
             </div>
 
             {/* Titular partido en dos, que se separa al hacer scroll */}
-            <div className="relative z-10 flex w-full flex-col items-center gap-3 text-center mix-blend-difference">
+            {/*
+              El componente original usaba `mix-blend-difference`: sobre un
+              fondo negro se ve bien, pero encima de una foto clara invierte los
+              colores y el titular sale gris sucio. Aquí va blanco sólido con
+              sombra, que lee sobre cualquier foto.
+            */}
+            <div
+              className="relative z-10 flex w-full flex-col items-center gap-2 text-center"
+              style={{ textShadow: '0 2px 24px rgba(0,0,0,0.65)' }}
+            >
               {eyebrow && (
-                <p
-                  className="text-xs font-semibold uppercase tracking-[0.25em] text-white/80"
-                  style={{ transform: `translateX(-${desplazamiento}vw)` }}
-                >
+                <p className="mb-2 text-xs font-semibold uppercase tracking-[0.25em] text-white/85">
                   {eyebrow}
                 </p>
               )}
 
               <h1
-                className="text-5xl font-bold tracking-tight text-white md:text-6xl lg:text-7xl"
+                className="text-5xl font-bold leading-[0.95] tracking-tight text-white md:text-7xl lg:text-8xl"
                 style={{ transform: `translateX(-${desplazamiento}vw)` }}
               >
                 {primera}
               </h1>
               <h1
-                className="text-5xl font-bold tracking-tight text-white md:text-6xl lg:text-7xl"
+                className="text-5xl font-bold leading-[0.95] tracking-tight text-white md:text-7xl lg:text-8xl"
                 style={{ transform: `translateX(${desplazamiento}vw)` }}
               >
                 {resto.join(' ')}
@@ -200,7 +209,7 @@ export function ScrollExpandHero({
             {/* Pista de "sigue bajando", sólo mientras no está abierta */}
             {hint && !expanded && (
               <motion.p
-                className="absolute bottom-10 z-10 text-sm text-white/80"
+                className="absolute bottom-10 z-10 text-sm text-white/90 [text-shadow:0_1px_12px_rgba(0,0,0,0.7)]"
                 animate={{ opacity: 1 - progress * 1.4 }}
               >
                 {hint}
