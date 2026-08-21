@@ -1,7 +1,20 @@
 import { SITE } from '@/constants';
 import type { Metadata, Viewport } from 'next';
+import { Caveat } from 'next/font/google';
 import './globals.css';
 import { Providers } from './providers';
+
+/**
+ * Letra manuscrita, sólo para la página de planes. Va como variable CSS y no
+ * como fuente del body: si fuera la tipografía por defecto, el resto del sitio
+ * —que es deliberadamente sobrio— se volvería ilegible.
+ */
+const manuscrita = Caveat({
+  subsets: ['latin'],
+  weight: ['400', '600', '700'],
+  variable: '--font-manuscrita',
+  display: 'swap',
+});
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE.url),
@@ -37,7 +50,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="es-PE">
+    <html lang="es-PE" className={manuscrita.variable}>
       <body className="min-h-dvh antialiased">
         <a
           href="#contenido"

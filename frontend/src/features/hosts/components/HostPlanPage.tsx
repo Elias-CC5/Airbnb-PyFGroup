@@ -112,10 +112,26 @@ export function HostPlanPage() {
 
       {/* ------------------------------ planes ------------------------------ */}
       {!activo && (
-        <section>
-          <h2 className="mb-6 text-sm font-medium uppercase tracking-wide text-ink-500">
-            {pendiente ? 'Otros planes' : 'Elige tu plan'}
-          </h2>
+        <section className="relative">
+          {/* Encabezado en el mismo tono manuscrito que las tarjetas. */}
+          <div className="mb-14 space-y-5 text-center">
+            <p className="-rotate-1 font-handwritten text-xl text-ink-500">
+              Precios claros, en soles
+            </p>
+
+            <div className="relative inline-block">
+              <h2 className="-rotate-1 font-handwritten text-4xl font-bold text-ink-900 md:text-5xl">
+                {pendiente ? 'Otros planes' : 'Publica todo lo que quieras'}
+                <span className="absolute -right-10 top-0 rotate-12 text-amber-500">✨</span>
+              </h2>
+              {/* Subrayado a mano alzada. */}
+              <span className="absolute -bottom-3 left-1/2 h-3 w-44 -translate-x-1/2 -rotate-1 rounded-full bg-amber-400/25 blur-sm" />
+            </div>
+
+            <p className="-rotate-1 font-handwritten text-xl text-ink-600">
+              Sin permanencia: cuando vence, tus anuncios se pausan, no se borran
+            </p>
+          </div>
 
           <motion.div
             variants={contenedor}
@@ -134,6 +150,7 @@ export function HostPlanPage() {
                   features={plan.features}
                   buttonText={pendiente ? 'Cambiar a este' : 'Contratar'}
                   icon={ICONOS[i % ICONOS.length]}
+                  index={i}
                   loading={contratar.isPending}
                   onSelect={() => {
                     if (pendiente) {
