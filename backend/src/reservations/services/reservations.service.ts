@@ -137,6 +137,31 @@ export class ReservationsService {
     return new PaginatedResponse(data, total, query.page, query.limit);
   }
 
+  /**
+   * Reservas de los alojamientos del anfitrión. El filtro por `ownerId` va en
+   * la consulta, no en el controlador: aunque alguien manipule los parámetros,
+   * no puede ver reservas de otro anfitrión.
+   */
+  async findForHost(ownerId: string, query: QueryReservationsDto) {
+    const where: Prisma.ReservationWhereInput = {
+      property: { ownerId, deletedAt: null },
+      ...(query.status ? { status: query.status } : {}),
+    };
+
+    const [data, total] = await this.prisma.$transaction([
+      this.prisma.reservation.findMany({
+        where,
+        include: reservationInclude,
+        orderBy: { checkIn: 'desc' },
+        skip: query.skip,
+        take: query.limit,
+      }),
+      this.prisma.reservation.count({ where }),
+    ]);
+
+    return new PaginatedResponse(data, total, query.page, query.limit);
+  }
+
   /** Listado administrativo con filtros. */
   async findAll(query: QueryReservationsDto) {
     const where: Prisma.ReservationWhereInput = {

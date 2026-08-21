@@ -26,6 +26,16 @@ export class ReservationsController {
     return this.reservationsService.findMine(userId, query);
   }
 
+  @Get('host')
+  @Roles(Role.HOST)
+  @ApiOperation({
+    summary: 'Reservas de mis alojamientos (anfitrión)',
+    description: 'Sólo devuelve reservas de propiedades cuyo ownerId es el usuario autenticado.',
+  })
+  findForHost(@CurrentUser('id') userId: string, @Query() query: QueryReservationsDto) {
+    return this.reservationsService.findForHost(userId, query);
+  }
+
   @Get()
   @Roles(Role.ADMIN)
   @ApiOperation({ summary: 'Listar todas las reservas (admin)' })
