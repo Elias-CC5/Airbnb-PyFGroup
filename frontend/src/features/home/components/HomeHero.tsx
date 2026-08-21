@@ -22,7 +22,7 @@ export function HomeHero({ featured }: HomeHeroProps) {
     <ScrollExpandHero
       mediaSrc={principal}
       eyebrow="Alojamientos con alma peruana"
-      title="Perú te espera"
+      title="PyFGroup te espera"
       hint="Desliza para descubrirlo"
     >
       {/*
