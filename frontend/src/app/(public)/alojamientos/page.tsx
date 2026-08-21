@@ -29,7 +29,9 @@ export default async function PropertiesPage() {
         a una pantalla de distancia. Queda sólo el encabezado, que además
         sostiene el <h1> que la página necesita.
       */}
-      <header className="container-page pb-2 pt-10">
+      {/* `pt-28` es la convención del proyecto para páginas sin hero: el Navbar
+          va `fixed` y sin ese margen el título le queda debajo. */}
+      <header className="container-page pb-2 pt-28 sm:pt-32">
         <h1 className="text-3xl font-bold tracking-tight text-ink-900 sm:text-4xl">Alojamientos</h1>
         <p className="mt-2 max-w-xl text-ink-600">
           Casas, departamentos y cabañas verificadas. Filtra por destino, fechas y precio.

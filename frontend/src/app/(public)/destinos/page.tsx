@@ -22,7 +22,9 @@ export default async function DestinationsPage() {
         Sin hero: las fotos de las regiones son el contenido de esta página, y
         una portada encima sólo las empujaba fuera de la primera pantalla.
       */}
-      <header className="container-page pb-6 pt-10">
+      {/* `pt-28` es la convención del proyecto para páginas sin hero: el Navbar
+          va `fixed` y sin ese margen el título le queda debajo. */}
+      <header className="container-page pb-6 pt-28 sm:pt-32">
         <h1 className="text-3xl font-bold tracking-tight text-ink-900 sm:text-4xl">Destinos</h1>
         <p className="mt-2 max-w-xl text-ink-600">
           Desde la costa hasta la selva. Elige tu región y mira dónde quedarte.
