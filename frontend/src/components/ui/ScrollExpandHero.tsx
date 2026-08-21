@@ -21,10 +21,11 @@ interface ScrollExpandHeroProps {
  * expandir— para que nadie quede atrapado a media página. Con
  * `prefers-reduced-motion` no se secuestra nada: la foto arranca abierta.
  *
- * El fondo es sólido a propósito. Antes iba una segunda foto desenfocada, pero
- * dos fotos peleando por la misma pantalla ensucian el color y el resultado
- * depende de qué alojamiento esté destacado ese día. Un fondo oscuro fijo hace
- * que la foto que crece sea lo único que se mira.
+ * El fondo es blanco a propósito. Pasó por una segunda foto desenfocada y por
+ * un degradado oscuro: la foto ensuciaba el color y el negro cortaba en seco
+ * contra la sección blanca de abajo. En blanco no hay corte —el hero y el
+ * resto de la página son el mismo lienzo— y la única mancha de color es la
+ * foto que crece.
  */
 export function ScrollExpandHero({
   mediaSrc,
@@ -138,17 +139,9 @@ export function ScrollExpandHero({
 
   return (
     <div className="overflow-x-hidden">
-      <section className="relative flex min-h-[100dvh] flex-col items-center justify-start bg-ink-950">
-        {/* Fondo sólido con un halo suave detrás de la foto. */}
-        <div className="absolute inset-0 z-0">
-          <div className="absolute inset-0 bg-[radial-gradient(120%_90%_at_50%_10%,#2c2724_0%,#1c1917_45%,#0c0a09_100%)]" />
-          {/* El halo se apaga a medida que la foto ocupa la pantalla. */}
-          <motion.div
-            className="absolute inset-0 bg-[radial-gradient(50%_40%_at_50%_50%,rgba(255,255,255,0.10)_0%,transparent_70%)]"
-            animate={{ opacity: 1 - progress }}
-            transition={{ duration: 0.2 }}
-          />
-        </div>
+      <section className="relative flex min-h-[100dvh] flex-col items-center justify-start bg-white">
+        {/* Fondo blanco con un velo casi imperceptible hacia los bordes. */}
+        <div className="absolute inset-0 z-0 bg-[radial-gradient(120%_90%_at_50%_0%,#ffffff_0%,#fafaf9_70%,#f5f5f4_100%)]" />
 
         <div className="relative z-10 flex w-full flex-col items-center">
           <div className="relative flex h-[100dvh] w-full flex-col items-center justify-center">
@@ -160,38 +153,45 @@ export function ScrollExpandHero({
                 height: `${alto}px`,
                 maxWidth: '95vw',
                 maxHeight: '85vh',
-                boxShadow: '0 30px 90px -20px rgba(0,0,0,0.75)',
+                boxShadow: '0 24px 70px -30px rgba(28,25,23,0.35)',
               }}
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={mediaSrc} alt={title} className="size-full object-cover" />
+              {/* Velo blanco que se disuelve: mientras la foto es chica deja
+                  leer el titular encima; cuando ocupa la pantalla, se va. */}
               <motion.div
-                className="absolute inset-0 bg-ink-950"
-                initial={{ opacity: 0.45 }}
-                animate={{ opacity: 0.45 - progress * 0.35 }}
+                className="absolute inset-0 bg-white"
+                initial={{ opacity: 0.35 }}
+                animate={{ opacity: 0.35 - progress * 0.35 }}
                 transition={{ duration: 0.2 }}
               />
             </div>
 
             {/* Titular partido en dos, que se separa al hacer scroll */}
+            {/*
+              Texto oscuro sobre blanco. El halo blanco del `textShadow` es lo
+              único que lo sostiene en el tramo en que queda encima de la foto;
+              sin él, una foto oscura se lo come.
+            */}
             <div
-              className="relative z-10 flex w-full flex-col items-center gap-2 text-center"
-              style={{ textShadow: '0 2px 24px rgba(0,0,0,0.65)' }}
+              className="relative z-10 flex w-full flex-col items-center gap-1 text-center"
+              style={{ textShadow: '0 1px 18px rgba(255,255,255,0.85)' }}
             >
               {eyebrow && (
-                <p className="mb-2 text-xs font-semibold uppercase tracking-[0.25em] text-white/85">
+                <p className="mb-3 text-[11px] font-medium uppercase tracking-[0.3em] text-ink-500">
                   {eyebrow}
                 </p>
               )}
 
               <h1
-                className="text-5xl font-bold leading-[0.95] tracking-tight text-white md:text-7xl lg:text-8xl"
+                className="text-5xl font-semibold leading-[0.95] tracking-tight text-ink-900 md:text-7xl lg:text-8xl"
                 style={{ transform: `translateX(-${desplazamiento}vw)` }}
               >
                 {primera}
               </h1>
               <h1
-                className="text-5xl font-bold leading-[0.95] tracking-tight text-white md:text-7xl lg:text-8xl"
+                className="text-5xl font-semibold leading-[0.95] tracking-tight text-ink-900 md:text-7xl lg:text-8xl"
                 style={{ transform: `translateX(${desplazamiento}vw)` }}
               >
                 {resto.join(' ')}
@@ -201,7 +201,7 @@ export function ScrollExpandHero({
             {/* Pista de "sigue bajando", sólo mientras no está abierta */}
             {hint && !expanded && (
               <motion.p
-                className="absolute bottom-10 z-10 text-sm text-white/90 [text-shadow:0_1px_12px_rgba(0,0,0,0.7)]"
+                className="absolute bottom-10 z-10 text-xs uppercase tracking-[0.2em] text-ink-400 [text-shadow:0_1px_14px_rgba(255,255,255,0.9)]"
                 animate={{ opacity: 1 - progress * 1.4 }}
               >
                 {hint}
