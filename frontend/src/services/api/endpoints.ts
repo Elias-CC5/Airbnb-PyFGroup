@@ -103,6 +103,6 @@ export const ENDPOINTS = {
     subscriptionPayment: (id: string) => `/hosts/subscription/${id}/payment`,
     subscriptionCancel: (id: string) => `/hosts/subscription/${id}/cancel`,
     freeSlot: '/hosts/subscription/free-slot',
-    byId: (id: string) => `/hosts/${id}`,
+    byId: (id: string) => `/hosts/profile/${id}`,
   },
 } as const;
