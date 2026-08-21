@@ -1,7 +1,7 @@
 import { StackSection } from '@/components/ui/StackSection';
 import { DeparturesBoard } from '@/features/home/components/DeparturesBoard';
 import { FeaturedProperties } from '@/features/home/components/FeaturedProperties';
-import { Hero } from '@/features/home/components/Hero';
+import { HomeHero } from '@/features/home/components/HomeHero';
 import { PopularDestinations } from '@/features/home/components/PopularDestinations';
 import { Testimonials } from '@/features/home/components/Testimonials';
 import { catalogServerService } from '@/features/properties/services/catalog.service';
@@ -20,12 +20,11 @@ export default async function HomePage() {
 
   return (
     <>
-      {/* El hero ocupa toda la pantalla y queda al fondo de la pila. */}
-      <Hero
-        backgroundUrl={featured?.[0]?.images?.[0]?.url}
-        stays={stays}
-        regions={regions}
-      />
+      {/*
+        Hero con foto que se expande al hacer scroll. Usa las fotos de los
+        alojamientos destacados, así que cambia solo cuando cambia el catálogo.
+      */}
+      <HomeHero featured={featured ?? []} stays={stays} regions={regions} />
 
       <StackSection index={1} className="bg-white">
         <FeaturedProperties properties={featured ?? []} />
