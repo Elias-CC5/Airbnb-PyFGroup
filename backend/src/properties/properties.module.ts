@@ -5,7 +5,6 @@ import { PropertiesController } from './controllers/properties.controller';
 import { PropertiesService } from './services/properties.service';
 
 @Module({
-  // HostsModule aporta el HostActiveGuard que protege los endpoints de anfitrión.
   imports: [AuthModule, HostsModule],
   controllers: [PropertiesController],
   providers: [PropertiesService],

@@ -3,13 +3,17 @@ import { Prisma, PropertyStatus, Role } from '@prisma/client';
 import { PaginatedResponse } from '../../common/dto/paginated-response.dto';
 import { toUtcDate, uniqueSlug } from '../../common/utils';
 import { PrismaService } from '../../database/prisma.service';
+import { SubscriptionsService } from '../../hosts/services/subscriptions.service';
 import { AuthenticatedUser } from '../../auth/interfaces/authenticated-user.interface';
 import { CreatePropertyDto, PropertySort, SearchPropertyDto, UpdatePropertyDto } from '../dto';
 import { propertyCardSelect, propertyDetailInclude } from '../interfaces/property.interface';
 
 @Injectable()
 export class PropertiesService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly subscriptions: SubscriptionsService,
+  ) {}
 
   // ------------------------------ lectura ------------------------------
   /**
@@ -147,6 +151,10 @@ export class PropertiesService {
 
   // ------------------------------ escritura ------------------------------
   async create(dto: CreatePropertyDto, user: AuthenticatedUser) {
+    // Plan gratuito: un solo alojamiento publicable. Se comprueba antes de
+    // escribir nada, para no dejar una ficha huérfana si el límite falla.
+    await this.subscriptions.assertCanPublish(user);
+
     const { location, amenityIds, ...data } = dto;
 
     const slug = await uniqueSlug(dto.title, async (s) =>
@@ -242,6 +250,11 @@ export class PropertiesService {
             : `No puedes pasar de ${property.status} a ${status}`,
         );
       }
+    }
+
+    // Sacar una ficha del cajón también consume cupo; pausarla o archivarla, no.
+    if (status === PropertyStatus.ACTIVE || status === PropertyStatus.PENDING_REVIEW) {
+      await this.subscriptions.assertCanPublish(user, id);
     }
 
     return this.prisma.property.update({ where: { id }, data: { status } });

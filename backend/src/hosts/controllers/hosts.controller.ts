@@ -38,8 +38,13 @@ export class HostsController {
     return this.hosts.updateMyProfile(userId, dto);
   }
 
+  /**
+   * Va bajo `profile/` a propósito. Cuando esto colgaba de `/hosts/:id`,
+   * cualquier ruta literal nueva del mismo controlador —`/hosts/plans`,
+   * `/hosts/subscription`— caía aquí, se validaba como UUID y devolvía 400.
+   */
   @Public()
-  @Get(':id')
+  @Get('profile/:id')
   @ApiOperation({ summary: 'Perfil público de un anfitrión' })
   publicProfile(@Param('id', ParseUUIDPipe) id: string) {
     return this.hosts.publicProfile(id);

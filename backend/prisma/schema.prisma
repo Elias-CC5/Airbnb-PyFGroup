@@ -101,6 +101,7 @@ model User {
   hostApplications   HostApplication[]  @relation("HostApplicant")
   reviewedApplications HostApplication[] @relation("HostReviewer")
   documentAccesses   HostDocumentAccess[] @relation("HostDocumentViewer")
+  reviewedSubscriptions HostSubscription[] @relation("SubscriptionReviewer")
 
   createdAt DateTime  @default(now()) @map("created_at")
   updatedAt DateTime  @updatedAt @map("updated_at")
@@ -561,6 +562,93 @@ enum IdDocumentType {
 }
 
 /// Perfil público del anfitrión. Lo que ve un huésped en la ficha.
+/// Billeteras y efectivo. No hay pasarela: todo se confirma a mano.
+enum PaymentMethod {
+  YAPE
+  PLIN
+  TRANSFER
+  CASH
+}
+
+enum SubscriptionStatus {
+  /// El anfitrión eligió plan y aún no reporta el pago.
+  PENDING_PAYMENT
+  /// Reportó el pago; falta que un administrador lo verifique.
+  IN_REVIEW
+  ACTIVE
+  EXPIRED
+  REJECTED
+  CANCELLED
+}
+
+/// Plan de publicación. Editable desde el panel: los precios viven en la base,
+/// no en el código.
+model HostPlan {
+  id     String @id @default(uuid()) @db.Uuid
+  code   String @unique @db.VarChar(40)
+  name   String @db.VarChar(80)
+  /// Duración en días. 30, 60, 210…
+  days   Int
+  price  Decimal  @db.Decimal(10, 2)
+  currency Currency @default(PEN)
+  /// Texto suelto que se muestra bajo el nombre.
+  tagline     String?  @db.VarChar(160)
+  /// Viñetas de la tarjeta de precios.
+  features    String[] @default([])
+  isPopular   Boolean  @default(false) @map("is_popular")
+  isActive    Boolean  @default(true)  @map("is_active")
+  sortOrder   Int      @default(0)     @map("sort_order")
+
+  subscriptions HostSubscription[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([isActive, sortOrder])
+  @@map("host_plans")
+}
+
+/// Un periodo pagado. El histórico se conserva: nunca se sobrescribe una fila,
+/// se crea otra.
+model HostSubscription {
+  id            String @id @default(uuid()) @db.Uuid
+  hostProfileId String @map("host_profile_id") @db.Uuid
+  planId        String @map("plan_id") @db.Uuid
+
+  status SubscriptionStatus @default(PENDING_PAYMENT)
+
+  /// Se rellenan al confirmar el pago, no al crear la suscripción.
+  startsAt DateTime? @map("starts_at")
+  endsAt   DateTime? @map("ends_at")
+
+  amount   Decimal       @db.Decimal(10, 2)
+  currency Currency      @default(PEN)
+  method   PaymentMethod?
+  /// Número de operación de Yape/Plin o de la transferencia.
+  operationNumber String? @map("operation_number") @db.VarChar(60)
+  /// Captura del pago. La sube el anfitrión; el efectivo no lleva.
+  proofUrl        String? @map("proof_url")
+  paidAt          DateTime? @map("paid_at")
+
+  reportedAt   DateTime? @map("reported_at")
+  reviewedAt   DateTime? @map("reviewed_at")
+  reviewedById String?   @map("reviewed_by_id") @db.Uuid
+  rejectionReason String? @map("rejection_reason") @db.VarChar(500)
+  /// Notas internas del administrador. No las ve el anfitrión.
+  adminNotes      String? @map("admin_notes") @db.VarChar(500)
+
+  hostProfile HostProfile @relation(fields: [hostProfileId], references: [id], onDelete: Cascade)
+  plan        HostPlan    @relation(fields: [planId], references: [id])
+  reviewedBy  User?       @relation("SubscriptionReviewer", fields: [reviewedById], references: [id])
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([hostProfileId, status])
+  @@index([status, endsAt])
+  @@map("host_subscriptions")
+}
+
 model HostProfile {
   id     String @id @default(uuid()) @db.Uuid
   userId String @unique @map("user_id") @db.Uuid
@@ -589,8 +677,13 @@ model HostProfile {
   suspendedAt     DateTime? @map("suspended_at")
   suspendedReason String?   @map("suspended_reason") @db.VarChar(500)
 
-  user     User             @relation(fields: [userId], references: [id], onDelete: Cascade)
-  settings HostSettings?
+  user          User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  settings      HostSettings?
+  subscriptions HostSubscription[]
+
+  /// Alojamiento que se conserva publicado cuando la suscripción vence y el
+  /// anfitrión vuelve al plan gratuito. Si está vacío se usa el más antiguo.
+  freeSlotPropertyId String? @unique @map("free_slot_property_id") @db.Uuid
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
