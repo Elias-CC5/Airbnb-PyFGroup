@@ -55,6 +55,13 @@ export interface HostSummary {
   propertiesCount: number;
   suspendedReason: string | null;
   user: { id: string; email: string; firstName: string; lastName: string };
+  /** Plan vigente, si lo hay. Llega con un solo elemento como mucho. */
+  subscriptions: Array<{
+    id: string;
+    startsAt: string | null;
+    endsAt: string | null;
+    plan: { name: string; days: number };
+  }>;
 }
 
 interface Page<T> {

@@ -1,7 +1,7 @@
-import { HostApplicationsInbox } from '@/features/hosts/components/HostApplicationsInbox';
+import { AdminHostsTabs } from '@/features/hosts/components/AdminHostsTabs';
 
 export const metadata = { title: 'Anfitriones · Administración' };
 
 export default function AdminHostsPage() {
-  return <HostApplicationsInbox />;
+  return <AdminHostsTabs />;
 }

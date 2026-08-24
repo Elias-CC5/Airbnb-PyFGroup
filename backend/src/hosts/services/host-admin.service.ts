@@ -1,11 +1,5 @@
 import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
-import {
-  HostApplicationStatus,
-  HostStatus,
-  Prisma,
-  PropertyStatus,
-  Role,
-} from '@prisma/client';
+import { HostApplicationStatus, HostStatus, Prisma, PropertyStatus, Role, SubscriptionStatus } from '@prisma/client';
 import { PrismaService } from '../../database/prisma.service';
 import { MailService } from '../../mail/mail.service';
 import { ReviewHostApplicationDto, SuspendHostDto } from '../dto/host.dto';
@@ -204,6 +198,23 @@ export class HostAdminService {
           propertiesCount: true,
           suspendedReason: true,
           user: { select: { id: true, email: true, firstName: true, lastName: true } },
+          /**
+           * Último plan activo, para que el administrador vea de un vistazo
+           * cuándo caduca. No se fuerza el vencimiento perezoso aquí: si
+           * `endsAt` ya pasó, la interfaz lo muestra como vencido, y el repaso
+           * diario se encarga de pausar las fichas.
+           */
+          subscriptions: {
+            where: { status: SubscriptionStatus.ACTIVE },
+            orderBy: { endsAt: 'desc' },
+            take: 1,
+            select: {
+              id: true,
+              startsAt: true,
+              endsAt: true,
+              plan: { select: { name: true, days: true } },
+            },
+          },
         },
       }),
       this.prisma.hostProfile.count({ where }),
