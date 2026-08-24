@@ -157,6 +157,12 @@ export class PropertiesService {
 
     const { location, amenityIds, ...data } = dto;
 
+    // Destacar es decisión editorial y, desde que existen los planes, un
+    // beneficio de pago. Si el campo llegara del cuerpo de la petición,
+    // cualquier anfitrión se autodestacaría con una llamada a la API,
+    // saltándose el plan. Ocultarlo en el formulario no basta.
+    if (!this.isStaff(user)) delete data.isFeatured;
+
     const slug = await uniqueSlug(dto.title, async (s) =>
       Boolean(await this.prisma.property.findUnique({ where: { slug: s } })),
     );
@@ -187,6 +193,9 @@ export class PropertiesService {
   async update(id: string, dto: UpdatePropertyDto, user: AuthenticatedUser) {
     const property = await this.ensureCanManage(id, user);
     const { location, amenityIds, title, ...data } = dto;
+
+    // Mismo motivo que en create(): el destacado sólo lo mueve el equipo.
+    if (!this.isStaff(user)) delete data.isFeatured;
 
     const slug =
       title && title !== property.title
