@@ -2,35 +2,33 @@
 
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 interface VideoHeroProps {
   /** Fuente del vídeo de fondo. Debe ser MP4 (H.264) para que Safari lo reproduzca. */
   videoSrc: string;
-  /** Imagen que se ve mientras el vídeo carga, y en lugar del vídeo si no puede reproducirse. */
+  /** Fotograma que se ve mientras carga, y en lugar del vídeo si no puede reproducirse. */
   poster?: string;
-  /** Etiqueta pequeña en mayúsculas, encima del título. */
-  eyebrow: string;
-  /** Primera línea del título: va en gris, se lee como el arranque de la frase. */
-  titleTop: string;
-  /** Segunda línea: va en oscuro y monta ligeramente sobre la primera. */
-  titleBottom: string;
-  subtitle: string;
+  /**
+   * Las tres palabras del titular. Van escalonadas en diagonal —izquierda,
+   * derecha, centro— así que conviene que sean cortas: una palabra larga en la
+   * línea de la derecha se sale de la pantalla en móvil.
+   */
+  lines: [string, string, string];
+  /** Párrafo corto al costado. Dos o tres renglones como máximo. */
+  blurb: string;
   primary: { label: string; href: string };
   secondary: { label: string; href: string };
   className?: string;
 }
 
-/** Azul-pizarra del botón principal. Fuera del tema porque es exclusivo del hero. */
-const OSCURO = '#202A36';
-const OSCURO_HOVER = '#1A2229';
-
 /**
- * Portada a pantalla completa con vídeo de fondo.
+ * Portada a pantalla completa con vídeo de fondo y titular en diagonal.
  *
- * El texto va oscuro sobre un velo blanco: es más legible que el blanco sobre
- * oscuro cuando el vídeo tiene zonas claras —cielo, paredes, ventanales— y no
- * se puede controlar qué fotograma toca en cada momento.
+ * El vídeo no va en bucle: arranca cuando la portada entra en pantalla, corre
+ * una vez y se queda congelado en su último fotograma. Un bucle infinito en la
+ * primera pantalla compite con el contenido y no deja de gastar batería aunque
+ * el visitante ya haya bajado.
  *
  * No lleva navegación propia a propósito: la del sitio ya es `fixed` y flota
  * por encima de esta sección. Dos barras se pisarían.
@@ -38,112 +36,121 @@ const OSCURO_HOVER = '#1A2229';
 export function VideoHero({
   videoSrc,
   poster,
-  eyebrow,
-  titleTop,
-  titleBottom,
-  subtitle,
+  lines,
+  blurb,
   primary,
   secondary,
   className,
 }: VideoHeroProps) {
   const video = useRef<HTMLVideoElement>(null);
+  const [termino, setTermino] = useState(false);
 
-  // Quien pide menos movimiento en el sistema recibe el fotograma fijo. Un vídeo
-  // en bucle a pantalla completa es justo lo que esa preferencia quiere evitar.
   useEffect(() => {
     const el = video.current;
     if (!el) return;
 
-    const media = window.matchMedia('(prefers-reduced-motion: reduce)');
-    const aplicar = () => {
-      if (media.matches) el.pause();
-      else void el.play().catch(() => undefined);
-    };
+    const quietud = window.matchMedia('(prefers-reduced-motion: reduce)');
 
-    aplicar();
-    media.addEventListener('change', aplicar);
-    return () => media.removeEventListener('change', aplicar);
+    // Con "reducir movimiento" activado el vídeo no se reproduce nunca: queda
+    // como una foto fija. Es exactamente lo que esa preferencia pide.
+    if (quietud.matches) return;
+
+    // Sólo corre mientras la portada está a la vista. Si el visitante baja a
+    // mitad de la reproducción, se pausa; si vuelve a subir, retoma donde iba.
+    const observador = new IntersectionObserver(
+      ([entrada]) => {
+        if (entrada.isIntersecting) void el.play().catch(() => undefined);
+        else el.pause();
+      },
+      { threshold: 0.25 },
+    );
+
+    observador.observe(el);
+    return () => observador.disconnect();
   }, []);
 
   return (
-    <section className={cn('relative h-[100dvh] overflow-hidden bg-ink-100', className)}>
+    <section className={cn('relative h-[100dvh] overflow-hidden bg-ink-950', className)}>
       <video
         ref={video}
         className="absolute inset-0 h-full w-full object-cover"
         src={videoSrc}
         poster={poster}
-        autoPlay
         muted
-        loop
         playsInline
         preload="metadata"
-        // Decorativo: no aporta información que no esté en el texto de al lado.
+        onEnded={() => setTermino(true)}
+        // Decorativo: no aporta nada que no esté en el texto de al lado.
         aria-hidden="true"
         tabIndex={-1}
       />
 
       {/*
-        Velo doble. El plano blanco levanta el contraste general; el degradado
-        aclara la mitad superior, que es donde cae el texto, sin apagar el vídeo
-        entero. Sin esto el título gris desaparece cuando pasa una zona clara.
+        Velo oscuro. El titular es blanco y enorme, así que necesita fondo
+        oscuro constante: sin esto desaparece cada vez que el vídeo pasa por una
+        zona clara —cielo, nieve, un ventanal—. El degradado añade peso arriba y
+        abajo, que es donde caen las palabras.
       */}
-      <div className="absolute inset-0 bg-white/35" />
-      <div className="absolute inset-0 bg-gradient-to-b from-white/70 via-white/20 to-transparent" />
+      <div className="absolute inset-0 bg-ink-950/45" />
+      <div className="absolute inset-0 bg-gradient-to-b from-ink-950/60 via-transparent to-ink-950/70" />
 
-      <div className="relative flex h-full flex-col">
+      {/*
+        El titular en diagonal. Un `<h1>` con tres bloques: el primero pegado a
+        la izquierda, el segundo a la derecha, el tercero algo pasado del centro.
+        En móvil el escalonado se apaga —todo a la izquierda— porque con el ancho
+        de un teléfono la diagonal deja las palabras cortadas.
+      */}
+      <div className="relative flex h-full flex-col justify-center px-6 pt-24 pb-16 sm:px-10 lg:px-16">
+        <h1
+          className={cn(
+            'flex flex-col font-normal uppercase tracking-tight text-white',
+            'text-[17vw] leading-[0.92] md:text-[13vw] md:leading-[1.05]',
+            '[text-shadow:0_4px_40px_rgba(0,0,0,0.35)]',
+          )}
+        >
+          <span className="md:self-start">{lines[0]}</span>
+          <span className="md:self-end">{lines[1]}</span>
+          <span className="md:self-center md:pl-[8vw]">{lines[2]}</span>
+        </h1>
+
         {/*
-          Empuja el bloque por encima del centro óptico. El hueco de arriba lo
-          ocupa la barra flotante del sitio, así que el texto arranca por debajo
-          de ella incluso en pantallas bajas.
+          El bloque de texto se apoya sobre el titular en escritorio —queda a la
+          izquierda, a media altura, en el hueco que deja la diagonal— y pasa a
+          fluir debajo en móvil, donde no hay hueco que aprovechar.
         */}
-        <div className="flex flex-1 items-center justify-center px-6 pt-24 pb-32 sm:pb-40 lg:pb-48">
-          <div className="text-center">
-            <p className="mb-4 text-sm font-semibold uppercase tracking-wider text-ink-600">
-              {eyebrow}
-            </p>
+        <div className="mt-10 max-w-xs md:absolute md:left-6 md:top-1/2 md:mt-0 md:-translate-y-1/2 lg:left-16">
+          <p className="text-sm leading-relaxed text-white/85 sm:text-base">{blurb}</p>
 
-            <h1 className="font-normal leading-none tracking-tighter">
-              <span className="block text-6xl text-ink-500 md:text-7xl lg:text-8xl">{titleTop}</span>
-              {/*
-                El solape es el gesto del diseño: la segunda línea sube 12 px y
-                casi toca la primera. `leading-none` ya las junta; el margen
-                negativo termina de cerrarlas.
-              */}
-              <span
-                className="-mt-3 block text-6xl md:text-7xl lg:text-8xl"
-                style={{ color: OSCURO }}
-              >
-                {titleBottom}
-              </span>
-            </h1>
+          <div className="mt-6 flex flex-wrap items-center gap-3">
+            <Link
+              href={primary.href}
+              className="rounded-full bg-white px-5 py-2.5 text-sm font-medium text-ink-900 transition-colors hover:bg-white/85"
+            >
+              {primary.label}
+            </Link>
 
-            <p className="mx-auto mt-6 mb-6 max-w-2xl text-lg text-ink-600 md:text-xl">{subtitle}</p>
-
-            <div className="flex flex-wrap items-center justify-center gap-4">
-              <Link
-                href={secondary.href}
-                className="rounded-full bg-ink-300 px-4 py-2 font-medium text-ink-800 transition-colors hover:bg-ink-400"
-              >
-                {secondary.label}
-              </Link>
-
-              <Link
-                href={primary.href}
-                style={{ backgroundColor: OSCURO }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = OSCURO_HOVER;
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = OSCURO;
-                }}
-                className="rounded-full px-4 py-2 font-medium text-white transition-colors"
-              >
-                {primary.label}
-              </Link>
-            </div>
+            <Link
+              href={secondary.href}
+              className="rounded-full px-5 py-2.5 text-sm font-medium text-white ring-1 ring-inset ring-white/45 transition-colors hover:bg-white/10"
+            >
+              {secondary.label}
+            </Link>
           </div>
         </div>
       </div>
+
+      {/*
+        Sólo aparece cuando el vídeo ya terminó: hasta entonces la portada se
+        mueve sola y no hace falta decirle a nadie que siga bajando.
+      */}
+      {termino && (
+        <span
+          aria-hidden="true"
+          className="absolute inset-x-0 bottom-6 text-center text-[11px] uppercase tracking-[0.2em] text-white/50"
+        >
+          Desliza
+        </span>
+      )}
     </section>
   );
 }
