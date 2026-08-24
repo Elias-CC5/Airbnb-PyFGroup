@@ -4,8 +4,6 @@ import {
   Button,
   Card,
   CardContent,
-  CardHeader,
-  CardTitle,
   Input,
   Label,
   Select,
@@ -18,6 +16,7 @@ import {
   CANCELLATION_POLICY_LABEL,
   PROPERTY_STATUS_LABEL,
 } from '@/constants';
+import { useAuth } from '@/features/auth/hooks/useAuth';
 import {
   useAmenitiesGrouped,
   useCategories,
@@ -31,7 +30,7 @@ import type { PropertyDetail } from '@/types';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useState, type ReactNode } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { propertyFormSchema, type PropertyFormInput } from '../schemas/property.schema';
@@ -57,12 +56,53 @@ const HOUSE_RULE_TOGGLES = [
 ] as const;
 
 /**
+ * Sección numerada del formulario.
+ *
+ * El número no es decoración: un formulario de esta longitud se lee como una
+ * lista de tareas, y saber cuántas quedan cambia la sensación de estar
+ * rellenándolo. La descripción evita el problema clásico de los formularios
+ * largos —campos que el usuario no sabe si le tocan— sin recurrir a tooltips.
+ */
+function Seccion({
+  numero,
+  titulo,
+  descripcion,
+  children,
+}: {
+  numero: number;
+  titulo: string;
+  descripcion: string;
+  children: ReactNode;
+}) {
+  return (
+    <Card className="scroll-mt-24">
+      <div className="flex gap-4 border-b border-ink-100 p-5 sm:p-6">
+        <span className="mt-0.5 grid size-7 shrink-0 place-items-center rounded-full bg-ink-100 text-xs font-semibold tabular-nums text-ink-600">
+          {String(numero).padStart(2, '0')}
+        </span>
+        <div>
+          <h2 className="text-base font-semibold text-ink-900">{titulo}</h2>
+          <p className="mt-0.5 text-sm text-ink-500">{descripcion}</p>
+        </div>
+      </div>
+      <CardContent className="pt-5 sm:pt-6">{children}</CardContent>
+    </Card>
+  );
+}
+
+/** Texto de ayuda bajo un campo. */
+function Ayuda({ children }: { children: ReactNode }) {
+  return <p className="mt-1.5 text-xs leading-relaxed text-ink-500">{children}</p>;
+}
+
+/**
  * Formulario dividido en secciones. En creación guarda primero el alojamiento
  * y luego habilita la subida de imágenes (necesita el ID).
  */
 export function PropertyForm({ property, basePath = '/admin/alojamientos' }: PropertyFormProps) {
   const router = useRouter();
   const queryClient = useQueryClient();
+  const { isAdmin } = useAuth();
 
   // Imágenes elegidas antes de que el alojamiento exista en el servidor.
   const [pendingImages, setPendingImages] = useState<PendingImage[]>([]);
@@ -157,6 +197,10 @@ export function PropertyForm({ property, basePath = '/admin/alojamientos' }: Pro
   const { data: provinces } = useProvinces(departmentId ? Number(departmentId) : undefined);
   const { data: districts } = useDistricts(provinceId ? Number(provinceId) : undefined);
 
+  const amenidadesElegidas = watch('amenityIds')?.length ?? 0;
+  const titulo = watch('title');
+  const precio = watch('pricePerNight');
+
   const save = useMutation({
     mutationFn: async (values: PropertyFormInput) => {
       const payload = {
@@ -210,43 +254,63 @@ export function PropertyForm({ property, basePath = '/admin/alojamientos' }: Pro
     onError: (error: Error) => toast.error(error.message),
   });
 
+  const hayCambios = isDirty || pendingImages.length > 0;
+
   return (
-    <form onSubmit={handleSubmit((v) => save.mutate(v))} className="space-y-6" noValidate>
-      <header className="flex flex-wrap items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight text-ink-900">
-            {property ? 'Editar alojamiento' : 'Nuevo alojamiento'}
-          </h1>
-          <p className="mt-1 text-sm text-ink-600">
-            {property ? property.title : 'Completa la información y publica cuando esté listo.'}
-          </p>
-        </div>
-        <div className="flex gap-3">
-          <Button type="button" variant="outline" onClick={() => router.push(basePath)}>
-            Cancelar
-          </Button>
-          <Button type="submit" loading={save.isPending} disabled={!isDirty && !!property}>
-            Guardar
-          </Button>
+    <form onSubmit={handleSubmit((v) => save.mutate(v))} className="pb-10" noValidate>
+      {/*
+        La cabecera se queda pegada arriba: en un formulario tan largo, tener
+        que subir hasta el principio para guardar es la queja número uno.
+      */}
+      <header className="sticky top-0 z-20 -mx-4 mb-6 border-b border-ink-200 bg-white/85 px-4 py-4 backdrop-blur sm:-mx-6 sm:px-6">
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <div className="min-w-0">
+            <h1 className="truncate text-xl font-semibold tracking-tight text-ink-900 sm:text-2xl">
+              {property ? property.title : titulo || 'Nuevo alojamiento'}
+            </h1>
+            <p className="mt-0.5 text-sm text-ink-500">
+              {property
+                ? 'Los cambios se aplican al guardar.'
+                : 'Ocho pasos. Puedes guardarlo como borrador y seguir después.'}
+            </p>
+          </div>
+
+          <div className="flex items-center gap-3">
+            {hayCambios && (
+              <span className="hidden text-xs text-ink-500 sm:inline">Sin guardar</span>
+            )}
+            <Button type="button" variant="outline" onClick={() => router.push(basePath)}>
+              Cancelar
+            </Button>
+            <Button type="submit" loading={save.isPending} disabled={!hayCambios && !!property}>
+              Guardar
+            </Button>
+          </div>
         </div>
       </header>
 
-      <div className="grid gap-6 xl:grid-cols-[1fr_360px]">
-        <div className="space-y-6">
-          {/* Información básica */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Información básica</CardTitle>
-            </CardHeader>
-            <CardContent className="grid gap-4">
+      <div className="grid gap-6 xl:grid-cols-[1fr_340px]">
+        <div className="space-y-5">
+          <Seccion
+            numero={1}
+            titulo="Información básica"
+            descripcion="Lo primero que ve un huésped en los resultados de búsqueda."
+          >
+            <div className="grid gap-5">
               <div>
-                <Label htmlFor="title" required>Título</Label>
+                <Label htmlFor="title" required>
+                  Título
+                </Label>
                 <Input
                   id="title"
                   placeholder="Casa moderna con vista al valle"
                   error={errors.title?.message}
                   {...register('title')}
                 />
+                <Ayuda>
+                  Di qué es y qué lo hace distinto. Los títulos concretos reciben más clics que
+                  los genéricos.
+                </Ayuda>
               </div>
 
               <div>
@@ -257,23 +321,36 @@ export function PropertyForm({ property, basePath = '/admin/alojamientos' }: Pro
                   error={errors.shortDescription?.message}
                   {...register('shortDescription')}
                 />
+                <Ayuda>Una línea que acompaña al título en la tarjeta.</Ayuda>
               </div>
 
               <div>
-                <Label htmlFor="description" required>Descripción completa</Label>
+                <Label htmlFor="description" required>
+                  Descripción completa
+                </Label>
                 <Textarea
                   id="description"
-                  rows={8}
+                  rows={7}
                   placeholder="Describe los ambientes, la zona y lo que hace especial al alojamiento…"
                   error={errors.description?.message}
                   {...register('description')}
                 />
+                <Ayuda>
+                  Cuenta los ambientes, cómo es el barrio y qué hay cerca. Lo que no expliques
+                  aquí te lo van a preguntar por WhatsApp.
+                </Ayuda>
               </div>
 
-              <div className="grid gap-4 sm:grid-cols-2">
+              <div className="grid gap-5 sm:grid-cols-2">
                 <div>
-                  <Label htmlFor="categoryId" required>Tipo de alojamiento</Label>
-                  <Select id="categoryId" error={errors.categoryId?.message} {...register('categoryId')}>
+                  <Label htmlFor="categoryId" required>
+                    Tipo de alojamiento
+                  </Label>
+                  <Select
+                    id="categoryId"
+                    error={errors.categoryId?.message}
+                    {...register('categoryId')}
+                  >
                     <option value="">Selecciona…</option>
                     {categories?.map((category) => (
                       <option key={category.id} value={category.id}>
@@ -284,46 +361,96 @@ export function PropertyForm({ property, basePath = '/admin/alojamientos' }: Pro
                 </div>
                 <div>
                   <Label htmlFor="whatsappPhone">WhatsApp del anfitrión</Label>
-                  <Input id="whatsappPhone" placeholder="+51 974 467 762" {...register('whatsappPhone')} />
+                  <Input
+                    id="whatsappPhone"
+                    placeholder="+51 974 467 762"
+                    {...register('whatsappPhone')}
+                  />
+                  <Ayuda>Por aquí te escriben los huéspedes para coordinar la llegada.</Ayuda>
                 </div>
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </Seccion>
 
-          {/* Capacidad y precios */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Capacidad y precios</CardTitle>
-            </CardHeader>
-            <CardContent className="grid gap-4 sm:grid-cols-3">
+          <Seccion
+            numero={2}
+            titulo="Capacidad"
+            descripcion="Cuánta gente entra y con qué comodidad. Filtra las búsquedas."
+          >
+            <div className="grid gap-5 sm:grid-cols-4">
               <div>
-                <Label htmlFor="pricePerNight" required>Precio por noche (S/)</Label>
-                <Input id="pricePerNight" type="number" min={1} error={errors.pricePerNight?.message} {...register('pricePerNight')} />
+                <Label htmlFor="maxGuests" required>
+                  Huéspedes
+                </Label>
+                <Input
+                  id="maxGuests"
+                  type="number"
+                  min={1}
+                  error={errors.maxGuests?.message}
+                  {...register('maxGuests')}
+                />
               </div>
               <div>
-                <Label htmlFor="cleaningFee">Tarifa de limpieza (S/)</Label>
-                <Input id="cleaningFee" type="number" min={0} {...register('cleaningFee')} />
-              </div>
-              <div>
-                <Label htmlFor="minNights">Noches mínimas</Label>
-                <Input id="minNights" type="number" min={1} {...register('minNights')} />
-              </div>
-              <div>
-                <Label htmlFor="maxGuests" required>Huéspedes</Label>
-                <Input id="maxGuests" type="number" min={1} error={errors.maxGuests?.message} {...register('maxGuests')} />
-              </div>
-              <div>
-                <Label htmlFor="bedrooms" required>Habitaciones</Label>
-                <Input id="bedrooms" type="number" min={0} error={errors.bedrooms?.message} {...register('bedrooms')} />
+                <Label htmlFor="bedrooms" required>
+                  Habitaciones
+                </Label>
+                <Input
+                  id="bedrooms"
+                  type="number"
+                  min={0}
+                  error={errors.bedrooms?.message}
+                  {...register('bedrooms')}
+                />
               </div>
               <div>
                 <Label htmlFor="beds">Camas</Label>
                 <Input id="beds" type="number" min={1} {...register('beds')} />
               </div>
               <div>
-                <Label htmlFor="bathrooms" required>Baños</Label>
-                <Input id="bathrooms" type="number" min={1} error={errors.bathrooms?.message} {...register('bathrooms')} />
+                <Label htmlFor="bathrooms" required>
+                  Baños
+                </Label>
+                <Input
+                  id="bathrooms"
+                  type="number"
+                  min={1}
+                  error={errors.bathrooms?.message}
+                  {...register('bathrooms')}
+                />
               </div>
+            </div>
+          </Seccion>
+
+          <Seccion
+            numero={3}
+            titulo="Precio y estadía"
+            descripcion="Todos los montos en soles. El huésped ve el total antes de reservar."
+          >
+            <div className="grid gap-5 sm:grid-cols-3">
+              <div>
+                <Label htmlFor="pricePerNight" required>
+                  Precio por noche
+                </Label>
+                <Input
+                  id="pricePerNight"
+                  type="number"
+                  min={1}
+                  placeholder="180"
+                  error={errors.pricePerNight?.message}
+                  {...register('pricePerNight')}
+                />
+                <Ayuda>En soles (S/).</Ayuda>
+              </div>
+              <div>
+                <Label htmlFor="cleaningFee">Tarifa de limpieza</Label>
+                <Input id="cleaningFee" type="number" min={0} {...register('cleaningFee')} />
+                <Ayuda>Se cobra una vez por estadía. Deja 0 si no aplica.</Ayuda>
+              </div>
+              <div>
+                <Label htmlFor="minNights">Noches mínimas</Label>
+                <Input id="minNights" type="number" min={1} {...register('minNights')} />
+              </div>
+
               <div>
                 <Label htmlFor="checkInTime">Check-in</Label>
                 <Input id="checkInTime" placeholder="15:00" {...register('checkInTime')} />
@@ -332,17 +459,19 @@ export function PropertyForm({ property, basePath = '/admin/alojamientos' }: Pro
                 <Label htmlFor="checkOutTime">Check-out</Label>
                 <Input id="checkOutTime" placeholder="11:00" {...register('checkOutTime')} />
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </Seccion>
 
-          {/* Ubicación */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Ubicación</CardTitle>
-            </CardHeader>
-            <CardContent className="grid gap-4 sm:grid-cols-3">
+          <Seccion
+            numero={4}
+            titulo="Ubicación"
+            descripcion="La dirección exacta solo la ve el huésped con reserva confirmada."
+          >
+            <div className="grid gap-5 sm:grid-cols-3">
               <div>
-                <Label htmlFor="departmentId" required>Departamento</Label>
+                <Label htmlFor="departmentId" required>
+                  Departamento
+                </Label>
                 <Select
                   id="departmentId"
                   error={errors.location?.departmentId?.message}
@@ -363,7 +492,9 @@ export function PropertyForm({ property, basePath = '/admin/alojamientos' }: Pro
               </div>
 
               <div>
-                <Label htmlFor="provinceId" required>Provincia</Label>
+                <Label htmlFor="provinceId" required>
+                  Provincia
+                </Label>
                 <Select
                   id="provinceId"
                   disabled={!departmentId}
@@ -395,11 +526,19 @@ export function PropertyForm({ property, basePath = '/admin/alojamientos' }: Pro
 
               <div className="sm:col-span-2">
                 <Label htmlFor="address">Dirección</Label>
-                <Input id="address" placeholder="Calle Los Álamos 123" {...register('location.address')} />
+                <Input
+                  id="address"
+                  placeholder="Calle Los Álamos 123"
+                  {...register('location.address')}
+                />
               </div>
               <div>
                 <Label htmlFor="reference">Referencia</Label>
-                <Input id="reference" placeholder="A dos cuadras de la plaza" {...register('location.reference')} />
+                <Input
+                  id="reference"
+                  placeholder="A dos cuadras de la plaza"
+                  {...register('location.reference')}
+                />
               </div>
 
               <div>
@@ -424,18 +563,21 @@ export function PropertyForm({ property, basePath = '/admin/alojamientos' }: Pro
                   {...register('location.longitude')}
                 />
               </div>
-              <p className="self-end text-xs leading-relaxed text-ink-500 sm:col-span-1">
-                Opcional. En Google Maps, clic derecho sobre el punto exacto y copia las coordenadas.
-              </p>
-            </CardContent>
-          </Card>
+              <div className="self-end">
+                <Ayuda>
+                  Opcional, pero pone el pin en el mapa. En Google Maps: clic derecho sobre el
+                  punto exacto y copia las coordenadas.
+                </Ayuda>
+              </div>
+            </div>
+          </Seccion>
 
-          {/* Detalles del espacio */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Detalles del espacio</CardTitle>
-            </CardHeader>
-            <CardContent className="grid gap-4 sm:grid-cols-3">
+          <Seccion
+            numero={5}
+            titulo="Detalles del espacio"
+            descripcion="Opcional. Aparecen en la ficha y ayudan a decidir."
+          >
+            <div className="grid gap-5 sm:grid-cols-3">
               <div>
                 <Label htmlFor="areaM2">Área (m²)</Label>
                 <Input id="areaM2" type="number" min={1} placeholder="85" {...register('areaM2')} />
@@ -465,19 +607,23 @@ export function PropertyForm({ property, basePath = '/admin/alojamientos' }: Pro
                   control={control}
                   name="hasElevator"
                   render={({ field }) => (
-                    <Switch checked={field.value ?? false} onChange={field.onChange} label="Ascensor" />
+                    <Switch
+                      checked={field.value ?? false}
+                      onChange={field.onChange}
+                      label="Ascensor"
+                    />
                   )}
                 />
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </Seccion>
 
-          {/* Reglas de la casa */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Reglas de la casa</CardTitle>
-            </CardHeader>
-            <CardContent className="grid gap-4">
+          <Seccion
+            numero={6}
+            titulo="Reglas de la casa"
+            descripcion="Dicho de entrada, evita discusiones a mitad de la estadía."
+          >
+            <div className="grid gap-5">
               <div className="grid gap-3 sm:grid-cols-2">
                 {HOUSE_RULE_TOGGLES.map((rule) => (
                   <div
@@ -503,7 +649,7 @@ export function PropertyForm({ property, basePath = '/admin/alojamientos' }: Pro
                 ))}
               </div>
 
-              <div className="grid gap-4 sm:grid-cols-2">
+              <div className="grid gap-5 sm:grid-cols-2">
                 <div>
                   <Label htmlFor="quietHoursFrom">Silencio desde</Label>
                   <Input id="quietHoursFrom" placeholder="22:00" {...register('quietHoursFrom')} />
@@ -523,15 +669,15 @@ export function PropertyForm({ property, basePath = '/admin/alojamientos' }: Pro
                   {...register('houseRules')}
                 />
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </Seccion>
 
-          {/* Políticas y cobros */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Políticas y cobros</CardTitle>
-            </CardHeader>
-            <CardContent className="grid gap-4 sm:grid-cols-2">
+          <Seccion
+            numero={7}
+            titulo="Políticas y cobros"
+            descripcion="Qué pasa si cancelan y qué se cobra aparte del precio por noche."
+          >
+            <div className="grid gap-5 sm:grid-cols-2">
               <div className="sm:col-span-2">
                 <Label htmlFor="cancellationPolicy">Política de cancelación</Label>
                 <Select id="cancellationPolicy" {...register('cancellationPolicy')}>
@@ -572,67 +718,75 @@ export function PropertyForm({ property, basePath = '/admin/alojamientos' }: Pro
                   {...register('monthlyDiscount')}
                 />
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </Seccion>
 
-          {/* Amenidades */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Comodidades</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <Controller
-                control={control}
-                name="amenityIds"
-                render={({ field }) => (
-                  <div className="space-y-5">
-                    {amenityGroups?.map((group) => (
-                      <div key={group.group}>
-                        <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-ink-400">
-                          {group.group}
-                        </p>
-                        <div className="flex flex-wrap gap-2">
-                          {group.items.map((amenity) => {
-                            const selected = field.value?.includes(amenity.id) ?? false;
-                            return (
-                              <button
-                                key={amenity.id}
-                                type="button"
-                                onClick={() =>
-                                  field.onChange(
-                                    selected
-                                      ? (field.value ?? []).filter((id) => id !== amenity.id)
-                                      : [...(field.value ?? []), amenity.id],
-                                  )
-                                }
-                                className={cn(
-                                  'rounded-full border px-3.5 py-2 text-sm transition',
+          <Seccion
+            numero={8}
+            titulo="Comodidades"
+            descripcion={
+              amenidadesElegidas > 0
+                ? `${amenidadesElegidas} seleccionadas. Son filtros de búsqueda: marca solo las que hay de verdad.`
+                : 'Son filtros de búsqueda: marca solo las que hay de verdad.'
+            }
+          >
+            <Controller
+              control={control}
+              name="amenityIds"
+              render={({ field }) => (
+                <div className="space-y-5">
+                  {amenityGroups?.map((group) => (
+                    <div key={group.group}>
+                      <p className="mb-2.5 text-xs font-semibold uppercase tracking-wide text-ink-400">
+                        {group.group}
+                      </p>
+                      <div className="flex flex-wrap gap-2">
+                        {group.items.map((amenity) => {
+                          const selected = field.value?.includes(amenity.id) ?? false;
+                          return (
+                            <button
+                              key={amenity.id}
+                              type="button"
+                              aria-pressed={selected}
+                              onClick={() =>
+                                field.onChange(
                                   selected
-                                    ? 'border-ink-900 bg-ink-900 text-white'
-                                    : 'border-ink-300 text-ink-700 hover:border-ink-500',
-                                )}
-                              >
-                                {amenity.name}
-                              </button>
-                            );
-                          })}
-                        </div>
+                                    ? (field.value ?? []).filter((id) => id !== amenity.id)
+                                    : [...(field.value ?? []), amenity.id],
+                                )
+                              }
+                              className={cn(
+                                'rounded-full border px-3.5 py-2 text-sm transition',
+                                selected
+                                  ? 'border-ink-900 bg-ink-900 text-white'
+                                  : 'border-ink-300 text-ink-700 hover:border-ink-500',
+                              )}
+                            >
+                              {amenity.name}
+                            </button>
+                          );
+                        })}
                       </div>
-                    ))}
-                  </div>
-                )}
-              />
-            </CardContent>
-          </Card>
+                    </div>
+                  ))}
+                </div>
+              )}
+            />
+          </Seccion>
         </div>
 
-        {/* Columna lateral */}
-        <div className="space-y-6">
+        {/* Columna lateral: acompaña el scroll en pantallas anchas. */}
+        <div className="space-y-5 xl:sticky xl:top-28 xl:self-start">
           <Card>
-            <CardHeader>
-              <CardTitle>Publicación</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
+            <div className="border-b border-ink-100 p-5 sm:p-6">
+              <h2 className="text-base font-semibold text-ink-900">Publicación</h2>
+              <p className="mt-0.5 text-sm text-ink-500">
+                {isAdmin
+                  ? 'Controlas el estado y la portada.'
+                  : 'Guárdalo como borrador; un administrador lo revisa antes de publicarlo.'}
+              </p>
+            </div>
+            <CardContent className="space-y-4 pt-5 sm:pt-6">
               <div>
                 <Label htmlFor="status">Estado</Label>
                 <Select id="status" {...register('status')}>
@@ -644,27 +798,41 @@ export function PropertyForm({ property, basePath = '/admin/alojamientos' }: Pro
                 </Select>
               </div>
 
-              <div className="flex items-center justify-between rounded-xl border border-ink-200 px-4 py-3">
-                <div>
-                  <p className="text-sm font-medium text-ink-900">Destacado</p>
-                  <p className="text-xs text-ink-500">Aparece en la portada</p>
+              {/*
+                El destacado es un beneficio de los planes de pago: se enciende
+                solo al confirmarse un pago y se apaga al vencer. Si el
+                anfitrión pudiera activarlo desde aquí, el plan no valdría nada.
+              */}
+              {isAdmin && (
+                <div className="flex items-center justify-between rounded-xl border border-ink-200 px-4 py-3">
+                  <div>
+                    <p className="text-sm font-medium text-ink-900">Destacado</p>
+                    <p className="text-xs text-ink-500">Aparece en la portada</p>
+                  </div>
+                  <Controller
+                    control={control}
+                    name="isFeatured"
+                    render={({ field }) => (
+                      <Switch
+                        checked={field.value ?? false}
+                        onChange={field.onChange}
+                        label="Destacado"
+                      />
+                    )}
+                  />
                 </div>
-                <Controller
-                  control={control}
-                  name="isFeatured"
-                  render={({ field }) => (
-                    <Switch checked={field.value ?? false} onChange={field.onChange} label="Destacado" />
-                  )}
-                />
-              </div>
+              )}
             </CardContent>
           </Card>
 
           <Card>
-            <CardHeader>
-              <CardTitle>Fotos</CardTitle>
-            </CardHeader>
-            <CardContent>
+            <div className="border-b border-ink-100 p-5 sm:p-6">
+              <h2 className="text-base font-semibold text-ink-900">Fotos</h2>
+              <p className="mt-0.5 text-sm text-ink-500">
+                La primera es la portada. Horizontales y con luz de día funcionan mejor.
+              </p>
+            </div>
+            <CardContent className="pt-5 sm:pt-6">
               {property ? (
                 <PropertyImagesManager propertyId={property.id} images={property.images} />
               ) : (
@@ -676,6 +844,32 @@ export function PropertyForm({ property, basePath = '/admin/alojamientos' }: Pro
               )}
             </CardContent>
           </Card>
+
+          {/* Resumen de lo imprescindible, para no tener que subir a comprobar. */}
+          <div className="rounded-2xl border border-ink-200 bg-ink-50 p-5">
+            <p className="text-xs font-semibold uppercase tracking-wide text-ink-500">
+              Para poder guardar
+            </p>
+            <ul className="mt-3 space-y-2 text-sm">
+              {[
+                { hecho: Boolean(titulo?.trim()), texto: 'Título' },
+                { hecho: Boolean(watch('description')?.trim()), texto: 'Descripción completa' },
+                { hecho: Boolean(watch('categoryId')), texto: 'Tipo de alojamiento' },
+                { hecho: Number(precio) > 0, texto: 'Precio por noche' },
+                { hecho: Boolean(watch('location.provinceId')), texto: 'Ubicación' },
+              ].map((item) => (
+                <li key={item.texto} className="flex items-center gap-2.5">
+                  <span
+                    className={cn(
+                      'size-1.5 shrink-0 rounded-full',
+                      item.hecho ? 'bg-ink-900' : 'bg-ink-300',
+                    )}
+                  />
+                  <span className={item.hecho ? 'text-ink-900' : 'text-ink-500'}>{item.texto}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
         </div>
       </div>
     </form>
