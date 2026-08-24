@@ -46,6 +46,21 @@ export class MailService implements OnModuleInit {
       },
     });
 
+    const usuario = this.config.get<string>('mail.user') ?? '';
+    const clave = this.config.get<string>('mail.password') ?? '';
+
+    /**
+     * Diagnóstico del 535 de Gmail sin exponer la credencial.
+     *
+     * Una contraseña de aplicación son 16 caracteres exactos. Si el largo no
+     * es 16, o si hay espacios, el valor pegado está mal y no hace falta
+     * seguir buscando en otro sitio.
+     */
+    this.logger.log(
+      `SMTP usuario=${usuario} · clave de ${clave.length} caracteres` +
+        (/\s/.test(clave) ? ' · OJO: contiene espacios' : ''),
+    );
+
     this.transporter
       .verify()
       .then(() => this.logger.log(`SMTP conectado a ${host}`))
