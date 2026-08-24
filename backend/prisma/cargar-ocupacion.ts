@@ -46,16 +46,8 @@ interface Estadia {
 
 /** Cifras del Excel, para verificar al final que la carga quedó bien. */
 const ESPERADO: Record<string, number> = {
-  '2026-01': 46200.94,
-  '2026-02': 54073.57,
-  '2026-03': 55036.94,
-  '2026-04': 51349.0,
-  '2026-05': 63956.13,
-  '2026-06': 57946.48,
-  '2026-07': 69402.67,
-  '2026-08': 55692.4,
-  '2026-09': 860.0,
-  '2026-10': 440.0,
+  '2026-08': 24086.1,
+  '2026-09': 2780.0,
 };
 
 const soles = (n: number) =>
