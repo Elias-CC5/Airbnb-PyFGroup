@@ -1,6 +1,7 @@
 'use client';
 import React, { useRef } from 'react';
 import { cn } from '@/lib/utils';
+import { SITE } from '@/constants';
 import {
   IconBrightnessDown,
   IconBrightnessUp,
@@ -154,7 +155,12 @@ export const Lid = ({
                   <span className="size-3 rounded-full bg-emerald-400" />
                 </span>
                 <span className="mx-auto rounded-md bg-white px-4 py-1 text-xs font-medium text-neutral-500 shadow-sm ring-1 ring-neutral-200/60">
-                  localhost:3000/login
+                  {/*
+                    Este marco imita un navegador, así que la barra tiene que
+                    mostrar el dominio real. Estaba fijo en `localhost:3000`,
+                    que es lo que veía cualquier visitante al iniciar sesión.
+                  */}
+                  {SITE.url.replace(/^https?:\/\//, '')}/login
                 </span>
               </div>
 
