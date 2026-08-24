@@ -9,6 +9,7 @@ import {
 import { HostActiveGuard } from './guards/host-active.guard';
 import { HostAdminService } from './services/host-admin.service';
 import { HostsService } from './services/hosts.service';
+import { SubscriptionsSchedulerService } from './services/subscriptions-scheduler.service';
 import { SubscriptionsService } from './services/subscriptions.service';
 
 @Module({
@@ -21,7 +22,13 @@ import { SubscriptionsService } from './services/subscriptions.service';
     HostsAdminController,
     AdminSubscriptionsController,
   ],
-  providers: [HostsService, HostAdminService, SubscriptionsService, HostActiveGuard],
+  providers: [
+    HostsService,
+    HostAdminService,
+    SubscriptionsService,
+    SubscriptionsSchedulerService,
+    HostActiveGuard,
+  ],
   // SubscriptionsService lo usa PropertiesModule para el límite de publicación.
   exports: [HostsService, HostActiveGuard, SubscriptionsService],
 })

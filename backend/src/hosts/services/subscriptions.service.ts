@@ -287,8 +287,34 @@ export class SubscriptionsService {
         sub.hostProfile.userId,
         sub.hostProfile.freeSlotPropertyId,
       );
+      await this.avisarVencimiento(sub.hostProfile.userId);
       this.logger.log(`Suscripción ${sub.id} vencida; anfitrión de vuelta al plan gratuito`);
     }
+  }
+
+  /**
+   * Le dice al anfitrión que su plan venció.
+   *
+   * Sin este aviso, sus alojamientos desaparecen del catálogo sin explicación
+   * y lo primero que hace es escribir preguntando qué pasó. Las fichas quedan
+   * pausadas, no borradas, y conviene decirlo en el mismo correo.
+   */
+  private async avisarVencimiento(userId: string) {
+    const usuario = await this.prisma.user.findUnique({ where: { id: userId } });
+    if (!usuario) return;
+
+    await this.mail.send({
+      to: usuario.email,
+      subject: 'Tu plan de anfitrión venció',
+      html:
+        `<p>Hola ${usuario.firstName},</p>` +
+        '<p>Tu plan llegó a su fin. Vuelves al plan gratuito, que permite ' +
+        '<strong>un alojamiento publicado</strong>.</p>' +
+        '<p>El resto de tus alojamientos quedaron <strong>pausados, no eliminados</strong>: ' +
+        'siguen ahí con sus fotos y su calendario, y vuelven a publicarse solos en cuanto ' +
+        'contrates un plan otra vez.</p>' +
+        '<p>Puedes renovar desde tu panel, en <strong>Mi plan</strong>.</p>',
+    });
   }
 
   private async volverAlPlanGratuito(userId: string, freeSlotPropertyId: string | null) {
