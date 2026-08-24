@@ -35,6 +35,16 @@ export interface HostApplicationInput {
   occupation?: string;
   motivation: string;
   city?: string;
+  documentFrontUrl?: string;
+  documentBackUrl?: string;
+  selfieUrl?: string;
+}
+
+/** URLs que devuelve la subida de documentos. */
+export interface HostDocumentUrls {
+  documentFrontUrl?: string;
+  documentBackUrl?: string;
+  selfieUrl?: string;
 }
 
 /** Lo que edita el anfitrión desde su panel. `languages` viaja como texto. */
@@ -80,6 +90,19 @@ export const hostService = {
       ENDPOINTS.hosts.applications,
       input,
     ),
+
+  /**
+   * Sube las tres fotos del documento y devuelve sus URLs. Se llama antes de
+   * enviar la solicitud, no durante: así el usuario ve el error de subida
+   * antes de perder el formulario.
+   */
+  uploadDocuments: (archivos: { front?: File; back?: File; selfie?: File }) => {
+    const formData = new FormData();
+    if (archivos.front) formData.append('front', archivos.front);
+    if (archivos.back) formData.append('back', archivos.back);
+    if (archivos.selfie) formData.append('selfie', archivos.selfie);
+    return api.post<HostDocumentUrls>(ENDPOINTS.uploads.hostDocuments, formData);
+  },
 
   myProfile: () => api.get<HostProfile>(ENDPOINTS.hosts.myProfile),
 

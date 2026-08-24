@@ -61,6 +61,7 @@ export const ENDPOINTS = {
     main: (id: string) => `/uploads/images/${id}/main`,
     image: (id: string) => `/uploads/images/${id}`,
     avatar: '/uploads/avatar',
+    hostDocuments: '/uploads/host-documents',
   },
   whatsapp: { property: (id: string) => `/whatsapp/properties/${id}/link`, support: '/whatsapp/support' },
   admin: {

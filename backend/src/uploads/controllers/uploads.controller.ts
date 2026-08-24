@@ -11,7 +11,11 @@ import {
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
-import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
+import {
+  FileFieldsInterceptor,
+  FileInterceptor,
+  FilesInterceptor,
+} from '@nestjs/platform-express';
 import { ApiBearerAuth, ApiConsumes, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Role } from '@prisma/client';
 import { AuthenticatedUser } from '../../auth/interfaces/authenticated-user.interface';
@@ -71,6 +75,42 @@ export class UploadsController {
     @CurrentUser() user: AuthenticatedUser,
   ) {
     return this.uploadsService.removeImage(imageId, user);
+  }
+
+  /**
+   * Fotos del documento para la solicitud de anfitrión.
+   *
+   * Cualquier usuario autenticado puede subirlas —todavía no es HOST, por eso
+   * no lleva `@Roles`—. Las URLs no se guardan aquí: se devuelven para que el
+   * formulario las envíe junto con la solicitud, y se borran al resolverla.
+   */
+  @Post('host-documents')
+  @ApiConsumes('multipart/form-data')
+  @ApiOperation({ summary: 'Sube anverso, reverso y selfie del documento' })
+  @UseInterceptors(
+    FileFieldsInterceptor([
+      { name: 'front', maxCount: 1 },
+      { name: 'back', maxCount: 1 },
+      { name: 'selfie', maxCount: 1 },
+    ]),
+  )
+  async uploadHostDocuments(
+    @UploadedFiles()
+    files: {
+      front?: Express.Multer.File[];
+      back?: Express.Multer.File[];
+      selfie?: Express.Multer.File[];
+    },
+    @CurrentUser() user: AuthenticatedUser,
+  ) {
+    const subir = async (archivo?: Express.Multer.File) =>
+      archivo ? (await this.uploadsService.uploadHostDocuments([archivo], user.id))[0] : undefined;
+
+    return {
+      documentFrontUrl: await subir(files.front?.[0]),
+      documentBackUrl: await subir(files.back?.[0]),
+      selfieUrl: await subir(files.selfie?.[0]),
+    };
   }
 
   @Post('avatar')

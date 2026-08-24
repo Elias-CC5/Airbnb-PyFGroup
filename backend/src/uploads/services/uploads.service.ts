@@ -54,6 +54,25 @@ export class UploadsService {
     return created;
   }
 
+  /**
+   * Sube las fotos del documento de identidad de un solicitante.
+   *
+   * No se guardan en ninguna tabla: devuelve las URLs y quien llama las mete
+   * en la solicitud. Van a una carpeta por usuario para poder borrarlas de
+   * golpe cuando la solicitud se resuelve.
+   */
+  async uploadHostDocuments(files: Express.Multer.File[], userId: string) {
+    if (!files?.length) throw new BadRequestException('No se recibió ninguna imagen');
+    files.forEach((f) => this.validate(f));
+
+    const subidas: string[] = [];
+    for (const file of files) {
+      const result = await this.storage.upload(file, `host-documents/${userId}`);
+      subidas.push(result.url);
+    }
+    return subidas;
+  }
+
   async removeImage(imageId: string, user: AuthenticatedUser) {
     const image = await this.prisma.propertyImage.findUnique({ where: { id: imageId } });
     if (!image) throw new NotFoundException('Imagen no encontrada');

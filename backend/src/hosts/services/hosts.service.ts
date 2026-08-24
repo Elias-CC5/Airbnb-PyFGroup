@@ -220,11 +220,14 @@ export class HostsService {
         admins.map((admin) =>
           this.mail.send({
             to: admin.email,
-            subject: 'Nueva solicitud de anfitrión',
+            subject: `${nombre} quiere ser anfitrión`,
             html:
-              `<p>Hola ${admin.firstName ?? ''},</p>` +
-              `<p><strong>${nombre}</strong> quiere publicar alojamientos en la plataforma.</p>` +
-              `<p>Revisa su solicitud en el panel, en Anfitriones → Solicitudes.</p>`,
+              `<p>Hola${admin.firstName ? ` ${admin.firstName}` : ''},</p>` +
+              `<p><strong>${nombre}</strong> envió una solicitud para publicar alojamientos.</p>` +
+              '<p>Adjuntó su documento de identidad. Revísalo en el panel de ' +
+              'administración, en <strong>Anfitriones → Solicitudes</strong>.</p>' +
+              '<p style="color:#737373;font-size:13px">Las fotos del documento se borran ' +
+              'en cuanto resuelves la solicitud, así que no dejes la revisión para después.</p>',
           }),
         ),
       );
