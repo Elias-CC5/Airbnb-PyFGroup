@@ -4,7 +4,7 @@ import { IsString, Matches, MinLength } from 'class-validator';
 export class ChangePasswordDto {
   @ApiProperty()
   @IsString()
-  currentPassword: string;
+  currentPassword!: string;
 
   @ApiProperty()
   @IsString()
@@ -12,5 +12,5 @@ export class ChangePasswordDto {
   @Matches(/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/, {
     message: 'La contraseña debe incluir mayúscula, minúscula y número',
   })
-  newPassword: string;
+  newPassword!: string;
 }

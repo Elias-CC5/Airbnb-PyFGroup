@@ -1,18 +1,36 @@
 import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { Prisma, PropertyStatus, Role } from '@prisma/client';
 import { PaginatedResponse } from '../../common/dto/paginated-response.dto';
+import { CacheService } from '../../common/services/cache.service';
 import { toUtcDate, uniqueSlug } from '../../common/utils';
 import { PrismaService } from '../../database/prisma.service';
 import { SubscriptionsService } from '../../hosts/services/subscriptions.service';
 import { AuthenticatedUser } from '../../auth/interfaces/authenticated-user.interface';
 import { CreatePropertyDto, PropertySort, SearchPropertyDto, UpdatePropertyDto } from '../dto';
 import { propertyCardSelect, propertyDetailInclude } from '../interfaces/property.interface';
+import { ViewsCounterService } from './views-counter.service';
+
+/**
+ * Prefijo común de todo lo que cachea este servicio. Sirve para tirar el bloque
+ * entero de una vez cuando cambia cualquier ficha: es más burdo que invalidar
+ * clave por clave, pero también imposible de equivocar, y el catálogo se toca
+ * pocas veces al día.
+ */
+const CACHE = 'properties:';
+
+/** Los destacados cambian cuando el equipo los mueve, no solos. */
+const TTL_DESTACADOS = 5 * 60 * 1000;
+
+/** Los parecidos dependen de categoría y departamento: aún más estables. */
+const TTL_PARECIDOS = 10 * 60 * 1000;
 
 @Injectable()
 export class PropertiesService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly subscriptions: SubscriptionsService,
+    private readonly cache: CacheService,
+    private readonly views: ViewsCounterService,
   ) {}
 
   // ------------------------------ lectura ------------------------------
@@ -80,14 +98,19 @@ export class PropertiesService {
     return new PaginatedResponse(withFavorites, total, query.page, query.limit);
   }
 
+  /**
+   * Destacados de la portada. Es la consulta más repetida del sitio —la ve todo
+   * el que entra— y la que menos cambia, así que es la que más gana con caché.
+   */
   async findFeatured(limit = 8) {
-    const data = await this.prisma.property.findMany({
-      where: { status: PropertyStatus.ACTIVE, deletedAt: null, isFeatured: true },
-      select: propertyCardSelect,
-      orderBy: [{ ratingAvg: 'desc' }, { createdAt: 'desc' }],
-      take: limit,
-    });
-    return data;
+    return this.cache.wrap(`${CACHE}featured:${limit}`, TTL_DESTACADOS, () =>
+      this.prisma.property.findMany({
+        where: { status: PropertyStatus.ACTIVE, deletedAt: null, isFeatured: true },
+        select: propertyCardSelect,
+        orderBy: [{ ratingAvg: 'desc' }, { createdAt: 'desc' }],
+        take: limit,
+      }),
+    );
   }
 
   async findBySlug(slug: string, currentUser?: AuthenticatedUser | null) {
@@ -102,8 +125,9 @@ export class PropertiesService {
       throw new NotFoundException('Alojamiento no encontrado');
     }
 
-    // Contador de vistas: no bloquea la respuesta.
-    void this.prisma.property.update({ where: { id: property.id }, data: { views: { increment: 1 } } }).catch(() => undefined);
+    // Contador de vistas: se suma en memoria y se vuelca en tandas. Antes cada
+    // visita disparaba su propio UPDATE contra la misma fila.
+    this.views.registrar(property.id);
 
     const isFavorite = currentUser
       ? Boolean(
@@ -127,6 +151,12 @@ export class PropertiesService {
 
   /** Alojamientos parecidos: misma categoría o mismo departamento. */
   async findSimilar(slug: string, limit = 4) {
+    return this.cache.wrap(`${CACHE}similar:${slug}:${limit}`, TTL_PARECIDOS, () =>
+      this.buscarParecidos(slug, limit),
+    );
+  }
+
+  private async buscarParecidos(slug: string, limit: number) {
     const property = await this.prisma.property.findUnique({
       where: { slug },
       select: { id: true, categoryId: true, location: { select: { departmentId: true } } },
@@ -169,7 +199,7 @@ export class PropertiesService {
 
     // La ubicación se crea antes: Prisma no permite mezclar FK escalares
     // (ownerId, categoryId) con escrituras anidadas de una relación propia.
-    return this.prisma.$transaction(async (tx) => {
+    const creada = await this.prisma.$transaction(async (tx) => {
       const createdLocation = await tx.location.create({ data: location });
 
       return tx.property.create({
@@ -188,6 +218,9 @@ export class PropertiesService {
         include: propertyDetailInclude,
       });
     });
+
+    this.cache.invalidar(CACHE);
+    return creada;
   }
 
   async update(id: string, dto: UpdatePropertyDto, user: AuthenticatedUser) {
@@ -205,7 +238,7 @@ export class PropertiesService {
           })
         : undefined;
 
-    return this.prisma.$transaction(async (tx) => {
+    const actualizada = await this.prisma.$transaction(async (tx) => {
       if (amenityIds) {
         await tx.propertyAmenity.deleteMany({ where: { propertyId: id } });
         if (amenityIds.length) {
@@ -230,7 +263,11 @@ export class PropertiesService {
         include: propertyDetailInclude,
       });
     });
+
+    this.cache.invalidar(CACHE);
+    return actualizada;
   }
+
   /**
    * Cambios de estado permitidos.
    *
@@ -274,10 +311,13 @@ export class PropertiesService {
         ? await this.subscriptions.tienePlanVigente(property.ownerId)
         : undefined;
 
-    return this.prisma.property.update({
+    const cambiada = await this.prisma.property.update({
       where: { id },
       data: { status, ...(destacar === undefined || destacar === null ? {} : { isFeatured: destacar }) },
     });
+
+    this.cache.invalidar(CACHE);
+    return cambiada;
   }
 
   /** Alojamientos del anfitrión que hace la petición. */
@@ -294,7 +334,10 @@ export class PropertiesService {
 
   async toggleFeatured(id: string, isFeatured: boolean, user: AuthenticatedUser) {
     await this.ensureCanManage(id, user);
-    return this.prisma.property.update({ where: { id }, data: { isFeatured } });
+    const ficha = await this.prisma.property.update({ where: { id }, data: { isFeatured } });
+
+    this.cache.invalidar(CACHE);
+    return ficha;
   }
 
   /** Borrado lógico: las reservas históricas siguen siendo válidas. */
@@ -304,6 +347,8 @@ export class PropertiesService {
       where: { id },
       data: { deletedAt: new Date(), status: PropertyStatus.ARCHIVED },
     });
+
+    this.cache.invalidar(CACHE);
     return { message: 'Alojamiento eliminado' };
   }
 
@@ -321,6 +366,10 @@ export class PropertiesService {
         reviewsCount: agg._count._all,
       },
     });
+
+    // Los destacados se ordenan por nota, así que una reseña nueva puede
+    // cambiar el orden de la portada.
+    this.cache.invalidar(CACHE);
   }
 
   // ------------------------------ helpers ------------------------------

@@ -11,6 +11,7 @@ import { AuthModule } from './auth/auth.module';
 import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
 import { AvailabilityModule } from './availability/availability.module';
 import { CategoriesModule } from './categories/categories.module';
+import { CacheModule } from './common/cache.module';
 import { CommonModule } from './common/common.module';
 import { AllExceptionsFilter } from './common/filters/http-exception.filter';
 import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
@@ -54,6 +55,8 @@ import { WhatsappModule } from './whatsapp/whatsapp.module';
 
     DatabaseModule,
     CommonModule,
+    // Global: una sola caché para todo el proceso.
+    CacheModule,
     MailModule,
 
     AuthModule,
