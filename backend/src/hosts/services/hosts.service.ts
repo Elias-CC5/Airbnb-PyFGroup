@@ -11,7 +11,6 @@ import {
   HostStatus,
   IdDocumentType,
   Prisma,
-  Role,
 } from '@prisma/client';
 import { PrismaService } from '../../database/prisma.service';
 import { MailService } from '../../mail/mail.service';
@@ -203,18 +202,9 @@ export class HostsService {
   /** Correo a los administradores. Si el envío falla, la solicitud igual queda. */
   private async avisarAdministradores(applicationId: string, nombre: string) {
     try {
-      // MAIL_ADMIN_TO manda si está definida; si no, los admins de la base.
-      const fijos = this.mail.adminRecipients;
-      const admins = fijos.length
-        ? fijos.map((email) => ({ email, firstName: null as string | null }))
-        : await this.prisma.user.findMany({
-            where: {
-              role: { in: [Role.ADMIN, Role.SUPER_ADMIN] },
-              deletedAt: null,
-              isActive: true,
-            },
-            select: { email: true, firstName: true },
-          });
+      // El buzón de la empresa y, además, todos los administradores con el
+      // correo verificado. Quien reciba el aviso puede resolverlo.
+      const admins = await this.mail.destinatariosInternos();
 
       await Promise.all(
         admins.map((admin) =>

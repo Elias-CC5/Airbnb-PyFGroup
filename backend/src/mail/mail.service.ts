@@ -1,7 +1,15 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { Role } from '@prisma/client';
 import * as nodemailer from 'nodemailer';
 import type { Transporter } from 'nodemailer';
+import { PrismaService } from '../database/prisma.service';
+
+/** Un destinatario de los avisos internos. */
+export interface DestinatarioInterno {
+  email: string;
+  firstName: string | null;
+}
 
 interface MailAttachment {
   filename: string;
@@ -23,7 +31,10 @@ export class MailService implements OnModuleInit {
   private readonly logger = new Logger(MailService.name);
   private transporter: Transporter | null = null;
 
-  constructor(private readonly config: ConfigService) {}
+  constructor(
+    private readonly config: ConfigService,
+    private readonly prisma: PrismaService,
+  ) {}
 
   onModuleInit() {
     const host = this.config.get<string>('mail.host');
@@ -79,6 +90,72 @@ export class MailService implements OnModuleInit {
    */
   get adminRecipients(): string[] {
     return this.config.get<string[]>('mail.adminTo') ?? [];
+  }
+
+  /**
+   * A quién van los avisos internos: solicitudes de anfitrión, pagos, capturas.
+   *
+   * Suma dos fuentes en vez de elegir una:
+   *
+   * - `MAIL_ADMIN_TO`, el buzón de la empresa. Va siempre, sin condiciones. Es
+   *   la dirección que no debe fallar nunca, así que no se filtra por nada.
+   * - Los administradores de la base con la cuenta activa. Así, al nombrar a
+   *   alguien administrador desde el panel, empieza a recibir los avisos sin
+   *   tocar variables de entorno ni redesplegar.
+   *
+   * Antes era excluyente —si había variable, los admins de la base no recibían
+   * nada—, y por eso los avisos llegaban a un solo buzón.
+   *
+   * NO se filtra por `emailVerified`, aunque por aquí viajen DNI y capturas de
+   * pago. El motivo: hoy ese campo sólo se pone a true al entrar con Google o
+   * GitHub, y quien se registró con contraseña se queda en false para siempre
+   * porque no existe flujo de verificación. Filtrar por ahí dejaría fuera a
+   * administradores legítimos sin que nadie se entere, que es peor: un aviso
+   * que no llega no se nota hasta que ya hubo daño.
+   *
+   * El control real es otro: el rol de administrador lo concede a mano otro
+   * administrador desde el panel. Ese es el momento en que alguien decide que
+   * esa persona puede ver documentos de identidad. Si algún día se añade
+   * verificación de correo de verdad, este filtro vuelve.
+   */
+  async destinatariosInternos(): Promise<DestinatarioInterno[]> {
+    const fijos: DestinatarioInterno[] = this.adminRecipients.map((email) => ({
+      email,
+      firstName: null,
+    }));
+
+    let admins: DestinatarioInterno[] = [];
+    try {
+      admins = await this.prisma.user.findMany({
+        where: {
+          role: { in: [Role.ADMIN, Role.SUPER_ADMIN] },
+          deletedAt: null,
+          isActive: true,
+        },
+        select: { email: true, firstName: true },
+      });
+    } catch (error) {
+      // Si la consulta falla, al menos sale el aviso al buzón de la empresa.
+      this.logger.error(`No se pudo leer los administradores: ${(error as Error).message}`);
+    }
+
+    // Sin duplicados: el correo de la empresa suele ser también el de un
+    // administrador, y recibir el mismo aviso dos veces enseña a ignorarlos.
+    const vistos = new Set<string>();
+    const salida: DestinatarioInterno[] = [];
+
+    for (const destinatario of [...fijos, ...admins]) {
+      const clave = destinatario.email.trim().toLowerCase();
+      if (!clave || vistos.has(clave)) continue;
+      vistos.add(clave);
+      salida.push(destinatario);
+    }
+
+    if (salida.length === 0) {
+      this.logger.warn('Aviso interno sin destinatarios: revisa MAIL_ADMIN_TO y los administradores');
+    }
+
+    return salida;
   }
 
   /**
