@@ -37,6 +37,17 @@ const MASCARA = (x: number, y: number) =>
   'rgba(0,0,0,0.4) 75%, rgba(0,0,0,0.12) 88%, rgba(0,0,0,0) 100%)';
 
 /**
+ * Perfiles del borde rasgado, en un lienzo de 1440x64 que se estira al ancho
+ * de la pantalla. Van fijos a propósito: calcularlos al vuelo haría que el
+ * borde cambiara en cada recarga.
+ */
+const RASGADO_FONDO =
+  'M0,64 L0,50.3 L31.3,44.5 L62.6,27.3 L93.9,18.3 L125.2,11.9 L156.5,22.4 L187.8,22.1 L219.1,28.0 L250.4,13.0 L281.7,22.5 L313.0,43.2 L344.3,32.0 L375.7,38.3 L407.0,40.5 L438.3,20.8 L469.6,12.1 L500.9,21.1 L532.2,23.4 L563.5,6.6 L594.8,22.6 L626.1,20.5 L657.4,33.9 L688.7,43.0 L720.0,37.5 L751.3,40.3 L782.6,37.2 L813.9,30.7 L845.2,31.3 L876.5,23.3 L907.8,5.3 L939.1,23.1 L970.4,24.9 L1001.7,21.5 L1033.0,27.6 L1064.3,29.8 L1095.7,42.3 L1127.0,27.9 L1158.3,29.4 L1189.6,29.2 L1220.9,9.5 L1252.2,5.0 L1283.5,22.9 L1314.8,22.0 L1346.1,26.1 L1377.4,24.2 L1408.7,38.0 L1440.0,29.1 L1440,64 Z';
+
+const RASGADO_FRENTE =
+  'M0,64 L0,19.8 L31.3,24.2 L62.6,24.0 L93.9,17.6 L125.2,23.8 L156.5,28.6 L187.8,34.1 L219.1,33.5 L250.4,31.3 L281.7,29.3 L313.0,38.2 L344.3,36.9 L375.7,24.5 L407.0,17.4 L438.3,22.5 L469.6,17.7 L500.9,17.1 L532.2,30.1 L563.5,23.8 L594.8,25.7 L626.1,38.0 L657.4,31.8 L688.7,28.2 L720.0,19.3 L751.3,26.7 L782.6,21.1 L813.9,15.4 L845.2,21.0 L876.5,29.8 L907.8,35.4 L939.1,33.0 L970.4,35.1 L1001.7,38.8 L1033.0,27.8 L1064.3,33.5 L1095.7,21.1 L1127.0,23.5 L1158.3,14.4 L1189.6,24.6 L1220.9,30.3 L1252.2,19.3 L1283.5,31.8 L1314.8,38.0 L1346.1,35.6 L1377.4,27.4 L1408.7,35.8 L1440.0,22.5 L1440,64 Z';
+
+/**
  * Portada con foco que sigue al cursor y descubre una segunda foto debajo.
  *
  * El diseño original monta la máscara pintando un canvas y sacando un
@@ -146,14 +157,38 @@ export function SpotlightHero({
       <div aria-hidden className="absolute inset-0 z-40 bg-gradient-to-b from-black/35 via-transparent to-black/55" />
 
       {/*
-        Redondea el borde inferior y deja asomar el blanco de la sección
-        siguiente. Sin esto el paso de la foto oscura al blanco es un corte
-        recto, que es justo lo que no gustó del hero anterior.
+        Borde rasgado, como papel roto. Sustituye el corte recto entre la foto
+        oscura y la sección blanca de abajo.
+
+        Son dos capas: una detrás, más irregular y en un blanco cálido, y otra
+        delante en blanco puro. Desfasadas, dan la sensación de dos hojas
+        superpuestas en vez de una silueta plana.
+
+        El perfil está calculado y escrito a mano, no generado en cada render:
+        un borde que cambiara al recargar se notaría como un parpadeo.
       */}
-      <div
-        aria-hidden
-        className="absolute inset-x-0 bottom-0 z-[45] h-10 rounded-t-[40px] bg-white"
-      />
+      <div aria-hidden className="pointer-events-none absolute inset-x-0 bottom-0 z-[45]">
+        <svg
+          viewBox="0 0 1440 64"
+          preserveAspectRatio="none"
+          className="block h-9 w-full translate-y-[3px] sm:h-12"
+          aria-hidden
+        >
+          <path d={RASGADO_FONDO} fill="#f5f2ec" />
+        </svg>
+
+        <svg
+          viewBox="0 0 1440 64"
+          preserveAspectRatio="none"
+          className="-mt-8 block h-9 w-full sm:-mt-11 sm:h-12"
+          aria-hidden
+        >
+          <path d={RASGADO_FRENTE} fill="#ffffff" />
+        </svg>
+
+        {/* Cierra hasta el borde: los SVG dejan un hilo de foto por debajo. */}
+        <div className="-mt-px h-2 bg-white" />
+      </div>
 
       {/*
         Arranca por debajo de la barra flotante del sitio, que es `fixed` y
