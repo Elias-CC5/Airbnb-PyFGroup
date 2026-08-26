@@ -1,24 +1,23 @@
 'use client';
 
 import { SpotlightHero } from '@/components/ui/SpotlightHero';
-import type { PropertyCard } from '@/types';
 
-interface HomeHeroProps {
-  /** Alojamientos destacados: de ahí sale la foto de la portada. */
-  featured: PropertyCard[];
-}
+/**
+ * Las dos fotos de la portada. Van fijas y no salen del catálogo a propósito:
+ * el efecto sólo funciona si las dos encajan entre sí, y si dependieran de los
+ * destacados cambiarían solas cada vez que se mueve el catálogo.
+ */
+const BASE =
+  'https://images.higgs.ai/?default=1&output=webp&url=https%3A%2F%2Fd8j0ntlcm91z4.cloudfront.net%2Fuser_38xzZboKViGWJOttwIXH07lWA1P%2Fhf_20260609_195923_b0ba8ace-1d1d-4f2c-9a28-1ab84b330680.png&w=1280&q=85';
 
-/** Si el catálogo viniera vacío, la portada no puede quedarse en negro. */
-const RESPALDO = 'https://picsum.photos/seed/pyfgroup-hero/1920/1080';
+const REVELADO =
+  'https://images.higgs.ai/?default=1&output=webp&url=https%3A%2F%2Fd8j0ntlcm91z4.cloudfront.net%2Fuser_38xzZboKViGWJOttwIXH07lWA1P%2Fhf_20260609_201152_bba90a12-bf12-459f-91f0-51f237dbaf3b.png&w=1280&q=85';
 
-export function HomeHero({ featured }: HomeHeroProps) {
-  const primero = featured[0];
-  const foto =
-    primero?.images.find((i) => i.isMain)?.url ?? primero?.images[0]?.url ?? RESPALDO;
-
+export function HomeHero() {
   return (
     <SpotlightHero
-      image={foto}
+      baseImage={BASE}
+      revealImage={REVELADO}
       titleTop="Espacios que"
       titleBottom="se sienten casa"
       intro="Departamentos amoblados en Perú que administramos nosotros mismos: los preparamos, los limpiamos entre estadías y respondemos el teléfono cuando hace falta."

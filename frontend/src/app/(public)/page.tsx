@@ -18,10 +18,10 @@ export default async function HomePage() {
   return (
     <>
       {/*
-        Portada: la foto del primer alojamiento destacado, desenfocada, que el
-        cursor va enfocando a su paso.
+        Portada con foco que sigue al cursor. Las fotos van fijas dentro del
+        componente: no dependen del catálogo.
       */}
-      <HomeHero featured={featured ?? []} />
+      <HomeHero />
 
       <StackSection index={1} className="bg-white">
         <FeaturedProperties properties={featured ?? []} />
