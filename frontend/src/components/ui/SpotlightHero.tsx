@@ -5,10 +5,8 @@ import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
 
 interface SpotlightHeroProps {
-  /** Foto de base, la que se ve siempre. */
-  baseImage: string;
-  /** Foto que asoma dentro del foco que sigue al cursor. */
-  revealImage: string;
+  /** La foto. Se ve desenfocada de fondo y nítida dentro del foco. */
+  image: string;
   /** Primera línea del titular. */
   titleTop: string;
   /** Segunda línea. Va pegada a la primera. */
@@ -37,7 +35,12 @@ const MASCARA = (x: number, y: number) =>
   'rgba(0,0,0,0.4) 75%, rgba(0,0,0,0.12) 88%, rgba(0,0,0,0) 100%)';
 
 /**
- * Portada con foco que sigue al cursor y descubre una segunda foto debajo.
+ * Portada con foco que sigue al cursor y enfoca la foto a su paso.
+ *
+ * Es la misma imagen dos veces: desenfocada al fondo y nítida encima, con una
+ * máscara circular que sigue al puntero. Frente a usar dos fotos distintas, el
+ * gesto se lee solo —el visitante entiende que está enfocando, no cambiando de
+ * imagen— y además se descarga una sola foto.
  *
  * El diseño original monta la máscara pintando un canvas y sacando un
  * `toDataURL()` en cada fotograma. Eso codifica en base64 un lienzo del tamaño
@@ -52,8 +55,7 @@ const MASCARA = (x: number, y: number) =>
  * No lleva navegación propia: la del sitio ya es `fixed` y flota por encima.
  */
 export function SpotlightHero({
-  baseImage,
-  revealImage,
+  image,
   titleTop,
   titleBottom,
   intro,
@@ -120,20 +122,23 @@ export function SpotlightHero({
       style={{ height: '100dvh' }}
       className={cn('relative h-screen w-full overflow-hidden bg-black', className)}
     >
-      {/* Foto de base. El zoom lento de entrada le da algo de vida al arrancar. */}
+      {/*
+        Foto desenfocada. El `scale-110` compensa el borde: al desenfocar, los
+        píxeles del contorno se estiran y dejarían un marco translúcido.
+      */}
       <div
         aria-hidden
-        className="hero-zoom absolute inset-0 z-10 bg-cover bg-center bg-no-repeat"
-        style={{ backgroundImage: `url("${baseImage}")` }}
+        className="hero-zoom absolute inset-0 z-10 scale-110 bg-cover bg-center bg-no-repeat blur-2xl"
+        style={{ backgroundImage: `url("${image}")` }}
       />
 
-      {/* Foto que se descubre. Sólo se pinta donde la máscara deja pasar. */}
+      {/* La misma foto, nítida. Sólo se pinta donde la máscara deja pasar. */}
       {conCursor && (
         <div
           aria-hidden
           className="pointer-events-none absolute inset-0 z-30 bg-cover bg-center bg-no-repeat"
           style={{
-            backgroundImage: `url("${revealImage}")`,
+            backgroundImage: `url("${image}")`,
             maskImage: mascara,
             WebkitMaskImage: mascara,
             maskSize: '100% 100%',

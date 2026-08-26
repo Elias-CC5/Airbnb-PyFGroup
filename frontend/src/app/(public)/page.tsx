@@ -18,11 +18,10 @@ export default async function HomePage() {
   return (
     <>
       {/*
-        Portada con foco que sigue al cursor. Ya no depende del catálogo: antes
-        sacaba la foto del primer destacado, así que la portada cambiaba sola
-        cada vez que se movía el catálogo.
+        Portada: la foto del primer alojamiento destacado, desenfocada, que el
+        cursor va enfocando a su paso.
       */}
-      <HomeHero />
+      <HomeHero featured={featured ?? []} />
 
       <StackSection index={1} className="bg-white">
         <FeaturedProperties properties={featured ?? []} />
