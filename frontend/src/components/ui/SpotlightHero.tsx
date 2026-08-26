@@ -129,7 +129,13 @@ export function SpotlightHero({
     <section
       ref={seccion}
       style={{ height: '100dvh' }}
-      className={cn('relative h-screen w-full overflow-hidden bg-black', className)}
+      /*
+        `z-0` es lo que hace que la sección cree su propio contexto de
+        apilamiento. Sin él, sus capas internas compiten con la barra de
+        navegación —que está en z-40— y como el <main> va después del <header>
+        en el DOM, el velo del hero ganaba y se comía los clics del menú.
+      */
+      className={cn('relative z-0 h-screen w-full overflow-hidden bg-black', className)}
     >
       {/* Foto de base. El zoom lento de entrada le da algo de vida al arrancar. */}
       <div
@@ -154,7 +160,10 @@ export function SpotlightHero({
       )}
 
       {/* Velo sutil: el titular es blanco y las fotos pueden tener zonas claras. */}
-      <div aria-hidden className="absolute inset-0 z-40 bg-gradient-to-b from-black/35 via-transparent to-black/55" />
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 z-40 bg-gradient-to-b from-black/35 via-transparent to-black/55"
+      />
 
       {/*
         Borde rasgado, como papel roto. Sustituye el corte recto entre la foto
@@ -168,22 +177,37 @@ export function SpotlightHero({
         un borde que cambiara al recargar se notaría como un parpadeo.
       */}
       <div aria-hidden className="pointer-events-none absolute inset-x-0 bottom-0 z-[45]">
-        <svg
-          viewBox="0 0 1440 64"
-          preserveAspectRatio="none"
-          className="block h-9 w-full translate-y-[3px] sm:h-12"
-          aria-hidden
-        >
-          <path d={RASGADO_FONDO} fill="#f5f2ec" />
+        {/*
+          Antes del papel, la foto se apaga. Sin esta banda el rasgado se
+          recorta contra la imagen a plena luz y vuelve a leerse como un corte,
+          sólo que con forma irregular.
+        */}
+        <div className="h-28 bg-gradient-to-b from-transparent via-black/45 to-black sm:h-36" />
+
+        <svg viewBox="0 0 1440 64" preserveAspectRatio="none" className="block h-9 w-full translate-y-[3px] sm:h-12">
+          <defs>
+            <linearGradient id="rasgado-fondo" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#1c1b19" />
+              <stop offset="100%" stopColor="#f5f2ec" />
+            </linearGradient>
+          </defs>
+          <path d={RASGADO_FONDO} fill="url(#rasgado-fondo)" />
         </svg>
 
-        <svg
-          viewBox="0 0 1440 64"
-          preserveAspectRatio="none"
-          className="-mt-8 block h-9 w-full sm:-mt-11 sm:h-12"
-          aria-hidden
-        >
-          <path d={RASGADO_FRENTE} fill="#ffffff" />
+        <svg viewBox="0 0 1440 64" preserveAspectRatio="none" className="-mt-8 block h-9 w-full sm:-mt-11 sm:h-12">
+          <defs>
+            {/*
+              El papel arranca casi del color de la foto y llega al blanco de
+              la sección de abajo. Así el rasgado no aparece de golpe: la
+              silueta se ve, pero el color va pasando.
+            */}
+            <linearGradient id="rasgado-frente" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#26241f" />
+              <stop offset="55%" stopColor="#b9b3a7" />
+              <stop offset="100%" stopColor="#ffffff" />
+            </linearGradient>
+          </defs>
+          <path d={RASGADO_FRENTE} fill="url(#rasgado-frente)" />
         </svg>
 
         {/* Cierra hasta el borde: los SVG dejan un hilo de foto por debajo. */}
@@ -213,14 +237,14 @@ export function SpotlightHero({
       </div>
 
       <div
-        className="hero-anim hero-fade absolute bottom-14 left-10 z-50 hidden max-w-[260px] sm:block md:left-14"
+        className="hero-anim hero-fade absolute bottom-40 left-10 z-50 hidden max-w-[260px] sm:block md:left-14"
         style={{ animationDelay: '0.7s' }}
       >
         <p className="text-sm leading-relaxed text-white/80">{intro}</p>
       </div>
 
       <div
-        className="hero-anim hero-fade absolute bottom-10 left-5 right-5 z-50 flex max-w-full flex-col items-start gap-4 sm:bottom-24 sm:left-auto sm:right-10 sm:max-w-[260px] sm:gap-5 md:right-14"
+        className="hero-anim hero-fade absolute bottom-36 left-5 right-5 z-50 flex max-w-full flex-col items-start gap-4 sm:bottom-40 sm:left-auto sm:right-10 sm:max-w-[260px] sm:gap-5 md:right-14"
         style={{ animationDelay: '0.85s' }}
       >
         <p className="text-xs leading-relaxed text-white/80 sm:text-sm">{pitch}</p>
