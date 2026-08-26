@@ -9,6 +9,8 @@ interface SpotlightHeroProps {
   baseImage: string;
   /** Foto que asoma dentro del foco que sigue al cursor. */
   revealImage: string;
+  /** Línea pequeña en mayúsculas, encima del titular. */
+  eyebrow: string;
   /** Primera línea del titular. */
   titleTop: string;
   /** Segunda línea. Va pegada a la primera. */
@@ -18,6 +20,8 @@ interface SpotlightHeroProps {
   /** Texto de la llamada a la acción, abajo a la derecha. */
   pitch: string;
   cta: { label: string; href: string };
+  /** Tres apuntes cortos bajo el titular. Rellenan el hueco sin recargar. */
+  facts: [string, string, string];
   className?: string;
 }
 
@@ -65,11 +69,13 @@ const RASGADO_FRENTE =
 export function SpotlightHero({
   baseImage,
   revealImage,
+  eyebrow,
   titleTop,
   titleBottom,
   intro,
   pitch,
   cta,
+  facts,
   className,
 }: SpotlightHeroProps) {
   const seccion = useRef<HTMLElement>(null);
@@ -176,7 +182,7 @@ export function SpotlightHero({
         El perfil está calculado y escrito a mano, no generado en cada render:
         un borde que cambiara al recargar se notaría como un parpadeo.
       */}
-      <div aria-hidden className="pointer-events-none absolute inset-x-0 bottom-0 z-[45]">
+      <div aria-hidden className="pointer-events-none absolute inset-x-0 bottom-0 z-[60]">
         {/*
           Antes del papel, la foto se apaga. Sin esta banda el rasgado se
           recorta contra la imagen a plena luz y vuelve a leerse como un corte,
@@ -219,8 +225,20 @@ export function SpotlightHero({
         mide unos 88px con su margen. A `top-[14%]` el titular le pasaba por
         detrás en pantallas de portátil.
       */}
-      <div className="pointer-events-none absolute inset-x-0 top-[26%] z-50 flex flex-col items-center px-5 text-center sm:top-[24%]">
-        <h1 className="leading-[0.95] text-white">
+      {/*
+        Baja hasta la mitad para que el titular se cruce con la roca: ahí es
+        donde el recorte del primer plano se nota y el texto deja de parecer
+        pegado encima de la foto.
+      */}
+      <div className="pointer-events-none absolute inset-x-0 top-[32%] z-50 flex flex-col items-start px-6 text-left sm:top-[30%] sm:px-10 md:px-14">
+        <p
+          className="hero-anim hero-fade mb-4 text-[11px] uppercase tracking-[0.28em] text-white/60 sm:text-xs"
+          style={{ animationDelay: '0.15s' }}
+        >
+          {eyebrow}
+        </p>
+
+        <h1 className="leading-[0.95] text-white [text-shadow:0_2px_30px_rgba(0,0,0,0.45)]">
           <span
             className="hero-anim hero-reveal block text-5xl font-normal italic sm:text-7xl md:text-8xl"
             style={{ letterSpacing: '-0.05em', animationDelay: '0.25s' }}
@@ -234,17 +252,33 @@ export function SpotlightHero({
             {titleBottom}
           </span>
         </h1>
+
+        {/*
+          Tres apuntes separados por una raya. Ocupan el hueco bajo el titular
+          sin añadir otro párrafo, que ahí competiría con los dos de abajo.
+        */}
+        <ul
+          className="hero-anim hero-fade mt-7 flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-white/70 sm:text-sm"
+          style={{ animationDelay: '0.58s' }}
+        >
+          {facts.map((fact, i) => (
+            <li key={fact} className="flex items-center gap-4">
+              {i > 0 && <span aria-hidden className="h-px w-6 bg-white/30" />}
+              {fact}
+            </li>
+          ))}
+        </ul>
       </div>
 
       <div
-        className="hero-anim hero-fade absolute bottom-40 left-10 z-50 hidden max-w-[260px] sm:block md:left-14"
+        className="hero-anim hero-fade absolute bottom-40 left-10 z-[60] hidden max-w-[260px] sm:block md:left-14"
         style={{ animationDelay: '0.7s' }}
       >
         <p className="text-sm leading-relaxed text-white/80">{intro}</p>
       </div>
 
       <div
-        className="hero-anim hero-fade absolute bottom-36 left-5 right-5 z-50 flex max-w-full flex-col items-start gap-4 sm:bottom-40 sm:left-auto sm:right-10 sm:max-w-[260px] sm:gap-5 md:right-14"
+        className="hero-anim hero-fade absolute bottom-36 left-5 right-5 z-[60] flex max-w-full flex-col items-start gap-4 sm:bottom-40 sm:left-auto sm:right-10 sm:max-w-[260px] sm:gap-5 md:right-14"
         style={{ animationDelay: '0.85s' }}
       >
         <p className="text-xs leading-relaxed text-white/80 sm:text-sm">{pitch}</p>

@@ -18,10 +18,12 @@ export function HomeHero() {
     <SpotlightHero
       baseImage={BASE}
       revealImage={REVELADO}
-      titleTop="Espacios que"
-      titleBottom="se sienten casa"
+      eyebrow="Ponce & Figueroa Group S.A.C."
+      titleTop="Bienvenido a"
+      titleBottom="P&F GROUP"
       intro="Departamentos amoblados en Perú que administramos nosotros mismos: los preparamos, los limpiamos entre estadías y respondemos el teléfono cuando hace falta."
       pitch="Reserva en línea, paga en soles y coordina la llegada directo con nosotros. Sin comisiones escondidas ni intermediarios."
+      facts={['Lima, Perú', 'Reserva directa', 'Pago en soles']}
       cta={{ label: 'Ver alojamientos', href: '/alojamientos' }}
     />
   );
