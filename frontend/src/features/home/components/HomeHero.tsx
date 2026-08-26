@@ -1,47 +1,29 @@
 'use client';
 
-import { ScrollExpandHero } from '@/components/ui/ScrollExpandHero';
-import type { PropertyCard } from '@/types';
+import { SpotlightHero } from '@/components/ui/SpotlightHero';
 
-interface HomeHeroProps {
-  /** Alojamientos destacados: de ahí sale la foto del hero. */
-  featured: PropertyCard[];
-}
+/**
+ * Fotos prestadas del diseño de referencia, para ver el efecto en marcha.
+ * Reemplazar por dos tuyas: el truco funciona mejor cuando son la misma escena
+ * con una diferencia clara —de día y de noche, vacía y amueblada, antes y
+ * después—, porque entonces el foco parece revelar algo y no cambiar de foto.
+ */
+const BASE =
+  'https://images.higgs.ai/?default=1&output=webp&url=https%3A%2F%2Fd8j0ntlcm91z4.cloudfront.net%2Fuser_38xzZboKViGWJOttwIXH07lWA1P%2Fhf_20260609_195923_b0ba8ace-1d1d-4f2c-9a28-1ab84b330680.png&w=1280&q=85';
 
-const RESPALDO = 'https://picsum.photos/seed/pyfgroup-hero/1920/1080';
+const REVELADO =
+  'https://images.higgs.ai/?default=1&output=webp&url=https%3A%2F%2Fd8j0ntlcm91z4.cloudfront.net%2Fuser_38xzZboKViGWJOttwIXH07lWA1P%2Fhf_20260609_201152_bba90a12-bf12-459f-91f0-51f237dbaf3b.png&w=1280&q=85';
 
-const foto = (property?: PropertyCard) =>
-  property?.images.find((i) => i.isMain)?.url ?? property?.images[0]?.url;
-
-export function HomeHero({ featured }: HomeHeroProps) {
-  // Una sola foto: la del primer destacado. El fondo ya no es otra foto sino
-  // blanco, así que no hace falta una segunda imagen.
-  const principal = foto(featured[0]) ?? RESPALDO;
-
+export function HomeHero() {
   return (
-    <ScrollExpandHero
-      mediaSrc={principal}
-      eyebrow="Alojamientos con alma peruana"
-      title="PyFGroup te espera"
-      hint="Desliza para descubrirlo"
-    >
-      {/*
-        Va centrado sobre la foto abierta, así que el texto es blanco y se
-        apoya en el velo oscuro que el hero enciende al expandirse.
-      */}
-      <div className="mx-auto max-w-2xl text-center text-white [text-shadow:0_2px_20px_rgba(0,0,0,0.55)]">
-        <p className="text-2xl font-medium leading-snug sm:text-3xl">
-          Somos PyFGroup, una operadora peruana de alojamientos temporales.
-        </p>
-        <p className="mt-6 text-base leading-relaxed text-white/85 sm:text-lg">
-          Administramos cada departamento nosotros mismos: los amoblamos, los limpiamos entre
-          estadía y estadía y respondemos el teléfono cuando algo hace falta.
-        </p>
-        <p className="mt-4 text-base leading-relaxed text-white/85 sm:text-lg">
-          Reserva en línea, paga en soles y coordina la llegada directo con nosotros. Sin comisiones
-          escondidas ni intermediarios.
-        </p>
-      </div>
-    </ScrollExpandHero>
+    <SpotlightHero
+      baseImage={BASE}
+      revealImage={REVELADO}
+      titleTop="Espacios que"
+      titleBottom="se sienten casa"
+      intro="Departamentos amoblados en Perú que administramos nosotros mismos: los preparamos, los limpiamos entre estadías y respondemos el teléfono cuando hace falta."
+      pitch="Reserva en línea, paga en soles y coordina la llegada directo con nosotros. Sin comisiones escondidas ni intermediarios."
+      cta={{ label: 'Ver alojamientos', href: '/alojamientos' }}
+    />
   );
 }

@@ -18,10 +18,11 @@ export default async function HomePage() {
   return (
     <>
       {/*
-        Hero con foto que se expande al hacer scroll. Usa la foto del primer
-        alojamiento destacado, así que cambia solo cuando cambia el catálogo.
+        Portada con foco que sigue al cursor. Ya no depende del catálogo: antes
+        sacaba la foto del primer destacado, así que la portada cambiaba sola
+        cada vez que se movía el catálogo.
       */}
-      <HomeHero featured={featured ?? []} />
+      <HomeHero />
 
       <StackSection index={1} className="bg-white">
         <FeaturedProperties properties={featured ?? []} />

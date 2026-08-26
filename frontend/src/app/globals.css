@@ -333,3 +333,43 @@
     scroll-behavior: auto !important;
   }
 }
+/* --------------------------- Portada con foco ---------------------------
+   Entrada de la home: el titular sube desenfocándose menos, los textos de
+   apoyo entran después y la foto de fondo cierra un zoom lento. Los retrasos
+   se pasan por `animationDelay` desde el componente, no aquí, porque el orden
+   depende de la maquetación y no del estilo. */
+
+@keyframes heroReveal {
+  0%   { opacity: 0; transform: translateY(28px); filter: blur(12px); }
+  100% { opacity: 1; transform: translateY(0);    filter: blur(0); }
+}
+
+@keyframes heroFadeUp {
+  0%   { opacity: 0; transform: translateY(20px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes heroZoom {
+  0%   { transform: scale(1.12); }
+  100% { transform: scale(1); }
+}
+
+.hero-anim {
+  opacity: 0;
+  animation-fill-mode: forwards;
+  animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.hero-reveal { animation-name: heroReveal; animation-duration: 1.1s; }
+.hero-fade   { animation-name: heroFadeUp; animation-duration: 1s; }
+.hero-zoom   { animation: heroZoom 1.8s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+
+@media (prefers-reduced-motion: reduce) {
+  /* Ojo: `.hero-anim` arranca en opacity 0, así que apagar la animación sin
+     devolver la opacidad dejaría el titular invisible. */
+  .hero-anim,
+  .hero-zoom {
+    animation: none;
+    opacity: 1;
+  }
+}
