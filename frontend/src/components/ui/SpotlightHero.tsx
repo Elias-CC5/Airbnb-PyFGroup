@@ -145,7 +145,22 @@ export function SpotlightHero({
       {/* Velo sutil: el titular es blanco y las fotos pueden tener zonas claras. */}
       <div aria-hidden className="absolute inset-0 z-40 bg-gradient-to-b from-black/35 via-transparent to-black/55" />
 
-      <div className="pointer-events-none absolute inset-x-0 top-[14%] z-50 flex flex-col items-center px-5 text-center">
+      {/*
+        Redondea el borde inferior y deja asomar el blanco de la sección
+        siguiente. Sin esto el paso de la foto oscura al blanco es un corte
+        recto, que es justo lo que no gustó del hero anterior.
+      */}
+      <div
+        aria-hidden
+        className="absolute inset-x-0 bottom-0 z-[45] h-10 rounded-t-[40px] bg-white"
+      />
+
+      {/*
+        Arranca por debajo de la barra flotante del sitio, que es `fixed` y
+        mide unos 88px con su margen. A `top-[14%]` el titular le pasaba por
+        detrás en pantallas de portátil.
+      */}
+      <div className="pointer-events-none absolute inset-x-0 top-[26%] z-50 flex flex-col items-center px-5 text-center sm:top-[24%]">
         <h1 className="leading-[0.95] text-white">
           <span
             className="hero-anim hero-reveal block text-5xl font-normal italic sm:text-7xl md:text-8xl"
@@ -177,7 +192,7 @@ export function SpotlightHero({
 
         <Link
           href={cta.href}
-          className="rounded-full bg-[#e8702a] px-7 py-3 text-sm font-medium text-white transition-all hover:scale-[1.03] hover:bg-[#d2611f] hover:shadow-lg hover:shadow-[#e8702a]/30 active:scale-95"
+          className="rounded-full bg-white px-7 py-3 text-sm font-medium text-ink-900 transition-all hover:scale-[1.03] hover:bg-white/90 hover:shadow-lg hover:shadow-black/20 active:scale-95"
         >
           {cta.label}
         </Link>
