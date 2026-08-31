@@ -1,7 +1,15 @@
 'use client';
 
+import Image from 'next/image';
 import Link from 'next/link';
-import { motion, useScroll, useSpring, useTransform, type MotionValue } from 'motion/react';
+import {
+  motion,
+  useReducedMotion,
+  useScroll,
+  useSpring,
+  useTransform,
+  type MotionValue,
+} from 'motion/react';
 import { useRef } from 'react';
 
 export interface ParallaxItem {
@@ -18,28 +26,49 @@ interface HeroParallaxProps {
   eyebrow: string;
   title: string;
   subtitle: string;
+  /** Párrafo de apoyo. Debajo del subtítulo, más pequeño. */
+  blurb: string;
+  /** Tres apuntes cortos, separados por una raya. */
+  facts: [string, string, string];
   cta: { label: string; href: string };
 }
 
 /** Suavizado de todos los movimientos. Sin esto el scroll se siente crudo. */
 const MUELLE = { stiffness: 300, damping: 30, bounce: 100 } as const;
 
+/** Tamaño real de cada tarjeta. Se le pasa a next/image para que sirva ese ancho. */
+const ANCHO = 480;
+const ALTO = 384;
+
 /**
  * Portada con tres filas de tarjetas que se desplazan en sentidos opuestos
  * mientras se baja, sobre un plano inclinado que se endereza.
  *
- * Adaptado del diseño de Aceternity. Cambios respecto al original:
+ * Sobre el rendimiento, que es lo que más cuesta aquí: son quince fotos dentro
+ * de un contenedor con transformación 3D, y el navegador tiene que rasterizar
+ * esa capa completa en cada fotograma. Tres decisiones lo mantienen fluido:
  *
- * - Las tarjetas enlazan a rutas internas con `next/link`, no a webs externas.
- * - La sección mide 300vh. Es deliberado —el recorrido del scroll ES la
- *   animación— pero significa que el visitante baja tres pantallas antes de
- *   ver el resto de la página.
- * - Las imágenes van con `<img>` y no con `next/image` a propósito: aquí
- *   llegan de varios servicios (Cloudinary, Wikipedia, picsum) y `next/image`
- *   revienta la página entera si un host no está declarado en la
- *   configuración. Se pierde optimización a cambio de que nunca falle.
+ * - `next/image` sirve cada foto ya redimensionada a 480px en AVIF o WebP, en
+ *   vez de descargar el original de varios megas. Es de lejos lo que más pesa.
+ *   Ojo: exige que el host de la imagen esté declarado en `next.config.ts`. Si
+ *   algún día entra una foto de un dominio nuevo, hay que añadirlo ahí o la
+ *   página falla al renderizar.
+ * - `will-change: transform` avisa al navegador de que esa capa se va a mover,
+ *   para que la promueva una vez y no en cada fotograma.
+ * - Con «reducir movimiento» activado no hay parallax: las tarjetas se quedan
+ *   quietas y sólo queda el texto.
  */
-export function HeroParallax({ items, eyebrow, title, subtitle, cta }: HeroParallaxProps) {
+export function HeroParallax({
+  items,
+  eyebrow,
+  title,
+  subtitle,
+  blurb,
+  facts,
+  cta,
+}: HeroParallaxProps) {
+  const quieto = useReducedMotion();
+
   // El diseño necesita quince tarjetas en tres filas de cinco. Si hay menos,
   // se repiten en ciclo: una fila a medias se ve rota.
   const quince = Array.from({ length: 15 }, (_, i) => items[i % Math.max(1, items.length)]).filter(
@@ -60,6 +89,10 @@ export function HeroParallax({ items, eyebrow, title, subtitle, cta }: HeroParal
   const opacidad = useSpring(useTransform(scrollYProgress, [0, 0.2], [0.2, 1]), MUELLE);
   const desplazarY = useSpring(useTransform(scrollYProgress, [0, 0.2], [-700, 500]), MUELLE);
 
+  const plano = quieto
+    ? undefined
+    : { rotateX: rotarX, rotateZ: rotarZ, translateY: desplazarY, opacity: opacidad };
+
   return (
     <div
       ref={ref}
@@ -68,43 +101,68 @@ export function HeroParallax({ items, eyebrow, title, subtitle, cta }: HeroParal
         apilamiento. Sin él compiten con la barra de navegación, que flota por
         encima, y le roban los clics.
       */
-      className="relative z-0 flex h-[300vh] flex-col self-auto overflow-hidden bg-white py-40 antialiased [perspective:1000px] [transform-style:preserve-3d]"
+      className="relative z-0 flex h-[300vh] flex-col self-auto overflow-hidden bg-white py-24 antialiased [perspective:1000px] [transform-style:preserve-3d] md:py-40"
     >
-      <header className="relative left-0 top-0 mx-auto w-full max-w-7xl px-6 py-20 md:px-10 md:py-40">
+      <header className="relative mx-auto w-full max-w-3xl px-6 py-16 text-center md:py-28">
         <p className="text-[11px] uppercase tracking-[0.28em] text-ink-500 sm:text-xs">{eyebrow}</p>
 
-        <h1 className="mt-5 text-3xl font-semibold leading-[1.05] tracking-tight text-ink-900 md:text-7xl">
+        <h1 className="mt-5 text-5xl font-semibold leading-[1.02] tracking-tight text-ink-900 md:text-7xl">
           {title}
         </h1>
 
-        <p className="mt-8 max-w-2xl text-base leading-relaxed text-ink-600 md:text-xl">
-          {subtitle}
+        <p className="mt-6 text-lg leading-snug text-ink-700 md:text-2xl">{subtitle}</p>
+
+        <p className="mx-auto mt-5 max-w-xl text-sm leading-relaxed text-ink-600 md:text-base">
+          {blurb}
         </p>
+
+        {/* Tres apuntes con raya en medio. Ocupan el hueco sin otro párrafo. */}
+        <ul className="mt-8 flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-xs text-ink-500 sm:text-sm">
+          {facts.map((fact, i) => (
+            <li key={fact} className="flex items-center gap-4">
+              {i > 0 && <span aria-hidden className="h-px w-6 bg-ink-300" />}
+              {fact}
+            </li>
+          ))}
+        </ul>
 
         <Link
           href={cta.href}
-          className="mt-8 inline-flex rounded-full bg-ink-900 px-7 py-3 text-sm font-medium text-white transition-colors hover:bg-ink-800"
+          className="mt-9 inline-flex rounded-full bg-ink-900 px-7 py-3 text-sm font-medium text-white transition-colors hover:bg-ink-800"
         >
           {cta.label}
         </Link>
       </header>
 
-      <motion.div style={{ rotateX: rotarX, rotateZ: rotarZ, translateY: desplazarY, opacity: opacidad }}>
+      <motion.div style={plano} className="[will-change:transform]">
         <motion.div className="mb-20 flex flex-row-reverse space-x-20 space-x-reverse">
           {fila1.map((item, i) => (
-            <Tarjeta key={`f1-${i}-${item.title}`} item={item} desplazar={desplazar} />
+            <Tarjeta
+              key={`f1-${i}-${item.title}`}
+              item={item}
+              desplazar={quieto ? undefined : desplazar}
+              prioritaria={i < 2}
+            />
           ))}
         </motion.div>
 
         <motion.div className="mb-20 flex flex-row space-x-20">
           {fila2.map((item, i) => (
-            <Tarjeta key={`f2-${i}-${item.title}`} item={item} desplazar={desplazarInverso} />
+            <Tarjeta
+              key={`f2-${i}-${item.title}`}
+              item={item}
+              desplazar={quieto ? undefined : desplazarInverso}
+            />
           ))}
         </motion.div>
 
         <motion.div className="flex flex-row-reverse space-x-20 space-x-reverse">
           {fila3.map((item, i) => (
-            <Tarjeta key={`f3-${i}-${item.title}`} item={item} desplazar={desplazar} />
+            <Tarjeta
+              key={`f3-${i}-${item.title}`}
+              item={item}
+              desplazar={quieto ? undefined : desplazar}
+            />
           ))}
         </motion.div>
       </motion.div>
@@ -112,19 +170,32 @@ export function HeroParallax({ items, eyebrow, title, subtitle, cta }: HeroParal
   );
 }
 
-function Tarjeta({ item, desplazar }: { item: ParallaxItem; desplazar: MotionValue<number> }) {
+function Tarjeta({
+  item,
+  desplazar,
+  prioritaria = false,
+}: {
+  item: ParallaxItem;
+  desplazar?: MotionValue<number>;
+  prioritaria?: boolean;
+}) {
   return (
     <motion.div
-      style={{ x: desplazar }}
+      style={desplazar ? { x: desplazar } : undefined}
       whileHover={{ y: -20 }}
-      className="group/tarjeta relative h-96 w-[30rem] shrink-0"
+      className="group/tarjeta relative h-72 w-[22rem] shrink-0 md:h-96 md:w-[30rem]"
     >
       <Link href={item.href} className="block h-full w-full group-hover/tarjeta:shadow-2xl">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
+        <Image
           src={item.thumbnail}
           alt={item.title}
-          loading="lazy"
+          width={ANCHO}
+          height={ALTO}
+          sizes="(max-width: 768px) 22rem, 30rem"
+          // Sólo las dos primeras se cargan de inmediato: el resto entra al
+          // acercarse. Cargarlas todas de golpe atasca el primer pintado.
+          priority={prioritaria}
+          loading={prioritaria ? undefined : 'lazy'}
           className="absolute inset-0 h-full w-full rounded-xl object-cover object-left-top"
         />
 

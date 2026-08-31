@@ -42,6 +42,8 @@ export function HomeHero({ featured }: HomeHeroProps) {
       eyebrow="Ponce & Figueroa Group S.A.C."
       title="PyFGroup"
       subtitle="Departamentos amoblados en Perú, administrados por nosotros."
+      blurb="Los preparamos, los limpiamos entre estadías y respondemos el teléfono cuando hace falta. Reserva en línea y coordina la llegada directo con nosotros, sin intermediarios."
+      facts={['Lima, Perú', 'Reserva directa', 'Pago en soles']}
       cta={{ label: 'Ver alojamientos', href: '/alojamientos' }}
     />
   );
