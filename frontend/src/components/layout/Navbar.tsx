@@ -28,13 +28,7 @@ export function Navbar() {
 
   useEffect(() => setMobileOpen(false), [pathname]);
 
-  /**
-   * En la portada, mientras no se ha bajado, la barra flota sobre una foto
-   * oscura a pantalla completa. Con el cristal claro de siempre los enlaces
-   * quedan casi ilegibles, así que ahí se invierte: cristal oscuro y texto
-   * blanco. Al scrollear vuelve al claro de todo el sitio.
-   */
-  const sobreOscuro = pathname === '/' && !scrolled;
+
 
   // Springs con carácter, pero contenidos: nada de rebote payaso.
   const springSnappy = { type: 'spring', stiffness: 420, damping: 32, mass: 0.6 } as const;
@@ -64,9 +58,7 @@ export function Navbar() {
             'ring-1 ring-inset',
             scrolled
               ? 'h-14 bg-white/70 ring-white/60 shadow-[0_10px_40px_-14px_rgba(28,25,23,0.28)]'
-              : sobreOscuro
-                ? 'h-16 bg-white/[0.07] ring-white/25 shadow-[0_8px_36px_-10px_rgba(0,0,0,0.55)]'
-                : 'h-16 bg-white/50 ring-white/60 shadow-[0_6px_28px_-16px_rgba(28,25,23,0.22)]',
+              : 'h-16 bg-white/50 ring-white/60 shadow-[0_6px_28px_-16px_rgba(28,25,23,0.22)]',
           )}
         >
           {/*
@@ -81,8 +73,7 @@ export function Navbar() {
 
           <motion.div whileHover={reduceMotion ? undefined : { scale: 1.04 }} whileTap={reduceMotion ? undefined : { scale: 0.96 }} transition={springSnappy}>
             <Link href="/" aria-label={`${SITE.name} — Inicio`} className="block shrink-0">
-              {/* `invert` deja el cuadro en blanco y el monograma oscuro. */}
-              <Logo className={cn('transition-[filter] duration-500', sobreOscuro && 'invert')} />
+              <Logo />
             </Link>
           </motion.div>
 
@@ -103,13 +94,9 @@ export function Navbar() {
                     aria-current={active ? 'page' : undefined}
                     className={cn(
                       'relative rounded-full px-4 py-2 text-sm transition-colors duration-300',
-                      sobreOscuro
-                        ? active
-                          ? 'font-medium text-white'
-                          : 'text-white/70 hover:bg-white/10 hover:text-white'
-                        : active
-                          ? 'font-medium text-ink-900'
-                          : 'text-ink-500 hover:bg-ink-900/[0.04] hover:text-ink-900',
+                      active
+                        ? 'font-medium text-ink-900'
+                        : 'text-ink-500 hover:bg-ink-900/[0.04] hover:text-ink-900',
                     )}
                   >
                     {link.label}
@@ -119,10 +106,7 @@ export function Navbar() {
                         layoutId="nav-active-dot"
                         aria-hidden
                         transition={reduceMotion ? { duration: 0 } : springSnappy}
-                        className={cn(
-                          'absolute inset-x-0 -bottom-0.5 mx-auto size-1 rounded-full',
-                          sobreOscuro ? 'bg-white' : 'bg-clay-600',
-                        )}
+                        className="absolute inset-x-0 -bottom-0.5 mx-auto size-1 rounded-full bg-clay-600"
                       />
                     )}
                   </Link>
@@ -135,12 +119,7 @@ export function Navbar() {
           <div className="flex items-center gap-1.5">
             <Link
               href={isHost ? '/host' : '/conviertete-en-anfitrion'}
-              className={cn(
-                'mr-1 hidden rounded-full px-3.5 py-2 text-sm transition-colors duration-300 md:inline-block',
-                sobreOscuro
-                  ? 'text-white/75 hover:bg-white/10 hover:text-white'
-                  : 'text-ink-600 hover:bg-ink-900/[0.04] hover:text-ink-900',
-              )}
+              className="mr-1 hidden rounded-full px-3.5 py-2 text-sm text-ink-600 transition-colors duration-300 hover:bg-ink-900/[0.04] hover:text-ink-900 md:inline-block"
             >
               {isHost ? 'Modo anfitrión' : 'Conviértete en anfitrión'}
             </Link>
@@ -152,14 +131,9 @@ export function Navbar() {
                     whileHover={reduceMotion ? undefined : { scale: 1.03 }}
                     whileTap={reduceMotion ? undefined : { scale: 0.97 }}
                     transition={springSnappy}
-                    className={cn(
-                      'flex items-center gap-2 rounded-full border py-1 pl-3 pr-1 transition-[border-color,box-shadow] duration-300 hover:shadow-sm',
-                      sobreOscuro
-                        ? 'border-white/25 bg-white/10 hover:border-white/40'
-                        : 'border-ink-200/80 bg-white/70 hover:border-ink-300',
-                    )}
+                    className="flex items-center gap-2 rounded-full border border-ink-200/80 bg-white/70 py-1 pl-3 pr-1 transition-[border-color,box-shadow] duration-300 hover:border-ink-300 hover:shadow-sm"
                   >
-                    <Menu className={cn('size-4', sobreOscuro ? 'text-white/80' : 'text-ink-500')} />
+                    <Menu className="size-4 text-ink-500" />
                     <Avatar
                       src={user?.avatarUrl}
                       firstName={user?.firstName}
@@ -238,12 +212,7 @@ export function Navbar() {
                     asChild
                     variant="ghost"
                     size="sm"
-                    className={cn(
-                      'rounded-full',
-                      sobreOscuro
-                        ? 'text-white/80 hover:bg-white/10 hover:text-white'
-                        : 'text-ink-600 hover:bg-ink-900/[0.05] hover:text-ink-900',
-                    )}
+                    className="rounded-full text-ink-600 hover:bg-ink-900/[0.05] hover:text-ink-900"
                   >
                     <Link href="/login">Iniciar sesión</Link>
                   </Button>
@@ -262,12 +231,7 @@ export function Navbar() {
               onClick={() => setMobileOpen((v) => !v)}
               aria-label={mobileOpen ? 'Cerrar menú' : 'Abrir menú'}
               aria-expanded={mobileOpen}
-              className={cn(
-                'grid size-10 place-items-center rounded-full transition lg:hidden',
-                sobreOscuro
-                  ? 'text-white hover:bg-white/10'
-                  : 'text-ink-700 hover:bg-ink-900/[0.06]',
-              )}
+              className="grid size-10 place-items-center rounded-full text-ink-700 transition hover:bg-ink-900/[0.06] lg:hidden"
             >
               <AnimatePresence mode="wait" initial={false}>
                 <motion.span

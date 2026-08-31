@@ -40,8 +40,8 @@ export function HomeHero({ featured }: HomeHeroProps) {
     <HeroParallax
       items={items.length ? items : RESPALDO}
       eyebrow="Ponce & Figueroa Group S.A.C."
-      title="Departamentos amoblados en Perú, administrados por nosotros."
-      subtitle="Los preparamos, los limpiamos entre estadías y respondemos el teléfono cuando hace falta. Reserva en línea, paga en soles y coordina la llegada directo con nosotros."
+      title="PyFGroup"
+      subtitle="Departamentos amoblados en Perú, administrados por nosotros."
       cta={{ label: 'Ver alojamientos', href: '/alojamientos' }}
     />
   );
