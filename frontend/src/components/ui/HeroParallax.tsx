@@ -2,14 +2,7 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import {
-  motion,
-  useReducedMotion,
-  useScroll,
-  useSpring,
-  useTransform,
-  type MotionValue,
-} from 'motion/react';
+import { motion, useReducedMotion, useScroll, useTransform, type MotionValue } from 'motion/react';
 import { useRef } from 'react';
 
 export interface ParallaxItem {
@@ -33,9 +26,6 @@ interface HeroParallaxProps {
   cta: { label: string; href: string };
 }
 
-/** Suavizado de todos los movimientos. Sin esto el scroll se siente crudo. */
-const MUELLE = { stiffness: 300, damping: 30, bounce: 100 } as const;
-
 /** Tamaño real de cada tarjeta. Se le pasa a next/image para que sirva ese ancho. */
 const ANCHO = 480;
 const ALTO = 384;
@@ -44,19 +34,21 @@ const ALTO = 384;
  * Portada con tres filas de tarjetas que se desplazan en sentidos opuestos
  * mientras se baja, sobre un plano inclinado que se endereza.
  *
- * Sobre el rendimiento, que es lo que más cuesta aquí: son quince fotos dentro
- * de un contenedor con transformación 3D, y el navegador tiene que rasterizar
- * esa capa completa en cada fotograma. Tres decisiones lo mantienen fluido:
+ * Sobre el rendimiento, que es lo que más cuesta aquí:
  *
- * - `next/image` sirve cada foto ya redimensionada a 480px en AVIF o WebP, en
- *   vez de descargar el original de varios megas. Es de lejos lo que más pesa.
- *   Ojo: exige que el host de la imagen esté declarado en `next.config.ts`. Si
- *   algún día entra una foto de un dominio nuevo, hay que añadirlo ahí o la
- *   página falla al renderizar.
- * - `will-change: transform` avisa al navegador de que esa capa se va a mover,
- *   para que la promueva una vez y no en cada fotograma.
- * - Con «reducir movimiento» activado no hay parallax: las tarjetas se quedan
- *   quietas y sólo queda el texto.
+ * - NO se usa `useSpring`. El diseño original envuelve cada valor en un muelle,
+ *   y eso hace que las tarjetas *persigan* al scroll: llegan tarde y siguen
+ *   moviéndose después de que el visitante para. Se percibe como pesadez
+ *   aunque el navegador vaya sobrado de fotogramas. Con `useTransform` a secas
+ *   el movimiento va pegado a la rueda y se siente inmediato.
+ * - No se anima la opacidad de la capa grande. Hacerlo obliga a una pasada de
+ *   composición extra sobre varios miles de píxeles en cada fotograma.
+ * - Tampoco lleva `will-change: transform`. En un elemento pequeño ayuda; en
+ *   una capa de este tamaño obliga a reservar una textura enorme y cuesta más
+ *   de lo que ahorra.
+ * - `next/image` sirve cada foto redimensionada a 480px en AVIF o WebP. Ojo:
+ *   exige que el host esté declarado en `next.config.ts`, o la página falla.
+ * - Con «reducir movimiento» activado no hay parallax.
  */
 export function HeroParallax({
   items,
@@ -82,16 +74,13 @@ export function HeroParallax({
   const ref = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({ target: ref, offset: ['start start', 'end start'] });
 
-  const desplazar = useSpring(useTransform(scrollYProgress, [0, 1], [0, 1000]), MUELLE);
-  const desplazarInverso = useSpring(useTransform(scrollYProgress, [0, 1], [0, -1000]), MUELLE);
-  const rotarX = useSpring(useTransform(scrollYProgress, [0, 0.2], [15, 0]), MUELLE);
-  const rotarZ = useSpring(useTransform(scrollYProgress, [0, 0.2], [20, 0]), MUELLE);
-  const opacidad = useSpring(useTransform(scrollYProgress, [0, 0.2], [0.2, 1]), MUELLE);
-  const desplazarY = useSpring(useTransform(scrollYProgress, [0, 0.2], [-700, 500]), MUELLE);
+  const desplazar = useTransform(scrollYProgress, [0, 1], [0, 1000]);
+  const desplazarInverso = useTransform(scrollYProgress, [0, 1], [0, -1000]);
+  const rotarX = useTransform(scrollYProgress, [0, 0.2], [15, 0]);
+  const rotarZ = useTransform(scrollYProgress, [0, 0.2], [20, 0]);
+  const desplazarY = useTransform(scrollYProgress, [0, 0.2], [-700, 500]);
 
-  const plano = quieto
-    ? undefined
-    : { rotateX: rotarX, rotateZ: rotarZ, translateY: desplazarY, opacity: opacidad };
+  const plano = quieto ? undefined : { rotateX: rotarX, rotateZ: rotarZ, translateY: desplazarY };
 
   return (
     <div
@@ -134,7 +123,7 @@ export function HeroParallax({
         </Link>
       </header>
 
-      <motion.div style={plano} className="[will-change:transform]">
+      <motion.div style={plano}>
         <motion.div className="mb-20 flex flex-row-reverse space-x-20 space-x-reverse">
           {fila1.map((item, i) => (
             <Tarjeta
@@ -183,6 +172,7 @@ function Tarjeta({
     <motion.div
       style={desplazar ? { x: desplazar } : undefined}
       whileHover={{ y: -20 }}
+      transition={{ type: 'spring', stiffness: 400, damping: 30 }}
       className="group/tarjeta relative h-72 w-[22rem] shrink-0 md:h-96 md:w-[30rem]"
     >
       <Link href={item.href} className="block h-full w-full group-hover/tarjeta:shadow-2xl">
