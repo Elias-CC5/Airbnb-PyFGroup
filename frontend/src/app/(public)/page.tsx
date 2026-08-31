@@ -18,10 +18,11 @@ export default async function HomePage() {
   return (
     <>
       {/*
-        Portada con foco que sigue al cursor. Las fotos van fijas dentro del
-        componente: no dependen del catálogo.
+        Portada con parallax: tres filas de alojamientos que se desplazan en
+        sentidos opuestos al bajar. Mide 300vh, así que el resto de la página
+        empieza tres pantallas más abajo.
       */}
-      <HomeHero />
+      <HomeHero featured={featured ?? []} />
 
       <StackSection index={1} className="bg-white">
         <FeaturedProperties properties={featured ?? []} />

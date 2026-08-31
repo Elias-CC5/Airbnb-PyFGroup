@@ -15,19 +15,19 @@ import {
 export class CreateReservationDto {
   @ApiProperty({ format: 'uuid' })
   @IsUUID()
-  propertyId: string;
+  propertyId!: string;
 
   @ApiProperty({ example: '2026-09-10' })
   @IsDateString()
-  checkIn: string;
+  checkIn!: string;
 
   @ApiProperty({ example: '2026-09-14' })
   @IsDateString()
-  checkOut: string;
+  checkOut!: string;
 
   @ApiProperty({ example: 2 })
   @Type(() => Number) @IsInt() @Min(1)
-  guests: number;
+  guests!: number;
 
   @ApiPropertyOptional({ example: 'Llegaremos alrededor de las 8 pm' })
   @IsOptional() @IsString() @MaxLength(500)
