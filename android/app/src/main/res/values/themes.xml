@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!--
+      Tema mínimo. El aspecto real lo pone Compose en ui/theme; esto sólo
+      evita el parpadeo blanco entre que arranca la actividad y se compone
+      la primera pantalla.
+    -->
+    <style name="Theme.PyFGroup" parent="android:Theme.Material.Light.NoActionBar">
+        <item name="android:windowBackground">@color/fondo</item>
+        <item name="android:statusBarColor">@color/tinta</item>
+        <item name="android:windowLightStatusBar">false</item>
+    </style>
+</resources>

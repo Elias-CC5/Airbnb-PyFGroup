@@ -2,7 +2,14 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { motion, useReducedMotion, useScroll, useTransform, type MotionValue } from 'motion/react';
+import {
+  motion,
+  useReducedMotion,
+  useScroll,
+  useSpring,
+  useTransform,
+  type MotionValue,
+} from 'motion/react';
 import { useRef } from 'react';
 
 export interface ParallaxItem {
@@ -27,28 +34,25 @@ interface HeroParallaxProps {
 }
 
 /** Tamaño real de cada tarjeta. Se le pasa a next/image para que sirva ese ancho. */
-const ANCHO = 480;
-const ALTO = 384;
+const ANCHO = 600;
+const ALTO = 600;
+
+const MUELLE = { stiffness: 300, damping: 30, bounce: 100 };
 
 /**
  * Portada con tres filas de tarjetas que se desplazan en sentidos opuestos
- * mientras se baja, sobre un plano inclinado que se endereza.
+ * mientras se baja, sobre un plano inclinado que se endereza y se revela.
  *
- * Sobre el rendimiento, que es lo que más cuesta aquí:
+ * Es el HeroParallax de Aceternity, con tres cosas adaptadas al proyecto:
  *
- * - NO se usa `useSpring`. El diseño original envuelve cada valor en un muelle,
- *   y eso hace que las tarjetas *persigan* al scroll: llegan tarde y siguen
- *   moviéndose después de que el visitante para. Se percibe como pesadez
- *   aunque el navegador vaya sobrado de fotogramas. Con `useTransform` a secas
- *   el movimiento va pegado a la rueda y se siente inmediato.
- * - No se anima la opacidad de la capa grande. Hacerlo obliga a una pasada de
- *   composición extra sobre varios miles de píxeles en cada fotograma.
- * - Tampoco lleva `will-change: transform`. En un elemento pequeño ayuda; en
- *   una capa de este tamaño obliga a reservar una textura enorme y cuesta más
- *   de lo que ahorra.
- * - `next/image` sirve cada foto redimensionada a 480px en AVIF o WebP. Ojo:
- *   exige que el host esté declarado en `next.config.ts`, o la página falla.
- * - Con «reducir movimiento» activado no hay parallax.
+ * - Las tarjetas llevan `next/image` en vez de `<img>`, así cada foto se sirve
+ *   redimensionada en AVIF o WebP. Exige que el host esté declarado en
+ *   `next.config.ts`, o la página falla al renderizar.
+ * - Los enlaces son `next/link`: son rutas internas y no deben recargar.
+ * - La sección lleva `z-0`. Sin él sus capas compiten con la barra de
+ *   navegación, que flota por encima, y le roban los clics.
+ *
+ * Con «reducir movimiento» activado no hay parallax.
  */
 export function HeroParallax({
   items,
@@ -74,39 +78,35 @@ export function HeroParallax({
   const ref = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({ target: ref, offset: ['start start', 'end start'] });
 
-  const desplazar = useTransform(scrollYProgress, [0, 1], [0, 1000]);
-  const desplazarInverso = useTransform(scrollYProgress, [0, 1], [0, -1000]);
-  const rotarX = useTransform(scrollYProgress, [0, 0.2], [15, 0]);
-  const rotarZ = useTransform(scrollYProgress, [0, 0.2], [20, 0]);
-  const desplazarY = useTransform(scrollYProgress, [0, 0.2], [-700, 500]);
+  const desplazar = useSpring(useTransform(scrollYProgress, [0, 1], [0, 1000]), MUELLE);
+  const desplazarInverso = useSpring(useTransform(scrollYProgress, [0, 1], [0, -1000]), MUELLE);
+  const rotarX = useSpring(useTransform(scrollYProgress, [0, 0.2], [15, 0]), MUELLE);
+  const rotarZ = useSpring(useTransform(scrollYProgress, [0, 0.2], [20, 0]), MUELLE);
+  const desplazarY = useSpring(useTransform(scrollYProgress, [0, 0.2], [-700, 500]), MUELLE);
+  const revelar = useSpring(useTransform(scrollYProgress, [0, 0.2], [0.2, 1]), MUELLE);
 
-  const plano = quieto ? undefined : { rotateX: rotarX, rotateZ: rotarZ, translateY: desplazarY };
+  const plano = quieto
+    ? undefined
+    : { rotateX: rotarX, rotateZ: rotarZ, translateY: desplazarY, opacity: revelar };
 
   return (
     <div
       ref={ref}
-      /*
-        `z-0` encierra las capas de esta sección en su propio contexto de
-        apilamiento. Sin él compiten con la barra de navegación, que flota por
-        encima, y le roban los clics.
-      */
-      className="relative z-0 flex h-[300vh] flex-col self-auto overflow-hidden bg-white py-24 antialiased [perspective:1000px] [transform-style:preserve-3d] md:py-40"
+      className="relative z-0 flex h-[300vh] flex-col self-auto overflow-hidden bg-white py-40 antialiased [perspective:1000px] [transform-style:preserve-3d]"
     >
-      <header className="relative mx-auto w-full max-w-3xl px-6 py-16 text-center md:py-28">
+      <header className="relative left-0 top-0 mx-auto w-full max-w-7xl px-4 py-20 md:py-40">
         <p className="text-[11px] uppercase tracking-[0.28em] text-ink-500 sm:text-xs">{eyebrow}</p>
 
-        <h1 className="mt-5 text-5xl font-semibold leading-[1.02] tracking-tight text-ink-900 md:text-7xl">
+        <h1 className="mt-5 text-2xl font-bold leading-[1.02] tracking-tight text-ink-900 md:text-7xl">
           {title}
         </h1>
 
-        <p className="mt-6 text-lg leading-snug text-ink-700 md:text-2xl">{subtitle}</p>
+        <p className="mt-8 max-w-2xl text-base leading-snug text-ink-700 md:text-xl">{subtitle}</p>
 
-        <p className="mx-auto mt-5 max-w-xl text-sm leading-relaxed text-ink-600 md:text-base">
-          {blurb}
-        </p>
+        <p className="mt-5 max-w-2xl text-sm leading-relaxed text-ink-600 md:text-base">{blurb}</p>
 
         {/* Tres apuntes con raya en medio. Ocupan el hueco sin otro párrafo. */}
-        <ul className="mt-8 flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-xs text-ink-500 sm:text-sm">
+        <ul className="mt-8 flex max-w-2xl flex-wrap items-center gap-x-4 gap-y-2 text-xs text-ink-500 sm:text-sm">
           {facts.map((fact, i) => (
             <li key={fact} className="flex items-center gap-4">
               {i > 0 && <span aria-hidden className="h-px w-6 bg-ink-300" />}
@@ -172,8 +172,7 @@ function Tarjeta({
     <motion.div
       style={desplazar ? { x: desplazar } : undefined}
       whileHover={{ y: -20 }}
-      transition={{ type: 'spring', stiffness: 400, damping: 30 }}
-      className="group/tarjeta relative h-72 w-[22rem] shrink-0 md:h-96 md:w-[30rem]"
+      className="group/tarjeta relative h-96 w-[30rem] shrink-0"
     >
       <Link href={item.href} className="block h-full w-full group-hover/tarjeta:shadow-2xl">
         <Image
@@ -181,24 +180,21 @@ function Tarjeta({
           alt={item.title}
           width={ANCHO}
           height={ALTO}
-          sizes="(max-width: 768px) 22rem, 30rem"
+          sizes="30rem"
           // Sólo las dos primeras se cargan de inmediato: el resto entra al
           // acercarse. Cargarlas todas de golpe atasca el primer pintado.
           priority={prioritaria}
           loading={prioritaria ? undefined : 'lazy'}
-          className="absolute inset-0 h-full w-full rounded-xl object-cover object-left-top"
+          className="absolute inset-0 h-full w-full object-cover object-left-top"
         />
-
-        <span
-          aria-hidden
-          className="pointer-events-none absolute inset-0 rounded-xl bg-black opacity-0 transition-opacity duration-300 group-hover/tarjeta:opacity-70"
-        />
-
-        <span className="pointer-events-none absolute bottom-5 left-5 right-5 opacity-0 transition-opacity duration-300 group-hover/tarjeta:opacity-100">
-          <span className="block text-lg font-medium text-white">{item.title}</span>
-          {item.meta && <span className="mt-1 block text-sm text-white/70">{item.meta}</span>}
-        </span>
       </Link>
+
+      <div className="pointer-events-none absolute inset-0 h-full w-full bg-black opacity-0 group-hover/tarjeta:opacity-80" />
+
+      <div className="pointer-events-none absolute bottom-4 left-4 opacity-0 group-hover/tarjeta:opacity-100">
+        <span className="block text-white">{item.title}</span>
+        {item.meta && <span className="mt-1 block text-sm text-white/70">{item.meta}</span>}
+      </div>
     </motion.div>
   );
 }
